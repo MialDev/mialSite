@@ -1,0 +1,60 @@
+<svg width="400" height="180" viewBox="0 0 400 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fenêtre principale -->
+  <rect x="4" y="4" width="392" height="172" rx="16" fill="#F4F7FF"/>
+
+  <!-- Barre du haut (fenêtre) -->
+  <rect x="4" y="4" width="392" height="34" rx="16" fill="#EBF1FF"/>
+  <!-- Pastilles type macOS -->
+  <circle cx="26" cy="21" r="5" fill="#E4D4D9"/>
+  <circle cx="46" cy="21" r="5" fill="#E5DCC8"/>
+  <circle cx="66" cy="21" r="5" fill="#CBE6D2"/>
+
+  <!-- Zone du tableau -->
+  <rect x="16" y="46" width="368" height="120" rx="10" fill="#FDFEFF"/>
+
+  <!-- Grille -->
+  <!-- Lignes horizontales -->
+  <g stroke="#E0E6F2" stroke-width="1">
+    <line x1="16" y1="70" x2="384" y2="70"/>
+    <line x1="16" y1="94" x2="384" y2="94"/>
+    <line x1="16" y1="118" x2="384" y2="118"/>
+    <line x1="16" y1="142" x2="384" y2="142"/>
+  </g>
+
+  <!-- Lignes verticales -->
+  <g stroke="#E0E6F2" stroke-width="1">
+    <line x1="88" y1="46" x2="88" y2="166"/>
+    <line x1="160" y1="46" x2="160" y2="166"/>
+    <line x1="232" y1="46" x2="232" y2="166"/>
+    <line x1="304" y1="46" x2="304" y2="166"/>
+  </g>
+
+  <!-- Cellules légèrement grisées (colonne 1) -->
+  <rect x="16"  y="70" width="72" height="24" fill="#F6F8FF"/>
+  <rect x="16"  y="94" width="72" height="24" fill="#F6F8FF"/>
+  <rect x="16"  y="118" width="72" height="24" fill="#F6F8FF"/>
+  <rect x="16"  y="142" width="72" height="24" fill="#F6F8FF"/>
+
+  <!-- En-tête colonne sélectionnée (bleu, colonne 2) -->
+  <rect x="88" y="46" width="72" height="24" rx="4" fill="#3D8BFF"/>
+
+  <!-- Barres grises dans la première colonne (type texte) -->
+  <rect x="26" y="77" width="52" height="6" rx="3" fill="#D3DAE8"/>
+  <rect x="26" y="101" width="52" height="6" rx="3" fill="#D3DAE8"/>
+  <rect x="26" y="125" width="52" height="6" rx="3" fill="#D3DAE8"/>
+  <rect x="26" y="149" width="52" height="6" rx="3" fill="#D3DAE8"/>
+
+  <!-- Barre bleue dans une cellule centrale (colonne 3 seulement) -->
+  <rect x="170" y="101" width="58" height="10" rx="5" fill="#3D8BFF"/>
+
+  <!-- Barres vertes (colonne 4 et 5, dans la largeur des colonnes) -->
+  <!-- Colonne 4 : x entre 232 et 304 -->
+  <rect x="238" y="77" width="56" height="12" rx="6" fill="#16C79A"/>
+  <!-- Colonne 5 : x entre 304 et 384 -->
+  <rect x="312" y="149" width="56" height="12" rx="6" fill="#16C79A"/>
+
+  <!-- Barres grises dans d'autres colonnes -->
+  <rect x="170" y="77" width="50" height="6" rx="3" fill="#D3DAE8"/>
+  <rect x="240" y="101" width="46" height="6" rx="3" fill="#D3DAE8"/>
+  <rect x="240" y="125" width="46" height="6" rx="3" fill="#D3DAE8"/>
+</svg>
