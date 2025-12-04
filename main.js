@@ -5,35 +5,25 @@
   const header = document.getElementById('site-header');
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let lastY = window.scrollY || 0;
-  let upAccum = 0;
-  const SCROLL_THRESHOLD = 6;
+  const SCROLL_THRESHOLD = 10;
 
-  /* ---------- NAV : hide / show en scroll ---------- */
+  // --- 1. NAV SCROLL ---
   function onScroll() {
     const y = window.scrollY || 0;
     const dy = y - lastY;
     const goingDown = dy > 0;
 
-    if (goingDown) {
-      upAccum = 0;
-      if (y > SCROLL_THRESHOLD && header) {
+    if (header) {
+      if (goingDown && y > SCROLL_THRESHOLD) {
         header.classList.add('nav-hidden');
-      }
-    } else {
-      upAccum += Math.abs(dy);
-      if (header) {
-        if (upAccum > SCROLL_THRESHOLD) header.classList.remove('nav-hidden');
-        if (y < SCROLL_THRESHOLD) header.classList.remove('nav-hidden');
+      } else {
+        header.classList.remove('nav-hidden');
       }
     }
-
     lastY = y;
-
-    // Si l'utilisateur demande moins d'animations : on ne rajoute rien ici
-    if (prefersReducedMotion.matches) return;
   }
 
-  /* ---------- Nav mobile : burger ---------- */
+  // --- 2. MENU MOBILE ---
   function initMobileNav() {
     if (!header) return;
     const toggle = header.querySelector('.nav-toggle');
@@ -44,7 +34,6 @@
       header.classList.toggle('nav-open');
     });
 
-    // fermer le menu quand on clique sur un lien
     links.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
         header.classList.remove('nav-open');
@@ -52,19 +41,7 @@
     });
   }
 
-  /* ---------- Avis : ouverture/fermeture au clic ---------- */
-  function initReviews() {
-    const cards = document.querySelectorAll('.review-card');
-    if (!cards.length) return;
-
-    cards.forEach((card) => {
-      card.addEventListener('click', () => {
-        card.classList.toggle('is-open');
-      });
-    });
-  }
-
-  /* ---------- Brief audio : play / pause + icône ---------- */
+  // --- 3. AUDIO PLAYER ---
   function initBriefAudio() {
     const audio = document.getElementById('brief-audio');
     const btn   = document.getElementById('brief-audio-button');
@@ -74,143 +51,227 @@
 
     btn.addEventListener('click', () => {
       if (audio.paused) {
-        audio.play().catch(() => {
-          // si le navigateur bloque l'auto-play, on ne fait rien de spécial
-        });
+        audio.play().catch(() => {});
+        btn.classList.add('is-playing');
+        icon.textContent = '⏸';
       } else {
         audio.pause();
+        btn.classList.remove('is-playing');
+        icon.textContent = '▶';
       }
     });
 
-    audio.addEventListener('play', () => {
-      btn.classList.add('is-playing');
-      icon.textContent = '⏸';
-    });
-
-    const resetState = () => {
+    audio.addEventListener('ended', () => {
       btn.classList.remove('is-playing');
       icon.textContent = '▶';
-    };
-
-    audio.addEventListener('pause', resetState);
-    audio.addEventListener('ended', resetState);
+    });
   }
 
-  /* ---------- Année du footer ---------- */
-  function initYear() {
-    const el = document.getElementById('year');
-    if (!el) return;
-    el.textContent = new Date().getFullYear();
-  }
-
-  /* ---------- Helper générique : séquence "jelly" au scroll ---------- */
-  function setupSequentialReveal({
-    sectionSelector,      // ex: '.section-audience' (peut être null)
-    cardSelector,         // ex: '.persona-card' ou '.section-features .card'
-    threshold = 0.35,
-    delay = 140,
-    resetOnExit = false,  // true = rejouer à chaque fois qu'on quitte totalement l'écran
-    toggleWaveClass = false // true = gérer .section-audience-active sur la section
-  }) {
-    const cards = document.querySelectorAll(cardSelector);
-    if (!cards.length) return;
-
-    const section = sectionSelector ? document.querySelector(sectionSelector) : null;
-
-    // Si l'utilisateur ne veut pas d'animations ou si IntersectionObserver n'est pas dispo
-    if (prefersReducedMotion.matches || !('IntersectionObserver' in window)) {
-      cards.forEach(card => card.classList.add('visible'));
-      if (toggleWaveClass && section) {
-        section.classList.add('section-audience-active');
-      }
-      return;
-    }
-
-    // cible observée : la section si fournie, sinon le parent du 1er élément
-    const target = section || cards[0].parentElement;
+  // --- 4. ANIMATION REVEAL (JELLY) ---
+  function initRevealAnimations() {
+    if (prefersReducedMotion.matches) return;
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const fullyOut =
-          !entry.isIntersecting &&
-          (entry.boundingClientRect.bottom <= 0 ||
-           entry.boundingClientRect.top >= window.innerHeight);
-
-        if (resetOnExit && fullyOut) {
-          // reset complet
-          cards.forEach(card => card.classList.remove('visible'));
-          if (toggleWaveClass && section) {
-            section.classList.remove('section-audience-active');
-          }
-          return;
-        }
-
         if (entry.isIntersecting) {
-          if (toggleWaveClass && section) {
-            section.classList.add('section-audience-active');
-          }
+          const target = entry.target;
+          // Ajoute un délai basé sur l'index pour effet cascade
+          const index = Array.from(target.parentNode.children).indexOf(target);
+          
+          setTimeout(() => {
+            target.classList.add('visible');
+          }, index * 140); // 140ms délai original
 
-          // séquence de "pop" : gauche → droite
-          cards.forEach((card, index) => {
-            if (card.classList.contains('visible')) return;
-            setTimeout(() => {
-              card.classList.add('visible');
-            }, index * delay);
-          });
+          observer.unobserve(target);
         }
       });
-    }, { threshold });
+    }, { threshold: 0.25 });
 
-    observer.observe(target);
+    document.querySelectorAll('.reveal-fx').forEach(el => observer.observe(el));
   }
 
-  /* ---------- Section "Mise en place" ---------- */
-  function initHowReveal() {
-    setupSequentialReveal({
-      sectionSelector: '.section-how',
-      cardSelector: ' .card-glass-jelly .h',
-      threshold: 0.25,
-      delay: 140,
-      resetOnExit: false,
-      toggleWaveClass: false
+/* ---------- Toggle Prix Mois / Année ---------- */
+  function initPricingSwitch() {
+    const switcher = document.querySelector('.switcher-glass');
+    if (!switcher) return;
+
+    const radios = switcher.querySelectorAll('input[name="billing"]');
+    const priceElements = document.querySelectorAll('.price');
+
+    // Fonction pour mettre à jour l'affichage
+    const updatePrices = (billingType) => {
+      priceElements.forEach(priceEl => {
+        // 1. Récupérer le montant
+        const amount = priceEl.getAttribute(`data-${billingType}`);
+        
+        // --- CORRECTION ---
+        // Si aucun montant n'est défini (cas "Sur devis"), on ne fait RIEN.
+        if (!amount) return; 
+        
+        // Animation simple
+        priceEl.style.opacity = '0';
+        
+        setTimeout(() => {
+            // 2. Mettre à jour le prix
+            priceEl.innerHTML = `€${amount} <span>/mo</span> <span class="discount-badge"></span>`;
+            
+            // 3. Gérer le badge (-20%) uniquement si c'est annuel
+            const newBadge = priceEl.querySelector('.discount-badge');
+            if (billingType === 'yearly') {
+              newBadge.textContent = '(-20%)';
+            } else {
+              newBadge.textContent = '';
+            }
+
+            priceEl.style.opacity = '1';
+        }, 150);
+      });
+    };
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          updatePrices(e.target.value);
+        }
+      });
     });
   }
 
-  /* ---------- Initialisation des séquences jelly ---------- */
-  function initJellySections() {
-    // 1) Personas "Pour qui" : reset quand la section sort entièrement, vague de fond
-    setupSequentialReveal({
-      sectionSelector: '.section-audience',
-      cardSelector: '.card-glass-jelly',
-      threshold: 0.25,
-      delay: 140,
-      resetOnExit: true,
-      toggleWaveClass: true
-    });
+/* ---------- Sélection du Plan -> Formulaire ---------- */
+function initPlanSelection() {
+    const buttons = document.querySelectorAll('.select-plan-btn');
+    const messageField = document.querySelector('textarea[name="message"]');
+    const hiddenInput = document.getElementById('hidden-plan-input');
+    const switcher = document.querySelector('.switcher-glass');
 
-    // 2) Cartes "Ce que Mial peut faire" : on exclut la carte d'intro
-    setupSequentialReveal({
-      sectionSelector: '.section-features ',
-      cardSelector: '.card.feature-card',
-      threshold: 0.25,
-      delay: 140,
-      resetOnExit: false,
-      toggleWaveClass: false
+    if (!messageField) return;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        let planName = btn.getAttribute('data-plan');
+        let period = "Mensuel";
+        
+        if (switcher) {
+            const yearlyRadio = switcher.querySelector('input[value="yearly"]');
+            if (yearlyRadio && yearlyRadio.checked) period = "Annuel";
+        }
+
+        if (planName.includes("Entreprise") || planName.includes("Demo")) {
+            period = ""; 
+        } else {
+            planName = `${planName} (${period})`;
+        }
+
+        if (hiddenInput) hiddenInput.value = planName;
+
+        if (messageField.value.trim() === '') {
+          messageField.value = `Bonjour, je suis intéressé par l'offre : ${planName}.\n\nVoici mes besoins : `;
+        } else {
+           messageField.value = `Intéressé par : ${planName}.\n` + messageField.value.replace(/^Intéressé par : .*\n/, '');
+        }
+      });
     });
   }
 
-  /* ---------- Initialisation globale ---------- */
+/* ---------- Effet Bouton Envoyer + Soumission AJAX ---------- */
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const btn = document.getElementById('submit-btn');
+    const btnText = btn ? btn.querySelector('.btn-text') : null;
+    const particlesContainer = document.getElementById('particles-container');
+
+    if (!form || !btn) return;
+
+    const createSplash = () => {
+      const particleCount = 16; 
+      
+      for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('span');
+        p.classList.add('particle');
+        
+        // Calcul d'une direction aléatoire autour du bouton
+        const angle = Math.random() * Math.PI * 2;
+        // Distance de projection (entre 60px et 100px)
+        const velocity = 60 + Math.random() * 40; 
+        
+        const tx = Math.cos(angle) * velocity + 'px';
+        const ty = Math.sin(angle) * velocity + 'px';
+        
+        // On passe les variables au CSS
+        p.style.setProperty('--tx', tx);
+        p.style.setProperty('--ty', ty);
+        
+        // Lancement de l'animation
+        p.style.animation = `splash 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards`;
+        
+        particlesContainer.appendChild(p);
+        
+        // Nettoyage après l'anim
+        setTimeout(() => p.remove(), 800);
+      }
+    };
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // 1. Animation visuelle immédiate
+        createSplash(); // SPLASH !
+        
+        if(btnText) {
+            // Petit effet de switch de texte
+            btnText.style.opacity = '0';
+            btnText.style.transform = 'scale(0.5)';
+            setTimeout(() => {
+                btnText.textContent = "Merci !";
+                btnText.style.opacity = '1';
+                btnText.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // 2. Envoi des données (Fetch)
+        const formData = new FormData(form);
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+        })
+        .then(() => {
+            // Succès
+            form.reset();
+            setTimeout(() => {
+                if(btnText) btnText.textContent = "Envoyer";
+            }, 4000);
+        })
+        .catch((error) => {
+            // Ignore l'erreur si on est en localhost (Failed to fetch)
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                console.log("Envoi simulé (localhost) : Formulaire soumis !");
+                form.reset();
+                return;
+            }
+            alert("Oups, une erreur est survenue.");
+        });
+    });
+  }
+
+  // --- 5. FOOTER YEAR ---
+  function initYear() {
+    const el = document.getElementById('year');
+    if (el) el.textContent = new Date().getFullYear();
+  }
+
+  // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initMobileNav();
-    initReviews();
     initBriefAudio();
-    initJellySections();
-    initHowReveal();
+    initRevealAnimations();
     initYear();
+    initPricingSwitch();
+    initPlanSelection();
+    initContactForm();
     onScroll();
   });
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
 
 })();
