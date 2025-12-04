@@ -4,7 +4,7 @@
 :root{
   --blue:#38bdf8;
   --pink:#fb7185;
-  --ink:#0b1220;      /* texte principal = foncé */
+  --ink:#0b1220;
   --muted:#4b5563;
   --ring:rgba(15,23,42,.08);
   --bg:#f5f7fb;
@@ -50,33 +50,63 @@ a{color:inherit}
   text-decoration:none;
   border:1px solid transparent;
   font-size:.95rem;
-  transition:background .18s ease,transform .18s ease,box-shadow .18s ease,border-color .18s ease;
-}
-.nav .btn-primary{
-  background:#0b1220;
-  color:#ffffff;
-  box-shadow:0 12px 26px rgba(15,23,42,.25);
-}
-.btn-primary{
-  background:#0b1220;          /* noir/bleu très foncé */
-  color:#ffffff;
-  box-shadow:0 12px 26px rgba(15,23,42,.25);
-}
-.btn-primary:hover{
-  transform:translateY(-1px);
-  box-shadow:0 18px 40px rgba(15,23,42,.3);
+  cursor:pointer;
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease;
 }
 
+/* Bouton noir – relief permanent façon "vrai bouton" */
+.btn-primary{
+  background:#0b1220;
+  color:#ffffff;
+  border-radius:999px;
+  border:1px solid #020617;
+  box-shadow:
+    0 14px 34px rgba(15,23,42,.45),
+    0 1px 0 rgba(255,255,255,.16) inset;
+  transform:translateY(0);
+}
+
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 20px 46px rgba(15,23,42,.5),
+    0 1px 0 rgba(255,255,255,.2) inset;
+}
+
+.btn-primary:active{
+  background:#020617;
+  transform:translateY(1px);
+  box-shadow:
+    0 6px 16px rgba(15,23,42,.75) inset;
+}
+
+/* Bouton blanc – style nav en relief permanent */
 .btn-ghost{
-  background:rgba(255,255,255,.85);
-  border-color:var(--ring);
+  background:rgba(255,255,255,.94);
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.6);
   color:var(--ink);
-  box-shadow:0 8px 18px rgba(15,23,42,.12);
+  box-shadow:
+    0 12px 28px rgba(15,23,42,.18),
+    0 1px 0 rgba(255,255,255,.95) inset;
 }
+
 .btn-ghost:hover{
-  background:#fff;
-  border-color:rgba(15,23,42,.18);
+  background:#ffffff;
+  border-color:rgba(148,163,184,.9);
 }
+
+.btn-ghost:active{
+  transform:translateY(1px);
+  box-shadow:
+    0 4px 12px rgba(15,23,42,.4) inset;
+}
+
 .w-full{display:inline-block;width:100%;text-align:center}
 
 /* petit chip générique */
@@ -99,7 +129,6 @@ a{color:inherit}
 /* =========================================================
    4. Navigation
    ========================================================= */
-/* header transparent, inner = pilule floutée */
 .nav{
   position:fixed;
   top:0;left:0;right:0;
@@ -124,6 +153,7 @@ a{color:inherit}
   display:flex;
   align-items:center;
   justify-content:space-between;
+  position:relative;
 }
 
 .nav-links{
@@ -153,11 +183,17 @@ a{color:inherit}
 }
 
 .nav a{
-  color:var(--ink);
   text-decoration:none;
   font-size:.92rem;
   opacity:.9;
 }
+
+/* liens “texte” seulement */
+.nav a:not(.btn){
+  color:var(--ink);
+}
+
+/* les boutons gardent leur propre couleur (btn-primary = blanc) */
 .nav a:hover{opacity:1}
 
 /* logo mial texte + icône */
@@ -170,20 +206,51 @@ a{color:inherit}
 }
 .brand-text{font-weight:600}
 
-/* logo global (pas de carte blanche) */
 .brand-logo{
   border-radius:0;
   box-shadow:none;
   display:block;
 }
-/* taille du logo dans la nav */
 .nav .brand-logo{
   height:28px;
   width:auto !important;
 }
 
+/* Bouton menu mobile (hidden desktop) */
+.nav-toggle{
+  display:none;
+  border:none;
+  background:rgba(255,255,255,.95);
+  border-radius:999px;
+  padding:6px 10px;
+  box-shadow:0 10px 25px rgba(15,23,42,.2);
+  border:1px solid rgba(148,163,184,.6);
+  cursor:pointer;
+  align-items:center;
+  justify-content:center;
+}
+.nav-toggle-bar{
+  width:18px;
+  height:2px;
+  border-radius:999px;
+  background:#0b1220;
+  position:relative;
+}
+.nav-toggle-bar::before,
+.nav-toggle-bar::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  height:2px;
+  border-radius:999px;
+  background:#0b1220;
+}
+.nav-toggle-bar::before{top:-5px;}
+.nav-toggle-bar::after{top:5px;}
+
 /* =========================================================
-   5. HERO principal (bloc gauche)
+   5. HERO principal
    ========================================================= */
 .hero{
   padding:120px 0 56px;
@@ -191,7 +258,7 @@ a{color:inherit}
 }
 .hero-inner{
   display:grid;
-  grid-template-columns:1.2fr 1fr;
+  grid-template-columns:1.4fr 0.9fr;
   gap:40px;
   align-items:center;
 }
@@ -232,28 +299,42 @@ a{color:inherit}
 }
 
 /* =========================================================
-   6. HERO visuel (flux Inbox → Mial → Tableur / Actions)
+   6. HERO visuel (flux)
    ========================================================= */
 .hero-visual{
   display:flex;
-  flex-direction:column;
-  align-items:center;
+  align-items:stretch;
+  justify-content:center;
+}
+
+.hero-flow-shell{
+  width:100%;
+  max-width:320px;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  display:flex;
 }
 
 .hero-flow{
-  position:relative;
   display:flex;
   flex-direction:column;
+  gap:8px;
+  margin:auto;
   align-items:center;
-  gap:14px;
-  min-height:260px;
+  transform:scale(.88);
+  transform-origin:top center;
 }
 
-/* cartes glass à droite du hero */
+/* cartes glass */
 .hero-flow .flow-card{
   position:static;
-  width:200px;                 /* plus petit que ta version précédente */
-  padding:16px;
+  width:180px;
+  padding:14px;
   border-radius:26px;
   background:rgba(255,255,255,.18);
   border:1px solid rgba(255,255,255,.9);
@@ -265,10 +346,10 @@ a{color:inherit}
   align-items:center;
 }
 
-/* rangée du bas : tableur + actions côte à côte */
+/* rangée du bas */
 .flow-bottom-row{
   display:flex;
-  gap:16px;
+  gap:10px;
 }
 
 /* label sous les cartes 3 & 4 */
@@ -280,7 +361,7 @@ a{color:inherit}
   text-align:center;
 }
 
-/* === Bloc Inbox (carte 1) === */
+/* Inbox */
 .inbox-panel{width:100%;}
 .inbox-title{
   font-size:.9rem;
@@ -320,10 +401,10 @@ a{color:inherit}
   text-overflow:ellipsis;
 }
 
-/* === Badge rond Mial (carte 2) === */
+/* Badge rond Mial */
 .logo-badge{
-  width:120px;                  /* plus petit */
-  height:120px;
+  width:110px;
+  height:110px;
   border-radius:999px;
   background:rgba(255,255,255,.20);
   border:1px solid rgba(255,255,255,.95);
@@ -337,12 +418,12 @@ a{color:inherit}
   justify-content:center;
 }
 .logo-badge img{
-  width:64%;                    /* logo un peu plus petit dans le rond */
+  width:64%;
   height:auto;
   display:block;
 }
 
-/* === Tableur (carte 3) === */
+/* Tableur */
 .mini-card{
   width:100%;
   padding:10px 12px;
@@ -358,10 +439,10 @@ a{color:inherit}
   max-width:100%;
   height:auto;
   display:block;
-  filter:contrast(1.3) saturate(1.4);  /* contraste renforcé */
+  filter:contrast(1.3) saturate(1.4);
 }
 
-/* === Actions automatiques (carte 4) === */
+/* Actions automatiques */
 .actions-card{
   width:100%;
   padding:10px 12px;
@@ -400,7 +481,7 @@ a{color:inherit}
   color:#6b7280;
 }
 
-/* petites bulles fléchées entre les blocs */
+/* petites bulles fléchées */
 .flow-arrow-icon{
   width:36px;
   height:36px;
@@ -422,7 +503,7 @@ a{color:inherit}
   fill:none;
 }
 
-/* flottement léger des cartes */
+/* Anim flottement léger */
 @keyframes float1{
   0%{transform:translateY(0);}
   50%{transform:translateY(-6px);}
@@ -438,60 +519,88 @@ a{color:inherit}
 .flow-card-3{ animation:float2 9s ease-in-out infinite; }
 .flow-card-4{ animation:float1 11s ease-in-out infinite; }
 
-/* === OVERRIDES HERO VISUEL ============================== */
-
-/* Colonne droite plus compacte */
-.hero-flow{
-  gap:8px;                          /* moins d'espace vertical */
+/* Animation jelly générique */
+@keyframes jellyPop{
+  0%   { transform:scale(.8); }
+  50%  { transform:scale(1.06); }
+  75%  { transform:scale(.95); }
+  100% { transform:scale(1);   }
 }
 
-.hero-flow .flow-card{
-  width:180px;                      /* plus étroit qu'avant */
-  padding:14px;                     /* un peu moins de padding */
+/* Inbox un peu plus large que les autres cartes */
+.flow-card.flow-inbox{
+  width:225px;
 }
 
-/* rangée du bas plus serrée */
-.flow-bottom-row{
-  gap:10px;
-}
-
-/* Carte 2 = seulement le rond, plus de rectangle */
+/* carte 2 = seulement le rond */
 .flow-card.flow-card-2{
   background:transparent;
   border:none;
   box-shadow:none;
   padding:0;
-  width:auto;                       /* largeur pilotée par le rond */
+  width:auto;
 }
 
-/* rond Mial un peu plus petit */
-.flow-card-2 .logo-badge{
-  width:110px;
-  height:110px;
-}
-
-.flow-card-2 .logo-badge img{
-  width:64%;
-  height:auto;
+/* Carte logo Mial légèrement réduite (~0.8) */
+.flow-card.flow-mial .logo-badge{
+  width:88px;
+  height:88px;
 }
 
 /* =========================================================
-   7. DAILY BRIEF (section suivante)
+   7. DAILY BRIEF
    ========================================================= */
-/* section sous le hero */
 .section-brief{
   padding-top:40px;
 }
 
-/* inversion des colonnes : visuel à gauche, texte à droite */
+/* visuel gauche, texte droite plus large */
 .brief-layout{
   display:grid;
-  grid-template-columns:1fr 1.2fr; /* gauche = visuel, droite = texte */
+  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);
   gap:40px;
-  align-items:center;
+  align-items:stretch;
+  grid-template-areas:"visual copy";
 }
-.brief-visual{display:flex;justify-content:center;}
-.brief-copy-card{ margin:0; }   /* hero-copy appliqué, mais sans marge spéciale */
+.brief-visual{
+  grid-area:visual;
+  justify-content:flex-start;
+  display:flex;
+}
+.brief-copy{
+  grid-area:copy;
+}
+.brief-copy-card{
+  margin:0;
+  max-width:none;
+}
+
+/* carte glass brief */
+.brief-card{
+  width:100%;
+  max-width:340px;
+  padding:18px 18px 16px;
+  border-radius:28px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 22px 55px rgba(15,23,42,.18);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  cursor:pointer;
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+
+/* légère élévation au survol */
+.brief-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 28px 60px rgba(15,23,42,.22);
+}
+
+/* effet “pressé” quand on clique */
+.brief-card:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 6px 16px rgba(15,23,42,.35);
+}
 
 .brief-copy h2{
   margin-top:0;
@@ -517,19 +626,6 @@ a{color:inherit}
   border:1px solid rgba(148,163,184,.4);
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-}
-
-/* carte glass pour l’exemple de brief */
-.brief-card{
-  width:100%;
-  max-width:340px;
-  padding:18px 18px 16px;
-  border-radius:28px;
-  background:rgba(255,255,255,.18);
-  border:1px solid rgba(255,255,255,.9);
-  box-shadow:0 22px 55px rgba(15,23,42,.18);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
 }
 
 .brief-pill{
@@ -565,7 +661,7 @@ a{color:inherit}
   color:#6b7280;
 }
 
-/* petits badges type Client / SAV / Fournisseur */
+/* badges type Client / SAV / Fournisseur */
 .badge{
   align-self:flex-start;
   padding:3px 8px;
@@ -579,6 +675,8 @@ a{color:inherit}
 .badge-fournisseur{color:#16a34a;}
 
 .brief-audio{margin-top:14px;}
+
+/* Effet bouton pour le bloc noir "Lecture du brief" */
 .audio-badge{
   display:flex;
   align-items:center;
@@ -587,7 +685,34 @@ a{color:inherit}
   border-radius:999px;
   background:rgba(15,23,42,.95);
   color:#f9fafb;
+  cursor:pointer;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    background .16s ease;
 }
+
+.audio-badge:hover{
+  transform:translateY(-1px);
+  box-shadow:0 16px 32px rgba(15,23,42,.45);
+}
+
+.audio-badge:active{
+  transform:translateY(1px);
+  box-shadow:0 6px 16px rgba(15,23,42,.55) inset;
+}
+
+/* État lecture en cours */
+.audio-badge.is-playing{
+  background:#111827;
+}
+
+.audio-badge.is-playing .audio-icon{
+  background:transparent;
+  color:#f9fafb;
+  border:1px solid rgba(249,250,251,.6);
+}
+
 .audio-icon{
   width:22px;
   height:22px;
@@ -612,44 +737,204 @@ a{color:inherit}
   color:#4b5563;
 }
 
-/* Visuel à gauche, texte à droite + texte un peu plus large */
-.brief-layout{
-  display:grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); /* droite plus large */
-  gap:40px;
-  align-items:stretch;
-  grid-template-areas:
-    "visual copy";
+/* =========================================================
+   Section intro COMMUNE + glass-jelly COMMUNE
+   ========================================================= */
+
+
+.section-intro-card{
+  max-width: 780px;
+  margin: 0 auto 32px;
+  background:#ffffff;
+  border:1px solid rgba(148,163,184,.35);
+  box-shadow:0 14px 32px rgba(15,23,42,.12);
+  border-radius:24px;
+  padding:24px 32px;
+  text-align:center;
+}
+.section-intro-card h2{
+  margin-top:0;
+  margin-bottom:8px;
+  font-size:2rem;
+}
+.section-intro-card .lead{
+  margin-top:4px;
 }
 
-/* on force la position, quel que soit l'ordre dans le HTML */
-.brief-visual{
-  grid-area:visual;
-  justify-content:flex-start;
+/* 1) Base commune pour toutes les cartes glass + jelly */
+.card-glass-jelly{
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 20px 55px rgba(15,23,42,.25);
+  border-radius:24px;
+  padding:24px;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  opacity:0;
+  transform:scale(.85);
+  transition:
+    transform .8s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    opacity .4s ease-out,
+    box-shadow .25s ease;
+
+  position:relative; /* pour pouvoir accrocher un chip en haut à gauche */
 }
 
-.brief-copy{
-  grid-area:copy;
+/* visible = anim jelly déjà gérée par JS avec .visible */
+.card-glass-jelly.visible{
+  opacity:1;
+  transform:scale(1);
 }
 
-/* bloc "Commencez la journée..." = vrai gros bloc blanc large */
-.brief-copy.hero-copy,
-.brief-copy.brief-copy-card{
-  width:100%;
-  max-width:none;          /* enlève la limite implicite */
+/* hover commun */
+.card-glass-jelly:hover{
+  transform:scale(1.04);
+  box-shadow:0 24px 60px rgba(15,23,42,.26);
+}
+
+/* 2) Chip générique (optionnel) */
+.card-chip{
+  position:absolute;
+  top:14px;
+  left:20px;
+  font-size:.75rem;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:#6b7280;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.card-chip-icon{
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:rgba(15,23,42,.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.7rem;
+}
+
+
+
+
+/* =========================================================
+   Section "Pour qui" / audience
+   ========================================================= */
+
+
+
+
+.section-audience{
+  padding-top:40px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* fond "vague" – animé quand la section est active */
+.section-audience::before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 10% 0, rgba(56,189,248,.18), transparent 60%),
+    radial-gradient(circle at 90% 100%, rgba(251,113,133,.16), transparent 60%);
+  opacity:0;
+  pointer-events:none;
+  z-index:-1;
+  transition:opacity .6s ease;
+}
+
+.section-audience.section-audience-active::before{
+  opacity:1;
+}
+
+
+/* Logo inline dans le titre "Pour qui est fait ... ?" */
+.logo-inline{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+.logo-inline img{
+  height:0.8em;
+  width:auto;
+  display:block;
+}
+
+
+.audience-grid{
+  margin-top:8px;
+}
+
+/* Cartes personas : glass + anim "dock" */
+.persona-card{
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 20px 55px rgba(15,23,42,.25);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  opacity:0;
+  transform:scale(.85);
+  transition:
+    transform .8s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    opacity .4s ease-out,
+    box-shadow .25s ease;
+}
+
+/* Quand l’observer ajoute .visible, la carte "pop" de .85 -> 1 */
+.persona-card.visible{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* Hover : léger grossissement + ombre */
+.persona-card:hover{
+  transform:scale(1.04);
+  box-shadow:0 24px 60px rgba(15,23,42,.26);
+}
+
+.persona-card h3{
+  margin-top:0;
+  margin-bottom:6px;
+  font-size:1.1rem;
+}
+.persona-tagline{
+  margin:0 0 10px;
+  font-size:.9rem;
+  color:#6b7280;
+}
+.persona-promise{
+  margin:10px 0 0;
+  font-size:.9rem;
+  color:#111827;
+  font-weight:500;
 }
 
 /* =========================================================
-   8. Grille de fonctionnalités (section-features)
+   8. Grille de fonctionnalités, cartes, etc.
    ========================================================= */
 .section-features{
   padding-top:40px;
+  position:relative;
+  overflow:hidden;
 }
+
+/* Conteneur d'intro des features : centré, largeur raisonnable */
+.feature-intro{
+  max-width:720px;
+  margin:0 auto 24px;
+}
+
 .section-features h2{
-  text-align:left;
   margin-bottom:4px;
 }
-.feature-grid{margin-top:24px;}
+.feature-grid{margin-top:8px;}
 
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -683,11 +968,53 @@ a{color:inherit}
   mix-blend-mode:screen;
 }
 
-/* petite étiquette en haut des feature-cards */
+/* Effet glass + jelly uniquement pour les 9 cartes "Ce que Mial peut faire" */
+.section-features .card.feature-card{
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 20px 55px rgba(15,23,42,.22);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  opacity:0;
+  transform:scale(.85);
+  transition:
+    transform .8s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    opacity .4s ease-out,
+    box-shadow .25s ease;
+}
+
+
+/* Seules les feature-cards "pop" au scroll */
+.section-features .card.feature-card.visible{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* Hover discret seulement pour les feature-cards */
+.section-features .card.feature-card:hover{
+  transform:scale(1.04);
+  box-shadow:0 24px 60px rgba(15,23,42,.26);
+}
+
+/* Carte features visible : pop */
+.section-features .card.visible{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* Hover très discret : léger grossissement + ombre, comme les personas */
+.section-features .card:hover{
+  transform:scale(1.04);
+  box-shadow:0 24px 60px rgba(15,23,42,.26);
+}
+
+/* étiquette en haut des feature-cards */
 .feature-card{
   position:relative;
   padding-top:18px;
 }
+
 .feature-tag{
   position:absolute;
   top:14px;
@@ -696,7 +1023,22 @@ a{color:inherit}
   text-transform:uppercase;
   letter-spacing:.05em;
   color:#6b7280;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
 }
+
+.feature-tag-icon{
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:rgba(15,23,42,.06);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.7rem;
+}
+
 .feature-card h3{
   margin-top:30px;
   margin-bottom:8px;
@@ -707,7 +1049,7 @@ a{color:inherit}
   color:var(--muted);
 }
 
-/* checklist (si tu l’utilises plus bas) */
+/* checklist */
 .checklist{
   list-style:none;
   padding:0;
@@ -723,8 +1065,51 @@ a{color:inherit}
   color:var(--blue);
 }
 
-/* === SECTION AVIS / REVIEWS ===================================== */
+/* =========================================================
+   Section "Comment ça marche" / Mise en place
+   ========================================================= */
+.section-how{
+  padding-top:40px;
+}
 
+
+/* Grille des 3 étapes */
+.how-steps-grid{
+  margin-top:24px;
+}
+
+
+/* Étapes avec le même style "glass + jelly" que les autres cartes animées */
+.section-how .how-step-card{
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 20px 55px rgba(15,23,42,.25);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+
+  opacity:0;
+  transform:scale(.85);
+  transition:
+    transform .8s cubic-bezier(0.175, 0.885, 0.32, 2.2),
+    opacity .4s ease-out,
+    box-shadow .25s ease;
+}
+
+/* Apparition identique aux personas / features */
+.section-how .how-step-card.visible{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* Hover discret : même logique que le reste */
+.section-how .how-step-card:hover{
+  transform:scale(1.04);
+  box-shadow:0 24px 60px rgba(15,23,42,.26);
+}
+
+/* =========================================================
+   9. SECTION AVIS / REVIEWS
+   ========================================================= */
 .section-reviews{
   padding:56px 0 64px;
 }
@@ -748,25 +1133,19 @@ a{color:inherit}
   max-width:380px;
 }
 
-/* wrapper général du carrousel */
 .reviews-scroller-wrapper{
   position:relative;
   overflow:hidden;
 }
-
-/* bande qui bouge */
 .reviews-scroller{
   position:relative;
   padding:8px 0;
 }
-
 .reviews-track{
   display:flex;
   gap:18px;
   animation:reviews-scroll 38s linear infinite;
 }
-
-/* pause au survol */
 .reviews-scroller-wrapper:hover .reviews-track{
   animation-play-state:paused;
 }
@@ -782,14 +1161,12 @@ a{color:inherit}
   pointer-events:none;
   z-index:2;
 }
-
 .reviews-scroller-wrapper::before{
   left:0;
   background:linear-gradient(to right,
     rgba(230,237,249,1),
     rgba(230,237,249,0));
 }
-
 .reviews-scroller-wrapper::after{
   right:0;
   background:linear-gradient(to left,
@@ -817,21 +1194,17 @@ a{color:inherit}
     box-shadow .18s ease,
     background .18s ease;
 }
-
-/* effet hover : arrêt de l’animation + carte qui “monte” un peu */
 .review-card:hover{
   transform:translateY(-6px);
   box-shadow:0 22px 55px rgba(15,23,42,.22);
   background:rgba(255,255,255,1);
 }
 
-/* header : avatar + nom */
 .review-header{
   display:flex;
   gap:10px;
   align-items:center;
 }
-
 .review-avatar{
   width:32px;
   height:32px;
@@ -844,18 +1217,16 @@ a{color:inherit}
   align-items:center;
   justify-content:center;
 }
-
 .review-name{
   font-size:.9rem;
   font-weight:600;
 }
-
 .review-meta{
   font-size:.8rem;
   color:#6b7280;
 }
 
-/* texte : clamp sur 3 lignes, clic pour ouvrir */
+/* texte : clamp */
 .review-text{
   margin:2px 0 0;
   font-size:.9rem;
@@ -865,14 +1236,12 @@ a{color:inherit}
   -webkit-box-orient:vertical;
   overflow:hidden;
 }
-
-/* état ouvert (après clic) : on enlève le clamp */
 .review-card.is-open .review-text{
   -webkit-line-clamp:unset;
   max-height:none;
 }
 
-/* footer : étoiles + source */
+/* footer */
 .review-footer{
   margin-top:4px;
   display:flex;
@@ -880,44 +1249,22 @@ a{color:inherit}
   align-items:center;
   font-size:.8rem;
 }
-
 .review-stars{
-  color:#fbbf24; /* jaune soft */
+  color:#fbbf24;
   letter-spacing:1px;
 }
-
 .review-source{
   color:#6b7280;
 }
 
 /* animation horizontale */
 @keyframes reviews-scroll{
-  0%{
-    transform:translateX(0);
-  }
-  100%{
-    transform:translateX(-50%);
-  }
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
 }
-
-/* responsive */
-@media (max-width:960px){
-  .reviews-layout{
-    grid-template-columns:1fr;
-    gap:24px;
-  }
-  .reviews-copy p{
-    max-width:none;
-  }
-  .reviews-track{
-    animation-duration:32s;
-  }
-}
-
-
 
 /* =========================================================
-   9. Formulaire & footer
+   10. Formulaire & footer
    ========================================================= */
 .plan-head{
   display:flex;
@@ -1003,12 +1350,12 @@ textarea:focus-visible{
 }
 
 /* =========================================================
-   10. Responsive
+   11. Responsive
    ========================================================= */
 @media (max-width:960px){
   .hero-inner{grid-template-columns:1fr;gap:24px;}
-  .hero-copy{order:2;}
-  .hero-visual{order:1;}
+  .hero-copy{order:1;}
+  .hero-visual{order:2;}
 
   .grid-4{grid-template-columns:1fr 1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
@@ -1024,23 +1371,64 @@ textarea:focus-visible{
   }
 
   .brief-layout{
-    grid-template-columns:1fr; /* visuel + texte l’un sous l’autre */
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "copy"
+      "visual";
     gap:24px;
+  }
+  .brief-visual{
+    justify-content:center;
+  }
+
+  .reviews-layout{
+    grid-template-columns:1fr;
+    gap:24px;
+  }
+  .reviews-copy p{
+    max-width:none;
+  }
+  .reviews-track{
+    animation-duration:32s;
   }
 }
 
+/* Nav mobile : menu déroulant + bouton */
 @media (max-width:640px){
   .grid-3,.grid-4,.grid-2{grid-template-columns:1fr;}
-  .nav-links{display:none;}
   .hero{padding-top:110px;}
   .hero-copy{padding:22px 18px;}
   .hero-copy h1{font-size:2.2rem;}
   .footer-grid{grid-template-columns:1fr;}
   .right{text-align:left;}
+
+  .nav-toggle{display:inline-flex;}
+  .nav-links{
+    position:absolute;
+    top:54px;
+    right:12px;
+    left:12px;
+    padding:10px 12px;
+    border-radius:22px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 18px 40px rgba(15,23,42,.26);
+    flex-direction:column;
+    gap:8px;
+    transform-origin:top right;
+    transform:scale(.98) translateY(-8px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .nav.nav-open .nav-links{
+    opacity:1;
+    transform:scale(1) translateY(0);
+    pointer-events:auto;
+  }
 }
 
 /* =========================================================
-   11. Accessibilité (transparence / motion)
+   12. Accessibilité
    ========================================================= */
 @media (prefers-reduced-transparency: reduce){
   body{
@@ -1048,7 +1436,6 @@ textarea:focus-visible{
   }
   .hero-copy,
   .card,
-  .hero-logo-wrap,
   .nav-inner,
   .brief-card,
   .footer{
