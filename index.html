@@ -1,10 +1,14 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>mial — Inbox IA pour PME</title>
+
+  <!-- Favicon = logo mial -->
+  <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+  <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+
   <link rel="stylesheet" href="style.css" />
   <meta name="theme-color" content="#1fb6ff">
 </head>
@@ -15,6 +19,12 @@
       <a href="#home" class="brand">
         <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88" height="88">
       </a>
+
+      <!-- Bouton menu mobile -->
+      <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+        <span class="nav-toggle-bar"></span>
+      </button>
+
       <nav class="nav-links">
         <a href="#home">Accueil</a>
         <a href="#how">Fonctionnement</a>
@@ -26,287 +36,325 @@
     </div>
   </header>
 
-<!-- HERO -->
-<section id="home" class="hero hero-grad">
-  <div class="container hero-inner">
-    <!-- Colonne texte -->
-    <div class="hero-copy">
-      <h1>Dites adieu à la boîte mail débordée</h1>
-      <p>Mial est un agent IA connecté à votre boîte mail. Il lit chaque message entrant et applique vos règles métier pour :</p>
-      <ul class="hero-list">
-        <li><strong>automatiser les réponses</strong> aux demandes répétitives avec vos propres modèles</li>
-        <li><strong>tenir à jour vos fichiers</strong> Excel ou Google Sheets à partir du contenu des emails</li>
-        <li><strong>ne vous déranger que pour les cas exceptionnels</strong> (conflits, décisions, situations sensibles)</li>
-      </ul>
-      <div class="cta-row">
-        <a href="#contact" class="btn btn-primary">Demander une démo</a>
-        <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
-      </div>
-    </div>
-
-    <!-- Colonne visuelle -->
-    <div class="hero-visual hero-flow">
-      <!-- Bloc 1 : Inbox -->
-      <div class="flow-card flow-card-1">
-        <div class="inbox-panel">
-          <div class="inbox-title">Inbox</div>
-
-          <div class="inbox-item">
-            <span class="inbox-icon">
-              <!-- icône enveloppe -->
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="5" width="18" height="14" rx="3" ry="3"
-                      fill="none" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M4 7.5l8 6 8-6"
-                      fill="none" stroke="currentColor" stroke-width="1.4"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="inbox-label">Demande de devis</span>
-          </div>
-
-          <div class="inbox-item">
-            <span class="inbox-icon">
-              <!-- icône bulle -->
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6.5L8 20.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
-                      fill="none" stroke="currentColor" stroke-width="1.4"
-                      stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="inbox-label">SAV client</span>
-          </div>
-
-          <div class="inbox-item">
-            <span class="inbox-icon">
-              <!-- icône calendrier -->
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="5" width="16" height="15" rx="2" ry="2"
-                      fill="none" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M8 3v4M16 3v4M4 10h16"
-                      fill="none" stroke="currentColor" stroke-width="1.4"
-                      stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="inbox-label">Planification chantier</span>
-          </div>
+  <!-- HERO -->
+  <section id="home" class="hero hero-grad">
+    <div class="container hero-inner">
+      <!-- Colonne texte -->
+      <div class="hero-copy">
+        <h1>Dites adieu à la boîte mail débordée</h1>
+        <p>Mial est un agent IA connecté à votre boîte mail. Il lit chaque message entrant et applique vos règles métier pour :</p>
+        <ul class="hero-list">
+          <li><strong>automatiser les réponses</strong> aux demandes répétitives avec vos propres modèles</li>
+          <li><strong>tenir à jour vos fichiers</strong> Excel ou Google Sheets à partir du contenu des emails</li>
+          <li><strong>ne vous déranger que pour les cas exceptionnels</strong> (conflits, décisions, situations sensibles)</li>
+        </ul>
+        <div class="cta-row">
+          <a href="#contact" class="btn btn-primary">Demander une démo</a>
+          <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
         </div>
       </div>
 
-      <!-- Flèche 1 : Inbox -> Mial -->
-      <div class="flow-arrow-icon">
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 6l4 4 4-4" />
-        </svg>
-      </div>
+      <!-- Colonne visuelle (flux) -->
+      <div class="hero-visual">
+        <div class="hero-flow-shell">
+          <div class="hero-flow">
+            <!-- Bloc 1 : Inbox -->
+            <div class="flow-card flow-card-1 flow-inbox">
+              <div class="inbox-panel">
+                <div class="inbox-title">Inbox</div>
 
-      <!-- Bloc 2 : Logo Mial -->
-      <div class="flow-card flow-card-2">
-        <div class="logo-badge">
-          <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial">
-        </div>
-      </div>
+                <div class="inbox-item">
+                  <span class="inbox-icon">
+                    <!-- icône enveloppe -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="3" y="5" width="18" height="14" rx="3" ry="3"
+                            fill="none" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M4 7.5l8 6 8-6"
+                            fill="none" stroke="currentColor" stroke-width="1.4"
+                            stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span class="inbox-label">Demande de devis</span>
+                </div>
 
-      <!-- Flèche 2 : Mial -> automatisations -->
-      <div class="flow-arrow-icon">
-        <svg viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M4 6l4 4 4-4" />
-        </svg>
-      </div>
+                <div class="inbox-item">
+                  <span class="inbox-icon">
+                    <!-- icône bulle -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6.5L8 20.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                            fill="none" stroke="currentColor" stroke-width="1.4"
+                            stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <span class="inbox-label">SAV client</span>
+                </div>
 
-      <!-- Ligne du bas : Tableur + Actions -->
-      <div class="flow-bottom-row">
-        <!-- Bloc 3 : tableur -->
-        <div class="flow-card flow-card-3">
-          <div class="mini-card">
-            <img src="assets/hero/tableur.svg" alt="Tableur de données">
-          </div>
-          <div class="flow-label">Tableur de données</div>
-        </div>
-
-        <!-- Bloc 4 : actions automatiques -->
-        <div class="flow-card flow-card-4">
-          <div class="actions-card">
-            <div class="actions-row">
-              <div class="action-icon">
-                <!-- email -->
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="5" width="18" height="14" rx="3" ry="3"
-                        fill="none" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M4 7.5l8 6 8-6"
-                        fill="none" stroke="currentColor" stroke-width="1.4"
-                        stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <span class="action-arrow">→</span>
-              <div class="action-icon">
-                <!-- calendar -->
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="4" y="5" width="16" height="15" rx="2" ry="2"
-                        fill="none" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M8 3v4M16 3v4M4 10h16"
-                        fill="none" stroke="currentColor" stroke-width="1.4"
-                        stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span class="action-arrow">→</span>
-              <div class="action-icon">
-                <!-- truck -->
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="10" width="11" height="7" rx="1.5"
-                        fill="none" stroke="currentColor" stroke-width="1.4"/>
-                  <path d="M14 11h3.5l2.5 3v3"
-                        fill="none" stroke="currentColor" stroke-width="1.4"
-                        stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="7" cy="18" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
-                  <circle cx="17" cy="18" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
-                </svg>
+                <div class="inbox-item">
+                  <span class="inbox-icon">
+                    <!-- icône calendrier -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="4" y="5" width="16" height="15" rx="2" ry="2"
+                            fill="none" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M8 3v4M16 3v4M4 10h16"
+                            fill="none" stroke="currentColor" stroke-width="1.4"
+                            stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <span class="inbox-label">Planification chantier</span>
+                </div>
               </div>
             </div>
-            <div class="actions-caption">Réponses · rappels · planning</div>
+
+            <!-- Flèche 1 : Inbox -> Mial -->
+            <div class="flow-arrow-icon">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </div>
+
+            <!-- Bloc 2 : Logo Mial (rond seulement) -->
+            <div class="flow-card flow-card-2 flow-mial">
+              <div class="logo-badge">
+                <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial">
+              </div>
+            </div>
+
+            <!-- Flèche 2 : Mial -> automatisations -->
+            <div class="flow-arrow-icon">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </div>
+
+            <!-- Ligne du bas : Tableur + Actions -->
+            <div class="flow-bottom-row">
+              <!-- Bloc 3 : tableur -->
+              <div class="flow-card flow-card-3">
+                <div class="mini-card">
+                  <img src="assets/hero/tableur.svg" alt="Tableur de données">
+                </div>
+                <div class="flow-label">Tableur de données</div>
+              </div>
+
+              <!-- Bloc 4 : actions automatiques -->
+              <div class="flow-card flow-card-4">
+                <div class="actions-card">
+                  <div class="actions-row">
+                    <div class="action-icon">
+                      <!-- email -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="3" ry="3"
+                              fill="none" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M4 7.5l8 6 8-6"
+                              fill="none" stroke="currentColor" stroke-width="1.4"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <span class="action-arrow">→</span>
+                    <div class="action-icon">
+                      <!-- calendar -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="4" y="5" width="16" height="15" rx="2" ry="2"
+                              fill="none" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M8 3v4M16 3v4M4 10h16"
+                              fill="none" stroke="currentColor" stroke-width="1.4"
+                              stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <span class="action-arrow">→</span>
+                    <div class="action-icon">
+                      <!-- truck -->
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="10" width="11" height="7" rx="1.5"
+                              fill="none" stroke="currentColor" stroke-width="1.4"/>
+                        <path d="M14 11h3.5l2.5 3v3"
+                              fill="none" stroke="currentColor" stroke-width="1.4"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="7" cy="18" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+                        <circle cx="17" cy="18" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="actions-caption">Réponses · rappels · planning</div>
+                </div>
+                <div class="flow-label">Actions automatiques</div>
+              </div>
+            </div>
           </div>
-          <div class="flow-label">Actions automatiques</div>
+        </div>  
+      </div>  
+    </div>
+  </section>
+
+  <!-- DAILY BRIEF -->
+  <section class="section section-brief">
+    <div class="container brief-layout">
+      <!-- Visuel gauche -->
+      <div class="brief-visual">
+        <div class="brief-card">
+          <div class="brief-pill">Brief du matin · 07h45</div>
+          <div class="brief-email-list">
+            <div class="brief-email">
+              <span class="badge badge-client">Client</span>
+              <div class="brief-email-text">
+                <strong>Chantier Rue des Lilas</strong>
+                <span>3 nouveaux messages, 1 date à confirmer</span>
+              </div>
+            </div>
+            <div class="brief-email">
+              <span class="badge badge-sav">SAV</span>
+              <div class="brief-email-text">
+                <strong>Suivi SAV fenêtres alu</strong>
+                <span>Dernière réponse client à vérifier</span>
+              </div>
+            </div>
+            <div class="brief-email">
+              <span class="badge badge-fournisseur">Fournisseur</span>
+              <div class="brief-email-text">
+                <strong>Commande profilés & grue</strong>
+                <span>Confirmation de livraison manquante</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="brief-audio">
+            <div class="audio-badge" id="brief-audio-button">
+              <span class="audio-icon" id="brief-audio-icon">▶</span>
+              <div class="audio-text">
+                <strong>Lecture du brief</strong>
+                <span>2 min · résumé de vos emails</span>
+              </div>
+            </div>
+            <p class="audio-caption">
+              “Aujourd’hui : 5 chantiers à confirmer, 2 SAV prioritaires et 1 fournisseur en attente.”
+            </p>
+
+            <!-- Audio démo -->
+            <audio id="brief-audio" src="assets/audio/demo-brief.mp3"></audio>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texte à droite -->
+      <div class="brief-copy hero-copy brief-copy-card">
+        <h2>Commencez la journée avec un brief, pas une boîte mail</h2>
+        <p>
+          Chaque matin, Mial prépare pour vous un <strong>résumé des emails importants</strong>
+          et vous envoie un <strong>message vocal</strong> que vous pouvez écouter en voiture,
+          en marchant ou pendant le café.
+        </p>
+        <ul class="brief-list">
+          <li>Résumé des nouveaux emails filtrés selon vos règles (clients, urgences, projets…)</li>
+          <li>Regroupement par client ou par dossier pour savoir <strong>qui attendre / qui relancer</strong></li>
+          <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook</li>
+        </ul>
+        <div class="brief-note">
+          Vous choisissez l’heure, le canal, et ce que le brief doit couvrir. Mial s’adapte à votre manière de travailler.
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- DAILY BRIEF -->
-<section class="section section-brief">
-  <div class="container brief-layout">
-    <div class="brief-copy hero-copy brief-copy-card">
-      <h2>Commencez la journée avec un brief, pas une boîte mail</h2>
-      <p>
-        Chaque matin, Mial prépare pour vous un <strong>résumé des emails importants</strong>
-        et vous envoie un <strong>message vocal</strong> que vous pouvez écouter en voiture,
-        en marchant ou pendant le café.
-      </p>
-      <ul class="brief-list">
-        <li>Résumé des nouveaux emails filtrés selon vos règles (clients, urgences, projets…)</li>
-        <li>Regroupement par client ou par dossier pour savoir <strong>qui attendre / qui relancer</strong></li>
-        <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook</li>
-      </ul>
-      <div class="brief-note">
-        Vous choisissez l’heure, le canal, et ce que le brief doit couvrir. Mial s’adapte à votre manière de travailler.
+  
+ <!-- POUR QUI -->
+  <section class="section section-audience" id="audience">
+    <div class="container">
+      <div class="section-intro-card">
+        <h2>Pour qui est fait 
+          <span class="logo-inline">
+            <img src="assets/logos/logo-mial-full-color.svg" alt="mial">
+          </span>
+          ?
+        </h2>
+        <p class="lead">
+          Mial s’adresse aux <strong>petites équipes sans service IT</strong>, noyées sous les e-mails&nbsp;:
+          <strong>dirigeants</strong>, <strong>back-office</strong> et <strong>indépendants</strong> qui gèrent tout
+          depuis leur <strong>boîte mail</strong>.
+        </p>
       </div>
     </div>
 
-    <div class="brief-visual">
-      <div class="brief-card">
-        <div class="brief-pill">Brief du matin · 07h45</div>
-        <div class="brief-email-list">
-          <div class="brief-email">
-            <span class="badge badge-client">Client</span>
-            <div class="brief-email-text">
-              <strong>Chantier Rue des Lilas</strong>
-              <span>3 nouveaux messages, 1 date à confirmer</span>
-            </div>
-          </div>
-          <div class="brief-email">
-            <span class="badge badge-sav">SAV</span>
-            <div class="brief-email-text">
-              <strong>Suivi SAV fenêtres alu</strong>
-              <span>Dernière réponse client à vérifier</span>
-            </div>
-          </div>
-          <div class="brief-email">
-            <span class="badge badge-fournisseur">Fournisseur</span>
-            <div class="brief-email-text">
-              <strong>Commande profilés & grue</strong>
-              <span>Confirmation de livraison manquante</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="brief-audio">
-          <div class="audio-badge">
-            <span class="audio-icon">▶</span>
-            <div class="audio-text">
-              <strong>Lecture du brief</strong>
-              <span>2 min · résumé de vos emails</span>
-            </div>
-          </div>
-          <p class="audio-caption">
-            “Aujourd’hui : 5 chantiers à confirmer, 2 SAV prioritaires et 1 fournisseur en attente.”
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-  <!-- POUR QUI -->
-  <section class="section" id="audience">
-    <div class="container center">
-      <span class="pill">Pour qui ?</span>
-      <h2>Pensé pour les petites équipes sans service IT</h2>
-      <p class="lead">Artisans, PME de services, e‑commerce, cabinets, associations : nous transformons la boîte de réception en un flux clair, traçable et mesurable.</p>
-    </div>
-    <div class="container grid-4">
-      <article class="card">
-        <h3>🎯 Triage auto</h3>
+    <div class="container grid-3 audience-grid">
+      <!-- Persona 1 : Dirigeant -->
+      <article class="card-glass-jelly">
+        <h3>👔 Gérant / dirigeant de PME</h3>
+        <p class="persona-tagline">
+          Tu gères <strong>clients</strong>, <strong>équipe</strong> et <strong>paperasse</strong>… et ta
+          <strong>boîte mail déborde</strong>.
+        </p>
         <ul class="checklist">
-          <li>Règles métier et heures d'ouverture</li>
-          <li>Détection pièces jointes et manques</li>
-          <li>Déduplication et suivi des threads</li>
+          <li><strong>Boîte partagée</strong> saturée, mails qui se perdent</li>
+          <li>Pas de <strong>vue rapide</strong> sur les urgences et retards</li>
+          <li>Pas envie d’<strong>embaucher juste pour la boîte mail</strong></li>
         </ul>
+        <p class="persona-promise">
+          Mial t’envoie chaque matin un <strong>résumé clair des priorités</strong>,
+          sans embauche en plus.
+        </p>
       </article>
-      <article class="card">
-        <h3>✍️ Brouillons & réponses</h3>
+
+      <!-- Persona 2 : Assistante / back-office / SAV / planning -->
+      <article class="card-glass-jelly">
+        <h3>📥 Assistante, back-office, SAV, planning</h3>
+        <p class="persona-tagline">
+          Tu passes ta journée à <strong>trier</strong>, <strong>répondre</strong> et
+          <strong>mettre à jour des tableaux</strong>.
+        </p>
         <ul class="checklist">
-          <li>Ton d'entreprise + signatures</li>
-          <li>Q/R fréquentes et politiques</li>
-          <li>Traduction automatique (FR/EN/NL/…)</li>
+          <li><strong>Boîtes partagées</strong>, doublons, mails qui tournent en boucle</li>
+          <li><strong>Ressaisies dans Excel</strong> avec risque d’erreur</li>
+          <li><strong>Demandes répétitives</strong> qui mangent tes journées</li>
         </ul>
+        <p class="persona-promise">
+          Mial gère le <strong>tri</strong> et les <strong>réponses simples</strong> ;
+          toi tu gardes les <strong>cas sensibles</strong>.
+        </p>
       </article>
-      <article class="card">
-        <h3>🤖 Autopilot</h3>
+
+      <!-- Persona 3 : Indépendants / petites équipes -->
+      <article class="card-glass-jelly">
+        <h3>🛠️ Indépendants & petites équipes sur rendez-vous</h3>
+        <p class="persona-tagline">
+          Tu es souvent en <strong>déplacement</strong>, rarement devant un PC.
+        </p>
         <ul class="checklist">
-          <li>Listes blanches / no‑reply</li>
-          <li>Escalade humaine si incertitude</li>
-          <li>Journal d'actions détaillé</li>
+          <li><strong>Oublis de mails</strong>, no-show, changements d’horaire</li>
+          <li><strong>Confirmations</strong> et <strong>relances</strong> faites à la main</li>
+          <li>Tu gères tout depuis ton <strong>téléphone</strong> entre deux rendez-vous</li>
         </ul>
-      </article>
-      <article class="card">
-        <h3>📊 Analytics</h3>
-        <ul class="checklist">
-          <li>Tableau de bord hebdo</li>
-          <li>Temps gagné & réponses évitées</li>
-          <li>Exports CSV pour la compta/CRM</li>
-        </ul>
+        <p class="persona-promise">
+          Mial envoie les <strong>rappels</strong>, les <strong>messages d’absence intelligents</strong>
+          et un <strong>récap audio</strong> le matin&nbsp;; toi tu te concentres sur le terrain.
+        </p>
       </article>
     </div>
   </section>
 
-  <!-- COMMENT ÇA MARCHE -->
-  <section class="section" id="how">
-    <div class="container center">
-      <span class="pill">Comment ça marche</span>
-      <h2>Mise en place en 3 étapes</h2>
-      <p class="lead">Pas besoin de service IT : on installe, on entraîne, on surveille.</p>
-    </div>
-    <div class="container grid-3">
-      <article class="card"><h3>1) Connexion</h3><p>Microsoft 365, Google Workspace ou IMAP (portée minimale, révocable).</p></article>
-      <article class="card"><h3>2) Entraînement</h3><p>Ton d'entreprise, gabarits, produits, politiques et routage (tags, SLA).</p></article>
-      <article class="card"><h3>3) Pilotage</h3><p>Choix du mode : Triage‑only, Copilot ou Autopilot + supervision humaine.</p></article>
-    </div>
-  </section>
+
 
   <!-- FEATURES GRID -->
+
   <section class="section section-features" id="features">
     <div class="container">
-      <h2>Ce que Mial peut faire à votre place</h2>
-      <p class="lead">
-        Sous le capot, Mial est un agent IA qui lit vos emails, met à jour vos tableaux
-        et déclenche des actions précises. Voici ce que ça veut dire concrètement.
-      </p>
+      <div class="section-intro-card">
+        <h2>Ce que
+          <span class="logo-inline">
+            <img src="assets/logos/logo-mial-full-color.svg" alt="mial">
+          </span>
+          peut faire à votre place
+        </h2>
+        <p class="lead">
+          Concrètement, Mial <strong>lit vos emails</strong>, <strong>met à jour vos tableaux</strong> et déclenche
+          les bonnes <strong>actions automatiquement</strong>. Et si votre besoin n’apparaît pas
+          dans la liste, on peut aussi le construire sur mesure.
+        </p>
+      </div>
+    </div>
 
-      <div class="grid-3 feature-grid">
+      <div class="container grid-3 feature-grid">
         <!-- 1. Extraction vers tableur -->
         <article class="card feature-card">
-          <span class="feature-tag">Données</span>
+          <span class="feature-tag"><span class="feature-tag-icon">📊</span>Données</span>
           <h3>Du mail au tableur</h3>
           <p>
             Extraction automatique des <strong>noms, adresses, dates, montants</strong>…
@@ -317,7 +365,7 @@
 
         <!-- 2. Réponses automatiques -->
         <article class="card feature-card">
-          <span class="feature-tag">Réponses</span>
+          <span class="feature-tag"><span class="feature-tag-icon">✉️</span>Réponses</span>
           <h3>Réponses automatiques sur mesure</h3>
           <p>
             Pour chaque type d’email répétitif, vous définissez un modèle.
@@ -328,7 +376,7 @@
 
         <!-- 3. Rappels & relances -->
         <article class="card feature-card">
-          <span class="feature-tag">Relances</span>
+          <span class="feature-tag"><span class="feature-tag-icon">⏰</span>Relances</span>
           <h3>Rappels avant les dates clés</h3>
           <p>
             À partir des dates dans votre tableur, Mial envoie automatiquement
@@ -339,7 +387,7 @@
 
         <!-- 4. Analyse des réponses clients -->
         <article class="card feature-card">
-          <span class="feature-tag">Suivi client</span>
+          <span class="feature-tag"><span class="feature-tag-icon">🧐</span>Suivi client</span>
           <h3>Comprendre “OK / pas OK”</h3>
           <p>
             Mial lit les réponses clients, détecte si c’est <strong>confirmé, refusé ou à clarifier</strong>,
@@ -349,7 +397,7 @@
 
         <!-- 5. Planning & agenda -->
         <article class="card feature-card">
-          <span class="feature-tag">Agenda</span>
+          <span class="feature-tag"><span class="feature-tag-icon">📅</span>Agenda</span>
           <h3>Planning connecté à votre agenda</h3>
           <p>
             À partir des lignes de votre tableur, Mial peut <strong>créer et mettre à jour des événements</strong> 
@@ -359,7 +407,7 @@
 
         <!-- 6. Distances & tournées -->
         <article class="card feature-card">
-          <span class="feature-tag">Logistique</span>
+          <span class="feature-tag"><span class="feature-tag-icon">🚚</span>Logistique</span>
           <h3>Distances et tournées optimisées</h3>
           <p>
             À partir des adresses clients, Mial calcule les <strong>distances et temps de trajet</strong>
@@ -369,7 +417,7 @@
 
         <!-- 7. Liens vers dossiers & fichiers -->
         <article class="card feature-card">
-          <span class="feature-tag">Dossiers</span>
+          <span class="feature-tag"><span class="feature-tag-icon">📁</span>Dossiers</span>
           <h3>Un clic vers le bon dossier</h3>
           <p>
             Chaque ligne de votre tableur peut contenir un <strong>lien direct</strong>
@@ -377,21 +425,9 @@
             Plus besoin de chercher pendant 5 minutes.
           </p>
         </article>
-
-        <!-- 8. Vue client consolidée -->
+        <!-- 8. Résumés & rapports -->
         <article class="card feature-card">
-          <span class="feature-tag">Vue 360°</span>
-          <h3>Dernier échange par client</h3>
-          <p>
-            Pour chaque client, Mial regroupe le <strong>dernier email important</strong>,
-            le statut du chantier et les prochaines actions. En un coup d’œil, vous savez
-            où vous en êtes avec chacun.
-          </p>
-        </article>
-
-        <!-- 9. Résumés & rapports -->
-        <article class="card feature-card">
-          <span class="feature-tag">Reporting</span>
+          <span class="feature-tag"><span class="feature-tag-icon">📈</span>Reporting</span>
           <h3>Rapports quotidiens ou hebdo</h3>
           <p>
             En plus du vocal, Mial peut envoyer un <strong>résumé écrit</strong> :
@@ -399,110 +435,67 @@
             relances à envoyer aujourd’hui.
           </p>
         </article>
+        <!-- 9. Automations sur mesure -->        
+        <article class="card feature-card">
+          <span class="feature-tag"><span class="feature-tag-icon">🧩</span>Sur-mesure</span>
+          <h3>Adapter Mial à votre entreprise</h3>
+          <p>
+            Vos process ne rentrent pas dans les cases ? On peut combiner
+            <strong>lecture d’emails, mises à jour de fichiers, API et rappels</strong>
+            pour construire des automatisations adaptées à votre façon de travailler.
+          </p>
+        </article>
+
       </div>
     </div>
   </section>
 
+<!-- COMMENT ÇA MARCHE / MISE EN PLACE -->
+<section class="section section-how" id="how">
+  <div class="container">
+    <!-- Intro blanche, sans animation -->
+    <article class="section-intro-card">
+      <h2>Mise en place, sans prise de tête</h2>
+      <p class="lead">
+        Contrairement à beaucoup de solutions IA, vous n’avez (presque) rien à faire :
+        on vient chez vous, on configure Mial sur vos mails et vos tableaux, puis on surveille
+        que tout tourne comme prévu.
+      </p>
+    </article>
 
-  <section id="reviews" class="section section-reviews">
-  <div class="container reviews-layout">
-    <div class="reviews-copy">
-      <h2>Ce que disent les clients de mial</h2>
-    </div>
+    <!-- 3 étapes avec effet jelly -->
+    <div class="grid-3 how-steps-grid">
+      <article class="card-glass-jelly">
+        <h3>1) Rendez-vous & diagnostic</h3>
+        <p>
+          On prend un rendez-vous avec vous pour comprendre vos flux réels :
+          types d’emails, tableaux utilisés, urgences, contraintes terrain.
+          L’objectif est de choisir <strong>les cas d’usage concrets</strong> à automatiser.
+        </p>
+      </article>
 
-    <div class="reviews-scroller-wrapper">
-      <div class="reviews-scroller">
-        <div class="reviews-track">
-          <!-- Bloc 1 -->
-          <article class="review-card" data-full="Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des mails de devis.">
-            <div class="review-header">
-              <div class="review-avatar" aria-hidden="true">F</div>
-              <div>
-                <div class="review-name">Fentra</div>
-                <div class="review-meta">Entreprise de menuiserie</div>
-              </div>
-            </div>
-            <p class="review-text">
-              «&nbsp;On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.&nbsp;»
-            </p>
-            <div class="review-footer">
-              <div class="review-stars" aria-label="5 sur 5">
-                ★★★★★
-              </div>
-              <span class="review-source">Avis Google</span>
-            </div>
-          </article>
+      <article class="card-glass-jelly">
+        <h3>2) Connexion à vos outils</h3>
+        <p>
+          On connecte Mial à <strong>Microsoft&nbsp;365, Google&nbsp;Workspace ou IMAP</strong>
+          avec des permissions minimales et révocables. On branche aussi vos fichiers
+          (Excel, Google Sheets ou base en ligne). C’est <strong>votre seule vraie action
+          technique</strong>.
+        </p>
+      </article>
 
-          <!-- Bloc 2 -->
-          <article class="review-card" data-full="Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit dans un tableau partagé, prêt à être traité.">
-            <div class="review-header">
-              <div class="review-avatar" aria-hidden="true">L</div>
-              <div>
-                <div class="review-name">Laurent D.</div>
-                <div class="review-meta">Dirigeant PME</div>
-              </div>
-            </div>
-            <p class="review-text">
-              «&nbsp;Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien ne se perd.&nbsp;»
-            </p>
-            <div class="review-footer">
-              <div class="review-stars" aria-label="5 sur 5">
-                ★★★★★
-              </div>
-              <span class="review-source">Avis interne</span>
-            </div>
-          </article>
-
-          <!-- Bloc 3 -->
-          <article class="review-card" data-full="Le brief vocal du matin est devenu notre rituel : en 2 minutes je sais quels clients rappeler et quels chantiers confirmer.">
-            <div class="review-header">
-              <div class="review-avatar" aria-hidden="true">M</div>
-              <div>
-                <div class="review-name">Marie P.</div>
-                <div class="review-meta">Responsable planning</div>
-              </div>
-            </div>
-            <p class="review-text">
-              «&nbsp;Le résumé vocal de mial dans la voiture, c’est mon nouveau briefing de début de journée.&nbsp;»
-            </p>
-            <div class="review-footer">
-              <div class="review-stars" aria-label="5 sur 5">
-                ★★★★★
-              </div>
-              <span class="review-source">Avis WhatsApp</span>
-            </div>
-          </article>
-
-          <!-- Bloc 4 -->
-          <article class="review-card" data-full="Mial répond aux mails simples, met à jour le tableau de suivi et nous alerte seulement quand il y a un cas sensible.">
-            <div class="review-header">
-              <div class="review-avatar" aria-hidden="true">C</div>
-              <div>
-                <div class="review-name">Claire S.</div>
-                <div class="review-meta">Service client</div>
-              </div>
-            </div>
-            <p class="review-text">
-              «&nbsp;On ne perd plus de temps sur les demandes répétitives, et on se concentre sur les vrais cas clients.&nbsp;»
-            </p>
-            <div class="review-footer">
-              <div class="review-stars" aria-label="5 sur 5">
-                ★★★★★
-              </div>
-              <span class="review-source">Avis interne</span>
-            </div>
-          </article>
-
-          <!-- DUPLICAT : même 4 avis, pour le scroll infini -->
-          <article class="review-card clone">
-            <!-- tu peux juste copier/coller les 4 précédents ici -->
-          </article>
-          <!-- duplique les 4 cartes pour avoir au moins 8–10 items au total -->
-        </div>
-      </div>
+      <article class="card-glass-jelly">
+        <h3>3) Construction & lancement</h3>
+        <p>
+          On développe votre scénario personnalisé (devis, SAV, planning, relances…),
+          on teste tout en sandbox, puis on active. Il ne vous reste plus qu’à
+          <strong>valider, ajuster et profiter du temps gagné</strong>.
+        </p>
+      </article>
     </div>
   </div>
 </section>
+
 
 
   <!-- PRICING -->
@@ -533,33 +526,116 @@
         <div class="plan-head"><h3>Team</h3></div>
         <div class="price">€499 <span>/mo</span></div>
         <ul class="checklist">
-          <li>Jusqu'à 10 boîtes</li><li>Multi‑langue + glossaires</li><li>Connecteurs (Graph/Gmail/IMAP)</li><li>Déploiement EU ou on‑prem</li>
+          <li>Jusqu'à 10 boîtes</li><li>Multi-langue + glossaires</li><li>Connecteurs (Graph/Gmail/IMAP)</li><li>Déploiement EU ou on-prem</li>
         </ul>
         <a href="#contact" class="btn btn-primary w-full">Choisir</a>
       </article>
     </div>
   </section>
 
-  <!-- TRUST -->
-  <section class="section" id="trust">
-    <div class="container center">
-      <span class="pill">Confiance</span>
-      <h2>Sécurité & conformité par défaut</h2>
-      <p class="lead">Permissions minimales, chiffrement au repos/en transit et journal d’actions.</p>
-    </div>
-    <div class="container grid-3">
-      <article class="card"><h3>Connexion mail</h3><p>Microsoft Graph (Outlook/Exchange), Gmail API ou IMAP. Scopes minimaux, révocables.</p></article>
-      <article class="card"><h3>Données privées</h3><p>Aucune donnée utilisée pour entraîner des modèles publics. Hébergement UE, option on‑premise.</p></article>
-      <article class="card"><h3>Traçabilité</h3><p>Journal des actions, approbations humaines, sandbox de test avant prod.</p></article>
+    <!-- REVIEWS -->
+  <section id="reviews" class="section section-reviews">
+    <div class="container reviews-layout">
+      <div class="reviews-copy">
+        <h2>Ce que disent les clients de mial</h2>
+      </div>
+
+      <div class="reviews-scroller-wrapper">
+        <div class="reviews-scroller">
+          <div class="reviews-track">
+            <!-- Bloc 1 -->
+            <article class="review-card" data-full="Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des mails de devis.">
+              <div class="review-header">
+                <div class="review-avatar" aria-hidden="true">F</div>
+                <div>
+                  <div class="review-name">Fentra</div>
+                  <div class="review-meta">Entreprise de menuiserie</div>
+                </div>
+              </div>
+              <p class="review-text">
+                «&nbsp;On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.&nbsp;»
+              </p>
+              <div class="review-footer">
+                <div class="review-stars" aria-label="5 sur 5">
+                  ★★★★★
+                </div>
+                <span class="review-source">Avis Google</span>
+              </div>
+            </article>
+
+            <!-- Bloc 2 -->
+            <article class="review-card" data-full="Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit dans un tableau partagé, prêt à être traité.">
+              <div class="review-header">
+                <div class="review-avatar" aria-hidden="true">L</div>
+                <div>
+                  <div class="review-name">Laurent D.</div>
+                  <div class="review-meta">Dirigeant PME</div>
+                </div>
+              </div>
+              <p class="review-text">
+                «&nbsp;Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien ne se perd.&nbsp;»
+              </p>
+              <div class="review-footer">
+                <div class="review-stars" aria-label="5 sur 5">
+                  ★★★★★
+                </div>
+                <span class="review-source">Avis interne</span>
+              </div>
+            </article>
+
+            <!-- Bloc 3 -->
+            <article class="review-card" data-full="Le brief vocal du matin est devenu notre rituel : en 2 minutes je sais quels clients rappeler et quels chantiers confirmer.">
+              <div class="review-header">
+                <div class="review-avatar" aria-hidden="true">M</div>
+                <div>
+                  <div class="review-name">Marie P.</div>
+                  <div class="review-meta">Responsable planning</div>
+                </div>
+              </div>
+              <p class="review-text">
+                «&nbsp;Le résumé vocal de mial dans la voiture, c’est mon nouveau briefing de début de journée.&nbsp;»
+              </p>
+              <div class="review-footer">
+                <div class="review-stars" aria-label="5 sur 5">
+                  ★★★★★
+                </div>
+                <span class="review-source">Avis WhatsApp</span>
+              </div>
+            </article>
+
+            <!-- Bloc 4 -->
+            <article class="review-card" data-full="Mial répond aux mails simples, met à jour le tableau de suivi et nous alerte seulement quand il y a un cas sensible.">
+              <div class="review-header">
+                <div class="review-avatar" aria-hidden="true">C</div>
+                <div>
+                  <div class="review-name">Claire S.</div>
+                  <div class="review-meta">Service client</div>
+                </div>
+              </div>
+              <p class="review-text">
+                «&nbsp;On ne perd plus de temps sur les demandes répétitives, et on se concentre sur les vrais cas clients.&nbsp;»
+              </p>
+              <div class="review-footer">
+                <div class="review-stars" aria-label="5 sur 5">
+                  ★★★★★
+                </div>
+                <span class="review-source">Avis interne</span>
+              </div>
+            </article>
+
+            <!-- (éventuellement tu peux dupliquer les cartes ici pour un scroll plus long) -->
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- CONTACT (Netlify Forms) -->
+  <!-- CONTACT -->
   <section class="section" id="contact">
     <div class="container center">
       <span class="pill">Contact</span>
       <h2>Parlons de votre boîte de réception</h2>
-      <p class="lead">Dites‑nous votre volume et vos cas fréquents — on vous montre en live sur votre propre inbox.</p>
+      <p class="lead">Dites-nous votre volume et vos cas fréquents — on vous montre en live sur votre propre inbox.</p>
     </div>
     <div class="container">
       <form name="contact" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" class="card form">
@@ -597,7 +673,10 @@
   <footer class="footer">
     <div class="container footer-grid">
       <div>
-        <div class="brand"><img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28" height="28"><span class="brand-text">mial</span></div>
+        <div class="brand">
+          <img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28" height="28">
+          <span class="brand-text">mial</span>
+        </div>
         <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données privées.</p>
       </div>
       <div>
