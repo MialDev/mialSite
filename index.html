@@ -575,9 +575,6 @@
   </section>
 
 <section class="section" id="contact">
-    <div class="container center">
-      <span class="pill">Contact</span>
-      </div>
     <div class="container">
       <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form" id="contact-form">
         <input type="hidden" name="form-name" value="contact" />
@@ -599,26 +596,10 @@
         <div class="form-actions">
           <label class="agree"><input type="checkbox" checked> J'accepte d'être contacté par mial</label>
           
-          <div class="gooey-button-wrapper">
-            <button type="submit" class="btn btn-primary" id="submit-btn">
-              <span class="btn-text">Envoyer</span>
-            </button>
-            <div class="particles-container" id="particles-container"></div>
-          </div>
-
+          <button type="submit" class="btn btn-primary" id="submit-btn">Envoyer</button>
         </div>
       </form>
     </div>
-
-    <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
-      <defs>
-        <filter id="goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
-          <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-        </filter>
-      </defs>
-    </svg>
   </section>
 
   <footer class="footer">
@@ -647,7 +628,7 @@
         </ul>
       </div>
       <div class="right">
-        <span class="pill">Logo minimal : <strong>//</strong></span>
+        <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial"> </span>
       </div>
     </div>
   </footer>
