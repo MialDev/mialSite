@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,6 +12,7 @@
   <link rel="stylesheet" href="style.css" />
   <meta name="theme-color" content="#1fb6ff">
 </head>
+
 <body>
 
   <header id="site-header" class="nav">
@@ -25,10 +27,10 @@
 
       <nav class="nav-links">
         <a href="#home">Accueil</a>
+        <a href="team.html">Équipe</a>
         <a href="#how">Fonctionnement</a>
-        <a href="#modes">Assistance</a>
         <a href="#pricing">Tarifs</a>
-        <a href="#trust">Sécurité</a>
+        <a href="security.html">Sécurité</a>
         <a href="#contact" class="btn btn-primary">Demander une démo</a>
       </nav>
     </div>
@@ -36,14 +38,17 @@
 
   <section id="home" class="hero hero-grad">
     <div class="container hero-inner">
-      
+
       <div class="hero-copy glass-static">
         <h1>Dites adieu à la boîte mail débordée</h1>
-        <p>Mial est un agent IA connecté à votre boîte mail. Il lit chaque message entrant et applique vos règles métier pour :</p>
+        <p>Mial est un agent IA connecté à votre boîte mail. Il lit chaque message entrant et applique vos règles métier
+          pour :</p>
         <ul class="hero-list">
           <li><strong>automatiser les réponses</strong> aux demandes répétitives avec vos propres modèles</li>
-          <li><strong>tenir à jour vos fichiers</strong> Excel ou Google Sheets à partir du contenu des emails</li>
-          <li><strong>ne vous déranger que pour les cas exceptionnels</strong> (conflits, décisions, situations sensibles)</li>
+          <li><strong>automatiser vos suivis (Excel / Sheets)</strong> sans changer vos habitudes de travail</li>
+          <!--<li><strong>tenir à jour vos fichiers</strong> Excel ou Google Sheets à partir du contenu des emails</li>-->
+          <li><strong>ne vous déranger que pour les cas exceptionnels</strong> (conflits, décisions, situations
+            sensibles)</li>
         </ul>
         <div class="cta-row">
           <a href="#contact" class="btn btn-primary">Demander une démo</a>
@@ -54,28 +59,36 @@
       <div class="hero-visual">
         <div class="hero-flow-shell">
           <div class="hero-flow">
-            
+
             <div class="flow-card flow-inbox flow-anim-1">
               <div class="inbox-panel">
                 <div class="inbox-title">Inbox</div>
-                
+
                 <div class="inbox-item">
                   <span class="inbox-icon icon">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" ry="3"/><path d="M4 7.5l8 6 8-6"/></svg>
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="5" width="18" height="14" rx="3" ry="3" />
+                      <path d="M4 7.5l8 6 8-6" />
+                    </svg>
                   </span>
                   <span class="inbox-label">Demande de devis</span>
                 </div>
 
                 <div class="inbox-item">
                   <span class="inbox-icon icon">
-                    <svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6.5L8 20.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>
+                    <svg viewBox="0 0 24 24">
+                      <path d="M5 5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6.5L8 20.5V16H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+                    </svg>
                   </span>
                   <span class="inbox-label">SAV client</span>
                 </div>
 
                 <div class="inbox-item">
                   <span class="inbox-icon icon">
-                    <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" ry="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                    <svg viewBox="0 0 24 24">
+                      <rect x="4" y="5" width="16" height="15" rx="2" ry="2" />
+                      <path d="M8 3v4M16 3v4M4 10h16" />
+                    </svg>
                   </span>
                   <span class="inbox-label">Planification chantier</span>
                 </div>
@@ -83,7 +96,9 @@
             </div>
 
             <div class="flow-arrow-icon icon">
-              <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" /></svg>
+              <svg viewBox="0 0 16 16">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
             </div>
 
             <div class="flow-card flow-mial flow-anim-2">
@@ -93,7 +108,9 @@
             </div>
 
             <div class="flow-arrow-icon icon">
-              <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" /></svg>
+              <svg viewBox="0 0 16 16">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
             </div>
 
             <div class="flow-bottom-row">
@@ -105,18 +122,29 @@
               </div>
 
               <div class="flow-card flow-anim-2">
-                <div class="actions-card">
+                <div class="actions-card" style="flex-direction: column;">
                   <div class="actions-row icon">
                     <div class="action-icon">
-                       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" ry="3"/><path d="M4 7.5l8 6 8-6"/></svg>
+                      <svg viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="3" ry="3" />
+                        <path d="M4 7.5l8 6 8-6" />
+                      </svg>
                     </div>
                     <span class="action-arrow">→</span>
                     <div class="action-icon">
-                       <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" ry="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                      <svg viewBox="0 0 24 24">
+                        <rect x="4" y="5" width="16" height="15" rx="2" ry="2" />
+                        <path d="M8 3v4M16 3v4M4 10h16" />
+                      </svg>
                     </div>
                     <span class="action-arrow">→</span>
                     <div class="action-icon">
-                       <svg viewBox="0 0 24 24"><rect x="3" y="10" width="11" height="7" rx="1.5"/><path d="M14 11h3.5l2.5 3v3"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>
+                      <svg viewBox="0 0 24 24">
+                        <rect x="3" y="10" width="11" height="7" rx="1.5" />
+                        <path d="M14 11h3.5l2.5 3v3" />
+                        <circle cx="7" cy="18" r="1.6" />
+                        <circle cx="17" cy="18" r="1.6" />
+                      </svg>
                     </div>
                   </div>
                   <div class="actions-caption">Réponses · rappels · planning</div>
@@ -126,8 +154,8 @@
             </div>
 
           </div>
-        </div>  
-      </div>  
+        </div>
+      </div>
     </div>
   </section>
 
@@ -189,7 +217,8 @@
           <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook</li>
         </ul>
         <div class="brief-note">
-          Vous choisissez l’heure, le canal, et ce que le brief doit couvrir. Mial s’adapte à votre manière de travailler.
+          Vous choisissez l’heure, le canal, et ce que le brief doit couvrir. Mial s’adapte à votre manière de
+          travailler.
         </div>
       </div>
     </div>
@@ -198,7 +227,7 @@
   <section class="section section-audience" id="audience">
     <div class="container">
       <div class="section-intro-card">
-        <h2>Pour qui est fait 
+        <h2>Pour qui est fait
           <span class="logo-inline">
             <img src="assets/logos/logo-mial-full-color.svg" alt="mial">
           </span>
@@ -221,7 +250,7 @@
           <ul class="checklist">
             <li><strong>Boîte partagée</strong> saturée, mails qui se perdent</li>
             <li>Pas de <strong>vue rapide</strong> sur les urgences et retards</li>
-            <li>Pas envie d’<strong>embaucher juste pour la boîte mail</strong></li>
+            <li>Difficulté à <strong>tout traiter</strong> dans les temps</li>
           </ul>
           <p class="persona-promise">
             Mial t’envoie chaque matin un <strong>résumé clair des priorités</strong>,
@@ -282,7 +311,7 @@
       </div>
 
       <div class="grid-3 feature-grid">
-        
+
         <article class="glass-jelly feature-card card-hover reveal-fx">
           <span class="feature-tag"><span class="feature-tag-icon">📊</span>Données</span>
           <h3>Du mail au tableur</h3>
@@ -326,7 +355,7 @@
           <span class="feature-tag"><span class="feature-tag-icon">📅</span>Agenda</span>
           <h3>Planning connecté à votre agenda</h3>
           <p>
-            À partir des lignes de votre tableur, Mial peut <strong>créer et mettre à jour des événements</strong> 
+            À partir des lignes de votre tableur, Mial peut <strong>créer et mettre à jour des événements</strong>
             dans Google Calendar : créneaux de chantier, rendez-vous clients, tournées d’équipes.
           </p>
         </article>
@@ -349,7 +378,7 @@
             Plus besoin de chercher pendant 5 minutes.
           </p>
         </article>
-        
+
         <article class="glass-jelly feature-card card-hover reveal-fx">
           <span class="feature-tag"><span class="feature-tag-icon">📈</span>Reporting</span>
           <h3>Rapports quotidiens ou hebdo</h3>
@@ -359,7 +388,7 @@
             relances à envoyer aujourd’hui.
           </p>
         </article>
-        
+
         <article class="glass-jelly feature-card card-hover reveal-fx">
           <span class="feature-tag"><span class="feature-tag-icon">🧩</span>Sur-mesure</span>
           <h3>Adapter Mial à votre entreprise</h3>
@@ -398,7 +427,7 @@
         <article class="glass-jelly card-hover reveal-fx">
           <h3>2) Connexion à vos outils</h3>
           <p>
-            On connecte Mial à <strong>Microsoft 365, Google Workspace ou IMAP</strong>
+            On connecte Mial à <strong>Microsoft 365, Google Workspace</strong>
             avec des permissions minimales et révocables. On branche aussi vos fichiers
             (Excel, Google Sheets ou base en ligne). C’est <strong>votre seule vraie action technique</strong>.
           </p>
@@ -416,12 +445,12 @@
     </div>
   </section>
 
-<section class="section" id="pricing">
+  <section class="section" id="pricing">
     <div class="container center">
       <div class="pricing-switch-wrapper">
         <fieldset class="switcher-glass">
           <label class="switcher-glass__option">
-            <input class="switcher-glass__input" type="radio" name="billing" value="monthly" checked/>
+            <input class="switcher-glass__input" type="radio" name="billing" value="monthly" checked />
             <span class="switcher-glass__text">Mensuel</span>
           </label>
           <label class="switcher-glass__option">
@@ -433,11 +462,14 @@
 
     </div>
 
-<div class="container grid-3" style="margin-top:40px;">
-      
+    <div class="container grid-3" style="margin-top:40px;">
+
       <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head"><h3>Mial Brief</h3></div>
-        <div class="price" data-monthly="59.90" data-yearly="47.99">€59.90 <span>/mo</span> <span class="discount-badge"></span></div>
+        <div class="plan-head">
+          <h3>Mial Brief</h3>
+        </div>
+        <div class="price" data-monthly="59.90" data-yearly="47.99">€59.90 <span>/mo</span> <span
+            class="discount-badge"></span></div>
         <p class="muted" style="font-size:0.9rem; margin-bottom:12px">L'essentiel pour rester à jour.</p>
         <ul class="checklist">
           <li>1 adresse email connectée</li>
@@ -449,8 +481,11 @@
       </article>
 
       <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head"><h3>Mial Gestion</h3><span class="pill">Automation</span></div>
-        <div class="price" data-monthly="159.90" data-yearly="127.15">€159.90 <span>/mo</span> <span class="discount-badge"></span></div>
+        <div class="plan-head">
+          <h3>Mial Gestion</h3><span class="pill">Automation</span>
+        </div>
+        <div class="price" data-monthly="159.90" data-yearly="127.15">€159.90 <span>/mo</span> <span
+            class="discount-badge"></span></div>
         <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Votre admin en pilote automatique.</p>
         <ul class="checklist">
           <li>1 adresse email connectée</li>
@@ -463,7 +498,9 @@
       </article>
 
       <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head"><h3>Entreprise</h3></div>
+        <div class="plan-head">
+          <h3>Entreprise</h3>
+        </div>
         <div class="price" style="font-size:1.8rem; padding: 6px 0;">Sur devis</div>
         <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Architecture complexe & multi-comptes.</p>
         <ul class="checklist">
@@ -472,15 +509,16 @@
           <li>Connexions API spécifiques</li>
           <li>Déploiement sur serveur dédié</li>
         </ul>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Offre Entreprise Sur Mesure">Nous contacter</a>
+        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Offre Entreprise Sur Mesure">Nous
+          contacter</a>
       </article>
 
     </div>
   </section>
 
-<section id="reviews" class="section section-reviews">
+  <section id="reviews" class="section section-reviews">
     <div class="container reviews-layout">
-      
+
       <div class="reviews-copy">
         <div class="section-intro-card" style="margin: 0; text-align: left; width: 100%; padding: 24px;">
           <h2>Ce que disent les clients de mial
@@ -494,78 +532,126 @@
       <div class="reviews-scroller-wrapper">
         <div class="reviews-scroller">
           <div class="reviews-track">
-            
+
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">F</div>
-                <div><div class="review-name">Fentra</div><div class="review-meta">Menuiserie</div></div>
+                <div>
+                  <div class="review-name">Fentra</div>
+                  <div class="review-meta">Menuiserie</div>
+                </div>
               </div>
-              <p class="review-text">Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des mails de devis.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Google</span></div>
+              <p class="review-text">Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des
+                mails de devis.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Google</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">L</div>
-                <div><div class="review-name">Laurent D.</div><div class="review-meta">Dirigeant</div></div>
+                <div>
+                  <div class="review-name">Laurent D.</div>
+                  <div class="review-meta">Dirigeant</div>
+                </div>
               </div>
-              <p class="review-text">On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Interne</span></div>
+              <p class="review-text">On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.
+              </p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Interne</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">M</div>
-                <div><div class="review-name">Marie P.</div><div class="review-meta">Planning</div></div>
+                <div>
+                  <div class="review-name">Marie P.</div>
+                  <div class="review-meta">Planning</div>
+                </div>
               </div>
-              <p class="review-text">Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien ne se perd.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">WhatsApp</span></div>
+              <p class="review-text">Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien
+                ne se perd.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">WhatsApp</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">C</div>
-                <div><div class="review-name">Claire S.</div><div class="review-meta">Service client</div></div>
+                <div>
+                  <div class="review-name">Claire S.</div>
+                  <div class="review-meta">Service client</div>
+                </div>
               </div>
-              <p class="review-text">Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit dans un tableau partagé, prêt à être traité.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Interne</span></div>
+              <p class="review-text">Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit
+                dans un tableau partagé, prêt à être traité.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Interne</span>
+              </div>
             </article>
 
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">F</div>
-                <div><div class="review-name">Fentra</div><div class="review-meta">Menuiserie</div></div>
+                <div>
+                  <div class="review-name">Fentra</div>
+                  <div class="review-meta">Menuiserie</div>
+                </div>
               </div>
-              <p class="review-text">Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des mails de devis.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Google</span></div>
+              <p class="review-text">Mial nous a fait gagner plus de 6 heures par semaine rien que sur la gestion des
+                mails de devis.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Google</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">L</div>
-                <div><div class="review-name">Laurent D.</div><div class="review-meta">Dirigeant</div></div>
+                <div>
+                  <div class="review-name">Laurent D.</div>
+                  <div class="review-meta">Dirigeant</div>
+                </div>
               </div>
-              <p class="review-text">On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Interne</span></div>
+              <p class="review-text">On a l’impression d’avoir embauché un assistant à plein temps pour la messagerie.
+              </p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Interne</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">M</div>
-                <div><div class="review-name">Marie P.</div><div class="review-meta">Planning</div></div>
+                <div>
+                  <div class="review-name">Marie P.</div>
+                  <div class="review-meta">Planning</div>
+                </div>
               </div>
-              <p class="review-text">Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien ne se perd.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">WhatsApp</span></div>
+              <p class="review-text">Tous les mails critiques sont triés et envoyés dans un fichier partagé. Plus rien
+                ne se perd.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">WhatsApp</span>
+              </div>
             </article>
 
             <article class="review-card glass-jelly card-hover">
               <div class="review-header">
                 <div class="review-avatar">C</div>
-                <div><div class="review-name">Claire S.</div><div class="review-meta">Service client</div></div>
+                <div>
+                  <div class="review-name">Claire S.</div>
+                  <div class="review-meta">Service client</div>
+                </div>
               </div>
-              <p class="review-text">Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit dans un tableau partagé, prêt à être traité.</p>
-              <div class="review-footer"><div class="review-stars">★★★★★</div><span class="review-source">Interne</span></div>
+              <p class="review-text">Avant mial, nos boîtes Outlook explosaient. Maintenant, chaque mail important finit
+                dans un tableau partagé, prêt à être traité.</p>
+              <div class="review-footer">
+                <div class="review-stars">★★★★★</div><span class="review-source">Interne</span>
+              </div>
             </article>
 
           </div>
@@ -574,9 +660,10 @@
     </div>
   </section>
 
-<section class="section" id="contact">
+  <section class="section" id="contact">
     <div class="container">
-      <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form" id="contact-form">
+      <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form"
+        id="contact-form">
         <input type="hidden" name="form-name" value="contact" />
         <input type="hidden" name="offre_choisie" id="hidden-plan-input" value="">
 
@@ -588,14 +675,14 @@
           <label>Société <input name="company" placeholder="Nom de la société" /></label>
           <label>Volume <input name="volume" placeholder="Emails / jour (approx.)" /></label>
         </div>
-        
+
         <label>Message
           <textarea name="message" rows="5" placeholder="Dites-nous en plus sur vos besoins..."></textarea>
         </label>
 
         <div class="form-actions">
           <label class="agree"><input type="checkbox" checked> J'accepte d'être contacté par mial</label>
-          
+
           <button type="submit" class="btn btn-primary" id="submit-btn">Envoyer</button>
         </div>
       </form>
@@ -635,4 +722,5 @@
 
   <script src="main.js"></script>
 </body>
+
 </html>

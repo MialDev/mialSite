@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sécurité & Données — mial</title>
+
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+
+    <style>
+        /* Specific styles for security page */
+        .security-section {
+            padding-top: 140px;
+        }
+
+        .security-intro {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            text-align: center;
+        }
+
+        .security-block {
+            margin-bottom: 60px;
+            padding: 40px;
+        }
+
+        .security-block h2 {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .security-block h3 {
+            font-size: 1.25rem;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: #334155;
+        }
+
+        .security-content p {
+            line-height: 1.7;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .security-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 24px;
+        }
+
+        .security-content ul li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 10px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .security-content ul li::before {
+            content: "•";
+            position: absolute;
+            left: 6px;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: rgba(241, 245, 249, 0.6);
+            border-left: 4px solid #38bdf8;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="index.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+
+            <nav class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="team.html">Équipe</a>
+                <a href="index.html#how">Fonctionnement</a>
+                <a href="index.html#pricing">Tarifs</a>
+                <a href="security.html" class="active" style="font-weight: 700;">Sécurité</a>
+                <a href="index.html#contact" class="btn btn-primary">Demander une démo</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section security-section">
+        <div class="container">
+            <div class="security-intro glass-static">
+                <h1>Vos données et leur sécurité</h1>
+                <p class="lead">Transparence totale sur le traitement de vos emails et la confidentialité de vos
+                    informations.</p>
+            </div>
+
+            <!-- 1. Brief Audio -->
+            <article class="security-block glass-jelly reveal-fx">
+                <h2>1. Module “Brief Audio” & IA</h2>
+                <div class="security-content">
+
+                    <h3>D’où viennent les données ?</h3>
+                    <p>Les e-mails proviennent exclusivement de votre boîte <strong>Microsoft 365 (Exchange
+                            Online)</strong>.</p>
+                    <div class="info-box">
+                        <strong>Sécurité :</strong> Nous ne stockons jamais vos mots de passe. L'accès se fait via Azure
+                        AD (Microsoft Entra) avec une application sécurisée. Ce sont des tokens d'accès temporaires
+                        générés par Microsoft qui permettent la lecture, pas vos identifiants.
+                    </div>
+
+                    <h3>Par où transitent-elles ?</h3>
+                    <p>Le flux est chiffré (HTTPS) à chaque étape :</p>
+                    <ul>
+                        <li><strong>Microsoft → mial :</strong> Notre serveur interroge l'API Microsoft Graph pour lire
+                            les messages et pièces jointes nécessaires.</li>
+                        <li><strong>mial → OpenAI :</strong> Le contenu (ou un extrait) est envoyé à OpenAI pour générer
+                            le résumé. OpenAI ne stocke pas ces données pour entraîner ses modèles (conformément à leurs
+                            conditions Business/API).</li>
+                        <li><strong>Retour client :</strong> Le résumé audio est généré et vous est envoyé par e-mail ou
+                            lien sécurisé.</li>
+                    </ul>
+
+                    <h3>Où sont-elles stockées ?</h3>
+                    <ul>
+                        <li><strong>Chez Microsoft :</strong> Vos e-mails originaux restent chez vous, sur vos serveurs
+                            Exchange.</li>
+                        <li><strong>Chez mial :</strong> Nous ne conservons que les logs techniques (pour la
+                            maintenance) et les fichiers temporaires (résumé texte/audio) le temps de la livraison. Nous
+                            ne constituons aucune base de données d'entraînement avec vos e-mails.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <!-- 2. CRM & Tableaux -->
+            <article class="security-block glass-jelly reveal-fx">
+                <h2>2. Module Gestion & Tableurs</h2>
+                <div class="security-content">
+                    <p>Ce module fonctionne sans IA générative pour le cœur du processus (synchronisation Mails ↔
+                        Excel).</p>
+
+                    <h3>Flux des données</h3>
+                    <p>
+                        Comme pour le brief, nous utilisons l'API Microsoft Graph sécurisée pour lire les changements
+                        (nouveaux mails, mises à jour Excel) et appliquer vos règles métier (extraction de données,
+                        mises à jour de statuts, rappels).
+                    </p>
+
+                    <h3>Stockage</h3>
+                    <ul>
+                        <li><strong>Vos fichiers :</strong> Les tableurs Excel/Sheets restent sur votre OneDrive ou
+                            SharePoint.</li>
+                        <li><strong>Base de données mial :</strong> Nous stockons uniquement les métadonnées structurées
+                            nécessaires au fonctionnement du CRM (noms clients, statuts chantiers, dates) dans une base
+                            de données isolée par client.</li>
+                    </ul>
+
+                    <h3>Option serveur local</h3>
+                    <p>
+                        Pour une confidentialité maximale, nous proposons de déployer l'infrastructure mial directement
+                        chez vous sur un mini-serveur dédié.
+                        Dans ce cas, les traitements restent physiquement sur votre réseau ; seules les requêtes vers
+                        Microsoft (et OpenAI si option brief) sortent de vos locaux.
+                    </p>
+                </div>
+            </article>
+
+            <!-- 3. Résumé -->
+            <article class="security-block glass-static reveal-fx">
+                <h2>En résumé</h2>
+                <div class="summary-grid">
+                    <div>
+                        <h3>🔒 Authentification</h3>
+                        <p>Déléguée à Microsoft (Azure AD). Nous ne voyons ni ne stockons jamais vos mots de passe.</p>
+                    </div>
+                    <div>
+                        <h3>🤖 Traitement IA</h3>
+                        <p>Via API OpenAI professionnelle. Vos données ne servent pas à entraîner les modèles publics.
+                        </p>
+                    </div>
+                    <div>
+                        <h3>💾 Stockage</h3>
+                        <p>Vos e-mails et fichiers restent chez vous (Microsoft 365). Nous ne gardons que le strict
+                            nécessaire au service.</p>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div>
+                <div class="brand">
+                    <img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28"
+                        height="28">
+                    <span class="brand-text">mial</span>
+                </div>
+                <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données privées.</p>
+            </div>
+            <div>
+                <h4>Produit</h4>
+                <ul>
+                    <li><a href="index.html#how">Comment ça marche</a></li>
+                    <li><a href="index.html#pricing">Tarifs</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Société</h4>
+                <ul>
+                    <li><a href="team.html">Équipe</a></li>
+                    <li><a href="security.html">Sécurité</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li class="muted">© <span id="year"></span> mial</li>
+                </ul>
+            </div>
+            <div class="right">
+                <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial"> </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

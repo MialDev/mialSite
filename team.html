@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>L'équipe mial</title>
+
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+
+    <style>
+        /* Specific styles for team page */
+        .team-section {
+            padding-top: 140px;
+        }
+
+        .team-intro {
+            max-width: 800px;
+            margin: 0 auto 60px;
+            text-align: center;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 80px;
+            padding: 40px;
+            border-radius: 32px;
+        }
+
+        .team-member:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .member-photo-wrapper {
+            flex: 0 0 240px;
+            width: 240px;
+            height: 240px;
+            position: relative;
+        }
+
+        .member-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-size: 2rem;
+            margin-bottom: 4px;
+            color: var(--ink);
+        }
+
+        .member-role {
+            font-size: 1.1rem;
+            color: #38bdf8;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .member-bio {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        @media (max-width: 768px) {
+
+            .team-member,
+            .team-member:nth-child(even) {
+                flex-direction: column;
+                text-align: center;
+                gap: 24px;
+                padding: 32px 24px;
+            }
+
+            .member-photo-wrapper {
+                margin: 0 auto;
+                width: 180px;
+                height: 180px;
+                flex: 0 0 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="index.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+
+            <nav class="nav-links">
+                <a href="index.html">Accueil</a>
+                <a href="team.html" class="active" style="font-weight: 700;">Équipe</a>
+                <a href="index.html#how">Fonctionnement</a>
+                <a href="index.html#pricing">Tarifs</a>
+                <a href="security.html">Sécurité</a>
+                <a href="index.html#contact" class="btn btn-primary">Demander une démo</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section team-section">
+        <div class="container">
+
+
+            <div class="team-grid">
+
+                <!-- Victor -->
+                <article class="team-member glass-jelly reveal-fx">
+                    <div class="member-photo-wrapper">
+                        <img src="assets/team/victor.png" alt="Victor Schyns" class="member-photo">
+                    </div>
+                    <div class="member-info">
+                        <h2 class="member-name">Victor Schyns</h2>
+                        <span class="member-role">Co-fondateur & CEO</span>
+                        <p class="member-bio">
+                            Ingénieur civil électromécanique (Louvain-la-Neuve) et diplômé d'un master complémentaire
+                            HEC Entrepreneur (Liège).
+                            <br><br>
+                            "L'entrepreneuriat a toujours été ma passion, venant d'une famille d'entrepreneurs. Avec
+                            Mial, je combine cette envie de bâtir avec la logique et les compétences techniques acquises
+                            durant mes études d'ingénieur. Le master en entrepreneuriat m'a permis de parfaire mes
+                            compétences en gestion, menant aujourd'hui à la concrétisation de ce projet pour aider les
+                            professionnels à se concentrer sur l'essentiel."
+                        </p>
+                        <div style="margin-top: 20px;">
+                            <a href="https://www.linkedin.com/in/victor-schyns-28b8792b9" target="_blank"
+                                class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                                    <rect x="2" y="9" width="4" height="12" />
+                                    <circle cx="4" cy="4" r="2" />
+                                </svg>
+                                LinkedIn
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Hugo -->
+                <article class="team-member glass-jelly reveal-fx">
+                    <div class="member-photo-wrapper">
+                        <img src="assets/team/hugo.png" alt="Hugo Duvivier" class="member-photo">
+                    </div>
+                    <div class="member-info">
+                        <h2 class="member-name">Hugo Duvivier</h2>
+                        <span class="member-role">Co-fondateur & CTO</span>
+                        <p class="member-bio">
+                            Ingénieur civil mécanicien (Louvain-la-Neuve), avec une expérience solide chez Safran Aero
+                            Boosters.
+                            <br><br>
+                            Expert en systèmes complexes et en rigueur industrielle, Hugo apporte la structure et la
+                            fiabilité technique indispensables. Il s'assure que chaque automatisation Mial tourne comme
+                            une horloge, avec la précision de l'aéronautique appliquée à vos processus métiers.
+                        </p>
+                        <div style="margin-top: 20px;">
+                            <a href="https://www.linkedin.com/in/hugo-duvivier-2901192b8/" target="_blank"
+                                class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                                    <rect x="2" y="9" width="4" height="12" />
+                                    <circle cx="4" cy="4" r="2" />
+                                </svg>
+                                LinkedIn
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Clément -->
+                <article class="team-member glass-jelly reveal-fx">
+                    <div class="member-photo-wrapper">
+                        <img src="assets/team/clement.png" alt="Clément Romain" class="member-photo">
+                    </div>
+                    <div class="member-info">
+                        <h2 class="member-name">Clément Romain</h2>
+                        <span class="member-role">Responsable Commercial & Associé</span>
+                        <p class="member-bio">
+                            Diplômé LSM et gérant d'une société dans le bâtiment (pose de châssis).
+                            <br><br>
+                            Clément nous permet d'avoir "les pieds sur terre". Il connaît par cœur la réalité du
+                            terrain, les urgences chantiers et la difficulté de gérer l'administratif quand on est sur
+                            la route. Sa double casquette commerciale et entrepreneur du bâtiment garantit que Mial
+                            répond aux VRAIS problèmes des PME, pas juste à des fantasmes d'ingénieurs.
+                        </p>
+                        <div style="margin-top: 20px;">
+                            <a href="https://www.linkedin.com/in/cl%C3%A9ment-romain-39ba181a5/" target="_blank"
+                                class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                                    <rect x="2" y="9" width="4" height="12" />
+                                    <circle cx="4" cy="4" r="2" />
+                                </svg>
+                                LinkedIn
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div>
+                <div class="brand">
+                    <img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28"
+                        height="28">
+                    <span class="brand-text">mial</span>
+                </div>
+                <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données privées.</p>
+            </div>
+            <div>
+                <h4>Produit</h4>
+                <ul>
+                    <li><a href="index.html#how">Comment ça marche</a></li>
+                    <li><a href="index.html#modes">Modes</a></li>
+                    <li><a href="index.html#pricing">Tarifs</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Société</h4>
+                <ul>
+                    <li><a href="team.html">Équipe</a></li>
+                    <li><a href="index.html#trust">Sécurité</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                    <li class="muted">© <span id="year"></span> mial</li>
+                </ul>
+            </div>
+            <div class="right">
+                <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial"> </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
