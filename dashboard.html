@@ -131,18 +131,26 @@
             }
 
             tbody.innerHTML = profiles.map(p => {
-                const statusClass = p.is_active ? 'status-active' : 'status-inactive';
-                const statusText = p.is_active ? 'Actif' : 'Inactif';
-                const debugBadge = p.debug_mode ? '<span style="color:orange; font-size:0.7rem; margin-left:4px;">(DEBUG)</span>' : '';
+                const status = (p.status || '—');
+                const emailSource = (p.account_email || '—');
+                const timezone = (p.timezone || '—');
+                const heures = `${p.heure_debut || '—'} - ${p.heure_fin || '—'}`;
+                const jours = `${p.jours_arriere_start || '—'} → ${p.jours_arriere_end || '—'}`;
+                const debugBadge = (p.debug_mode === true) ? '<span style="color:orange; font-size:0.7rem; margin-left:4px;">(DEBUG)</span>' : '';
+
+                // Note: user requested fallback for status class logic too, but "status" is likely string
+                // We keep simple styling checks or default to inactive
+                const isStatusActive = (status === 'active' || status === 'ACTIF' || p.is_active === true);
+                const statusClass = isStatusActive ? 'status-active' : 'status-inactive';
 
                 return `
           <tr>
             <td style="font-family:monospace; color:var(--muted);">${p.id}</td>
-            <td><strong>${p.email_account}</strong> ${debugBadge}</td>
-            <td>${p.timezone}</td>
-            <td>${p.start_time_str} - ${p.end_time_str}</td>
-            <td>${p.lookback_days_start}j - ${p.lookback_days_end}j</td>
-            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td><strong>${emailSource}</strong> ${debugBadge}</td>
+            <td>${timezone}</td>
+            <td>${heures}</td>
+            <td>${jours}</td>
+            <td><span class="status-badge ${statusClass}">${status}</span></td>
             <td>
               <div class="action-btn-group">
                 <button class="btn btn-ghost btn-small" onclick="editSchedule('${p.id}')">Horaires</button>
