@@ -10,6 +10,34 @@
     <link rel="stylesheet" href="style.css" />
     <meta name="theme-color" content="#1fb6ff">
 </head>
+<style>
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper input {
+        padding-right: 40px;
+    }
+
+    .eye-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .eye-btn:hover {
+        color: var(--ink);
+    }
+</style>
 
 <body>
 
@@ -45,8 +73,37 @@
                         <input type="email" name="email" required placeholder="votre@email.com" />
                     </label>
                     <label>Mot de passe
-                        <input type="password" name="password" required placeholder="••••••••" />
+                        <div class="input-wrapper">
+                            <input type="password" id="password" name="password" required placeholder="••••••••" />
+                            <button type="button" class="eye-btn" onclick="togglePwd('password')">
+                                <!-- Eye Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="muted" style="font-size:0.75rem; margin-top:4px;">Min 8 car., 1 maj, 1 min, 1
+                            chiffre, 1 spécial.</div>
                     </label>
+
+                    <label>Confirmer mot de passe
+                        <div class="input-wrapper">
+                            <input type="password" id="confirm_password" name="confirm_password" required
+                                placeholder="••••••••" />
+                            <button type="button" class="eye-btn" onclick="togglePwd('confirm_password')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </label>
+
                     <label>Code d'invitation
                         <input type="text" name="invite_code" placeholder="Code optionnel" />
                     </label>
@@ -74,6 +131,12 @@
 
     <script src="main.js"></script>
     <script>
+        function togglePwd(id) {
+            const inp = document.getElementById(id);
+            if (inp.type === 'password') inp.type = 'text';
+            else inp.type = 'password';
+        }
+
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -83,10 +146,25 @@
 
             const email = (e.target.email.value || '').trim().toLowerCase();
             const password = e.target.password.value || '';
+            const confirm = e.target.confirm_password.value || '';
             const inviteRaw = (e.target.invite_code.value || '').trim();
 
+            // 1. Validation JS
+            if (password !== confirm) {
+                errorDiv.textContent = "Les mots de passe ne correspondent pas.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const strongPwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+            if (!strongPwd.test(password)) {
+                errorDiv.textContent = "Le mot de passe doit contenir 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre et 1 caractère spécial.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
             const payload = { email, password };
-            if (inviteRaw) payload.invite_code = inviteRaw; // IMPORTANT: seulement si non vide
+            if (inviteRaw) payload.invite_code = inviteRaw;
 
             try {
                 const res = await fetch('/portal-api/auth/register', {
@@ -100,7 +178,8 @@
                 try { data = await res.json(); } catch (e) { }
 
                 if (res.ok) {
-                    window.location.href = '/dashboard.html';
+                    // Redirect to Onboarding instead of Dashboard
+                    window.location.href = 'onboarding.html';
                     return;
                 }
 

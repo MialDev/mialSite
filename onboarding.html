@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion Messagerie — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            padding-right: 40px;
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eye-btn:hover {
+            color: var(--ink);
+        }
+
+        /* Tabs styling adjustment if needed, but switcher-glass in style.css should work */
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="accueil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <nav class="nav-links">
+                <a href="accueil.html">Accueil</a>
+                <a href="crm.html">CRM</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px; min-height: 80vh; display: flex; align-items: center;">
+        <div class="container" style="max-width: 520px;">
+            <div class="card glass-static">
+                <div class="center" style="margin-bottom: 24px;">
+                    <h2>Connecter votre messagerie</h2>
+                    <p class="muted">Autorisez mial à accéder à vos emails pour générer les récaps.</p>
+                </div>
+
+                <!-- Provider Tabs -->
+                <div style="margin-bottom: 24px;">
+                    <fieldset class="switcher-glass" id="provider-tabs">
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="providerTab" value="outlook"
+                                checked />
+                            <span class="switcher-glass__text">Outlook</span>
+                        </label>
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="providerTab" value="gmail" />
+                            <span class="switcher-glass__text">Gmail</span>
+                        </label>
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="providerTab" value="other" />
+                            <span class="switcher-glass__text">Autre</span>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <form id="onboarding-form" class="form">
+
+                    <!-- Hidden Select as requested, or valid UI replacement. User said "formulaire : provider (select)". 
+                         I will make a select but maybe hide it and sync with tabs, or just show it if user prefers explicit control.
+                         Tabs are better UX. I'll sync tabs to a hidden input or select. -->
+                    <div style="display:none;">
+                        <label>Provider</label>
+                        <select id="f-provider" name="provider">
+                            <option value="outlook">Outlook</option>
+                            <option value="gmail">Gmail</option>
+                            <option value="other">Autre (IMAP)</option>
+                        </select>
+                    </div>
+
+                    <label>Email
+                        <input type="email" name="email" id="f-email" required placeholder="nom@entreprise.com" />
+                    </label>
+
+                    <label>Mot de passe d'application / Secret
+                        <div class="input-wrapper">
+                            <input type="password" name="secret" id="f-secret" required placeholder="••••••••••••" />
+                            <button type="button" class="eye-btn" onclick="togglePwd('f-secret')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="muted" style="font-size:0.75rem; margin-top:4px;">
+                            Utilisez un mot de passe d'application pour Gmail/Outlook.
+                        </div>
+                    </label>
+
+                    <div id="error-message" style="color: #ef4444; font-size: 0.9rem; margin-top: 8px; display: none;">
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-primary w-full">Connecter</button>
+                    </div>
+
+                    <div class="center" style="margin-top: 20px;">
+                        <a href="dashboard.html?connected=false" class="muted"
+                            style="text-decoration: underline; font-size: 0.9rem;">Passer cette étape (Configuration
+                            plus tard)</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Info block -->
+            <div class="center" style="margin-top:24px; color:var(--muted); font-size:0.85rem; padding:0 20px;">
+                <p>Vos identifiants sont chiffrés et stockés de manière sécurisée. <a href="security.html"
+                        style="color:var(--blue);">En savoir plus</a>.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted" style="font-size: 0.85rem;">© 2025 mial — Inbox IA</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Toggle Password
+        function togglePwd(id) {
+            const inp = document.getElementById(id);
+            if (inp.type === 'password') inp.type = 'text';
+            else inp.type = 'password';
+        }
+
+        // Tabs Logic
+        const tabs = document.getElementsByName('providerTab');
+        const select = document.getElementById('f-provider');
+
+        for (const t of tabs) {
+            t.addEventListener('change', () => {
+                if (t.checked) select.value = t.value;
+            });
+        }
+
+        // Form Submit
+        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errDiv = document.getElementById('error-message');
+            errDiv.style.display = 'none';
+
+            const provider = select.value;
+            const email = document.getElementById('f-email').value.trim();
+            const secret = document.getElementById('f-secret').value.trim();
+
+            if (!email || !secret) return;
+
+            const payload = {
+                provider,
+                email,
+                secret
+            };
+
+            try {
+                const res = await fetch('/portal-api/mailbox/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                let data = {};
+                try { data = await res.json(); } catch (e) { }
+                errDiv.textContent = data.detail || `Erreur connexion (${res.status})`;
+                errDiv.style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                errDiv.textContent = "Erreur réseau.";
+                errDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

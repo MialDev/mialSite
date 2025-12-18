@@ -154,6 +154,19 @@
                         </label>
                     </div>
 
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px;">
+                        <div>
+                            <div style="font-weight:600;">Status Actif</div>
+                            <div class="muted" style="font-size:0.9rem;">Désactiver pour mettre en pause</div>
+                        </div>
+
+                        <label class="toggle">
+                            <input id="f-status" type="checkbox" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
                     <div style="display:flex; gap:10px; margin-top:16px;">
                         <button type="button" class="btn btn-primary" id="save-schedule">Enregistrer</button>
                         <button type="button" class="btn btn-ghost" id="reset-schedule">Réinitialiser</button>
@@ -334,6 +347,10 @@
             document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
             document.getElementById('f-debug').checked = (p.debug_mode === true);
 
+            // Status Toggle (Active/Inactive)
+            const st = String(p.status ?? '').toLowerCase();
+            document.getElementById('f-status').checked = (st === 'active');
+
             // ADMIN LOGIC
             const isAdmin = (currentUserRole === 'admin');
             const assignBlock = document.getElementById('admin-assign-block');
@@ -400,6 +417,7 @@
             const daysStart = parseInt(document.getElementById('f-days-start').value, 10);
             const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
             const debugMode = document.getElementById('f-debug').checked;
+            const statusActive = document.getElementById('f-status').checked;
 
             if (!tz) {
                 errDiv.textContent = "La timezone est requise.";
@@ -435,7 +453,8 @@
                 timezone: tz,
                 jours_arriere_start: daysStart,
                 jours_arriere_end: daysEnd,
-                debug_mode: debugMode
+                debug_mode: debugMode,
+                status: statusActive ? 'Active' : 'Inactive'
             };
 
             try {
