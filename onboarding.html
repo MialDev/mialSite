@@ -83,6 +83,36 @@
                     </fieldset>
                 </div>
 
+                <!-- Instructions Blocks -->
+                <div id="instr-outlook" class="instruction-block"
+                    style="margin-bottom:20px; font-size:0.9rem; color:var(--muted); background:rgba(255,255,255,0.6); padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.2);">
+                    <strong>Outlook :</strong>
+                    <ul style="margin:8px 0 0 18px; padding:0;">
+                        <li>Activez la vérification en deux étapes (2FA) sur votre compte Microsoft.</li>
+                        <li>Allez dans <em>Sécurité > Options de sécurité avancées</em>.</li>
+                        <li>Créez un <strong>Mot de passe d'application</strong>.</li>
+                        <li>Utilisez ce mot de passe ci-dessous (pas votre mot de passe habituel).</li>
+                    </ul>
+                </div>
+
+                <div id="instr-gmail" class="instruction-block"
+                    style="display:none; margin-bottom:20px; font-size:0.9rem; color:var(--muted); background:rgba(255,255,255,0.6); padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.2);">
+                    <strong>Gmail :</strong>
+                    <ul style="margin:8px 0 0 18px; padding:0;">
+                        <li>Activez la <strong>Validation en deux étapes</strong> sur votre compte Google.</li>
+                        <li>Allez dans <em>Gérer votre compte Google > Sécurité</em>.</li>
+                        <li>Cherchez "Mots de passe d'application" (barre de recherche) ou en bas de page.</li>
+                        <li>Générez un mot de passe pour "Messagerie" / "Autre". Copiez la clé de 16 caractères.</li>
+                    </ul>
+                </div>
+
+                <div id="instr-other" class="instruction-block"
+                    style="display:none; margin-bottom:20px; font-size:0.9rem; color:var(--muted); background:rgba(255,255,255,0.6); padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.2);">
+                    <strong>Autre (IMAP) :</strong>
+                    <p style="margin-top:4px;">Généralement, vous devez activer l'accès IMAP et générer un mot de passe
+                        spécifique si le 2FA est actif.</p>
+                </div>
+
                 <form id="onboarding-form" class="form">
 
                     <!-- Hidden Select as requested, or valid UI replacement. User said "formulaire : provider (select)". 
@@ -162,8 +192,21 @@
 
         for (const t of tabs) {
             t.addEventListener('change', () => {
-                if (t.checked) select.value = t.value;
+                if (t.checked) {
+                    select.value = t.value;
+                    updateInstructions(t.value);
+                }
             });
+        }
+
+        function updateInstructions(val) {
+            document.getElementById('instr-outlook').style.display = 'none';
+            document.getElementById('instr-gmail').style.display = 'none';
+            document.getElementById('instr-other').style.display = 'none';
+
+            if (val === 'outlook') document.getElementById('instr-outlook').style.display = 'block';
+            if (val === 'gmail') document.getElementById('instr-gmail').style.display = 'block';
+            if (val === 'other') document.getElementById('instr-other').style.display = 'block';
         }
 
         // Form Submit

@@ -118,64 +118,69 @@
                     <div id="assign-status" style="margin-top:8px; font-size:0.9rem; color:var(--muted);"></div>
                 </div>
 
-                <form id="form-schedule" class="form" style="margin-top:16px;">
-                    <label>Timezone
-                        <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
-                    </label>
+                <!-- Single Unified Form split into Views -->
+                <form id="form-settings" class="form" style="margin-top:16px;">
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <label>Heure début
-                            <input id="f-start" type="time" step="1" />
+                    <!-- View: Schedule -->
+                    <div id="view-schedule">
+                        <label>Timezone
+                            <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
                         </label>
-                        <label>Heure fin
-                            <input id="f-end" type="time" step="1" />
-                        </label>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <label>Heure début
+                                <input id="f-start" type="time" step="1" />
+                            </label>
+                            <label>Heure fin
+                                <input id="f-end" type="time" step="1" />
+                            </label>
+                        </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <label>Jours arrière START
-                            <input id="f-days-start" type="number" min="0" max="30" placeholder="1" />
-                        </label>
-                        <label>Jours arrière END
-                            <input id="f-days-end" type="number" min="0" max="30" placeholder="1" />
-                        </label>
-                    </div>
-
-                    <div
-                        style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px;">
-                        <div>
-                            <div style="font-weight:600;">Debug mode</div>
-                            <div class="muted" style="font-size:0.9rem;">Active les logs / mode test</div>
+                    <!-- View: Filters -->
+                    <div id="view-filters" style="display:none;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <label>Jours arrière START
+                                <input id="f-days-start" type="number" min="0" max="30" placeholder="1" />
+                            </label>
+                            <label>Jours arrière END
+                                <input id="f-days-end" type="number" min="0" max="30" placeholder="1" />
+                            </label>
                         </div>
 
-                        <label class="toggle">
-                            <input id="f-debug" type="checkbox" />
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px;">
+                            <div>
+                                <div style="font-weight:600;">Debug mode</div>
+                                <div class="muted" style="font-size:0.9rem;">Active les logs / mode test</div>
+                            </div>
+
+                            <label class="toggle">
+                                <input id="f-debug" type="checkbox" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div
-                        style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px;">
-                        <div>
-                            <div style="font-weight:600;">Status Actif</div>
-                            <div class="muted" style="font-size:0.9rem;">Désactiver pour mettre en pause</div>
-                        </div>
+                    <!-- Common: Status (Always visible or in Schedule?) User didn't specify, but let's keep it common or in Schedule -->
+                    <!-- Let's put Status in Schedule as it's a "general" setting, or maybe just always visible at bottom -->
+                    <div style="border-top:1px solid rgba(148,163,184,0.3); margin:16px 0; padding-top:16px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                            <div>
+                                <div style="font-weight:600;">Status Actif</div>
+                                <div class="muted" style="font-size:0.9rem;">Désactiver pour mettre en pause</div>
+                            </div>
 
-                        <label class="toggle">
-                            <input id="f-status" type="checkbox" />
-                            <span class="toggle-slider"></span>
-                        </label>
+                            <label class="toggle">
+                                <input id="f-status" type="checkbox" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
 
                     <div style="display:flex; gap:10px; margin-top:16px;">
-                        <button type="button" class="btn btn-primary" id="save-schedule">Enregistrer</button>
-                        <button type="button" class="btn btn-ghost" id="reset-schedule">Réinitialiser</button>
+                        <button type="button" class="btn btn-primary" id="save-settings">Enregistrer</button>
                     </div>
-                </form>
-
-                <form id="form-filters" class="form" style="margin-top:16px; display:none;">
-                    <div class="muted">Filtres: le formulaire est actuellement combiné avec les horaires pour simplifier
-                        l'édition.</div>
                 </form>
             </section>
 
@@ -402,7 +407,26 @@
         // ----------------------------------------------------
         // SAVE SETTINGS (Unified)
         // ----------------------------------------------------
-        document.getElementById('save-schedule').addEventListener('click', async () => {
+        // Tab Logic for Editor
+        const tabRadios = document.getElementsByName('editTab');
+        for (const r of tabRadios) {
+            r.addEventListener('change', () => {
+                if (r.checked) {
+                    if (r.value === 'filters') {
+                        document.getElementById('view-filters').style.display = 'block';
+                        document.getElementById('view-schedule').style.display = 'none';
+                    } else {
+                        document.getElementById('view-filters').style.display = 'none';
+                        document.getElementById('view-schedule').style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // SAVE SETTINGS (Unified)
+        // ----------------------------------------------------
+        document.getElementById('save-settings').addEventListener('click', async () => {
             if (!currentProfileId) return;
 
             const errDiv = document.getElementById('editor-error');
