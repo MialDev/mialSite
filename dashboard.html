@@ -80,7 +80,11 @@
                         <h3 style="margin:0;">Paramètres du profil</h3>
                         <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
                     </div>
-                    <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-ghost btn-small" id="btn-delete-profile"
+                            style="color:#ef4444; border-color:#ef4444; display:none;">Supprimer</button>
+                        <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+                    </div>
                 </div>
 
                 <div style="margin-top:14px;">
@@ -98,6 +102,21 @@
 
                 <div id="editor-error" style="display:none; margin-top:12px; color:#ef4444; font-size:0.95rem;"></div>
                 <div id="editor-ok" style="display:none; margin-top:12px; color:#16a34a; font-size:0.95rem;"></div>
+
+                <!-- Admin Only: Assignment -->
+                <div id="admin-assign-block"
+                    style="display:none; margin-top:16px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
+                    <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation</h4>
+                    <div style="display:flex; gap:8px; align-items:flex-end;">
+                        <label style="flex:1;">Email utilisateur
+                            <input id="f-assign-email" type="email" placeholder="client@example.com" />
+                        </label>
+                        <button class="btn btn-primary btn-small" id="btn-assign">Assigner</button>
+                        <button class="btn btn-ghost btn-small" id="btn-unassign"
+                            style="display:none;">Désassigner</button>
+                    </div>
+                    <div id="assign-status" style="margin-top:8px; font-size:0.9rem; color:var(--muted);"></div>
+                </div>
 
                 <form id="form-schedule" class="form" style="margin-top:16px;">
                     <label>Timezone
@@ -226,15 +245,21 @@
                 const statusRaw = (p.status ?? '—');
                 const status = escapeHtml(statusRaw);
 
-                // IMPORTANT: account_email est supprimé par le backend pour les non-admin
-                // fallback propre : recap_recipient (au moins ça affiche un email utile)
-                const emailSource = escapeHtml(p.account_email ?? p.recap_recipient ?? '—');
+                // Admin sees account_email or assigned_to, User sees their own data
+                // If we are admin (currentUserRole === 'admin'), we might want to see who it is assigned to.
+                // But the column says "Email source" (mailbox to recap).
+                // Let's stick to showing: p.account_email (if admin) ?? p.recap_recipient
+                // And for non-admins, p.account_email is nuked by backend anyway.
+                let emailSource = escapeHtml(p.account_email ?? p.recap_recipient ?? '—');
+
+                // If assigned_to_email is present (admin view mostly), maybe show it?
+                // User requirement: "ne pas afficher account_email... afficher recap_recipient" for user mode.
+                // Backend removes account_email for user. So logic holds.
 
                 const timezone = escapeHtml(p.timezone ?? '—');
 
                 const heures = `${escapeHtml(v(p.heure_debut))} - ${escapeHtml(v(p.heure_fin))}`;
 
-                // ICI: utiliser ?? et pas || (sinon 0 devient "—")
                 const jours = `${escapeHtml(v(p.jours_arriere_start ?? '—'))} → ${escapeHtml(v(p.jours_arriere_end ?? '—'))}`;
 
                 const debugBadge = (p.debug_mode === true)
@@ -254,8 +279,7 @@
               <td><span class="status-badge ${statusClass}">${status}</span></td>
               <td>
                 <div class="action-btn-group">
-                  <button class="btn btn-ghost btn-small" onclick="editSchedule('${escapeHtml(p.id)}')">Horaires</button>
-                  <button class="btn btn-ghost btn-small" onclick="editFilters('${escapeHtml(p.id)}')">Filtres</button>
+                  <button class="btn btn-ghost btn-small" onclick="editSettings('${escapeHtml(p.id)}')">Paramètres</button>
                 </div>
               </td>
             </tr>
@@ -266,6 +290,7 @@
         // 4. Actions & Editor Logic
 
         let currentProfileId = null;
+        let currentUserRole = null; // 'admin' or 'user'
 
         function normalizeTimeToHHMMSS(t) {
             const s = String(t ?? '').trim();
@@ -279,12 +304,10 @@
         }
 
         // Open functions now map to the editor
-        function editSchedule(id) {
+        // We removed separate editSchedule/editFilters buttons in favor of "Paramètres"
+        // But we keep the function for backward compatibility if needed, or mapping "Paramètres" to openEditor
+        function editSettings(id) {
             openEditor(id, 'schedule');
-        }
-
-        function editFilters(id) {
-            openEditor(id, 'filters');
         }
 
         function openEditor(id, tab) {
@@ -295,8 +318,10 @@
             document.getElementById('edit-profile-id').textContent = id;
 
             // Reset status messages
-            document.getElementById('editor-error').style.display = 'none';
-            document.getElementById('editor-ok').style.display = 'none';
+            const errDiv = document.getElementById('editor-error');
+            const okDiv = document.getElementById('editor-ok');
+            errDiv.style.display = 'none';
+            okDiv.style.display = 'none';
 
             // Show Editor
             document.getElementById('profile-editor').style.display = 'block';
@@ -309,25 +334,41 @@
             document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
             document.getElementById('f-debug').checked = (p.debug_mode === true);
 
-            // Select Tab (UI only for now since we merged fields into one form - user asked for separation but provided combined fields in HTML A example... 
-            // Wait, looking at the user HTML request: 
-            // <form id="form-schedule"> contains EVERYTHING: timezone, start/end, days-start/end, debug.
-            // <form id="form-filters"> is empty/placeholder.
-            // So we just simulate tab switching to show/hide sections, OR we just show everything in 'schedule' tab as the user pasted code does.
-            // But wait, the user's HTML shows form-schedule having filters fields (days-start, days-end) too? 
-            // Yes: "Jours arrière START" is inside form-schedule in the user's snippet.
-            // So practically, "Horaires" tab shows all fields in the provided snippet.
-            // Let's implement the tab switcher to be cleaner if we want to separate, but adhering to the user snippet:
+            // ADMIN LOGIC
+            const isAdmin = (currentUserRole === 'admin');
+            const assignBlock = document.getElementById('admin-assign-block');
+            const deleteBtn = document.getElementById('btn-delete-profile');
 
-            // Auto-select the requested radio
+            if (isAdmin) {
+                assignBlock.style.display = 'block';
+                deleteBtn.style.display = 'block';
+
+                // Populate Assignment
+                const assignEmailInput = document.getElementById('f-assign-email');
+                const unassignBtn = document.getElementById('btn-unassign');
+                const assignStatus = document.getElementById('assign-status');
+
+                if (p.assigned_to_email) {
+                    assignEmailInput.value = p.assigned_to_email;
+                    unassignBtn.style.display = 'inline-block';
+                    assignStatus.textContent = `Assigné à : ${p.assigned_to_email}`;
+                } else {
+                    assignEmailInput.value = '';
+                    unassignBtn.style.display = 'none';
+                    assignStatus.textContent = "Non assigné";
+                }
+
+            } else {
+                assignBlock.style.display = 'none';
+                deleteBtn.style.display = 'none';
+            }
+
+            // Tabs
             const radios = document.getElementsByName('editTab');
             for (const r of radios) {
                 if (r.value === tab) r.checked = true;
             }
 
-            // Logic to switch forms if they were split, but currently fields are in form-schedule.
-            // Users snippet puts ALL fields in form-schedule. So tabs might just be visual or for future.
-            // We will scroll to editor
             document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -341,11 +382,9 @@
             if (currentProfileId) openEditor(currentProfileId, 'schedule');
         });
 
-        // Handle Tab Switching
-        // Since the user put all inputs in form-schedule, tabs are mostly decorative or for future separation.
-        // We can leave them as is.
-
-        // SAVE LOGIC
+        // ----------------------------------------------------
+        // SAVE SETTINGS (Unified)
+        // ----------------------------------------------------
         document.getElementById('save-schedule').addEventListener('click', async () => {
             if (!currentProfileId) return;
 
@@ -354,7 +393,7 @@
             errDiv.style.display = 'none';
             okDiv.style.display = 'none';
 
-            // 1. Gather & Validate
+            // 1. Validate
             const tz = document.getElementById('f-timezone').value.trim();
             const rawStart = document.getElementById('f-start').value;
             const rawEnd = document.getElementById('f-end').value;
@@ -386,59 +425,30 @@
             if (daysStart > daysEnd) {
                 errDiv.textContent = "Attention: Jours arrière START > END ?";
                 errDiv.style.display = 'block';
-                // We let it pass or block? User said "daysStart<=daysEnd" in requirements text but didn't code it. 
-                // We will block as it implies a range.
                 return;
             }
 
-            // 2. Build Payloads
-            // API separates schedule and filters updates. We have one save button.
-            // We should call BOTH endpoints if needed, or arguably the user wants "save-schedule" to save schedule fields 
-            // and a "save-filters" to save filters.
-
-            // HOWEVER, the user's HTML snippet only has ONE visible form "form-schedule" containing ALL fields (timezone, hours, days, debug).
-            // And ONE save button: id="save-schedule".
-            // So we must trigger updates to BOTH endpoints: 
-            // 1. PUT /profiles/{id}/schedule (start, end, timezone)
-            // 2. PUT /profiles/{id}/filters (days_start, days_end, debug)
+            // 2. Build Unified Payload
+            const payload = {
+                heure_debut: cleanStart,
+                heure_fin: cleanEnd,
+                timezone: tz,
+                jours_arriere_start: daysStart,
+                jours_arriere_end: daysEnd,
+                debug_mode: debugMode
+            };
 
             try {
-                // Update Schedule
-                const payloadSchedule = {
-                    heure_debut: cleanStart,
-                    heure_fin: cleanEnd,
-                    timezone: tz
-                };
-
-                const r1 = await fetch(`/portal-api/profiles/${currentProfileId}/schedule`, {
+                const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payloadSchedule),
+                    body: JSON.stringify(payload),
                     credentials: 'include'
                 });
 
-                if (!r1.ok) {
-                    const t = await r1.text();
-                    throw new Error(`Schedule API ${r1.status}: ${t}`);
-                }
-
-                // Update Filters
-                const payloadFilters = {
-                    jours_arriere_start: daysStart,
-                    jours_arriere_end: daysEnd,
-                    debug_mode: debugMode
-                };
-
-                const r2 = await fetch(`/portal-api/profiles/${currentProfileId}/filters`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payloadFilters),
-                    credentials: 'include'
-                });
-
-                if (!r2.ok) {
-                    const t = await r2.text();
-                    throw new Error(`Filters API ${r2.status}: ${t}`);
+                if (!res.ok) {
+                    const t = await res.text();
+                    throw new Error(`API ${res.status}: ${t}`);
                 }
 
                 // Success
@@ -450,10 +460,115 @@
 
             } catch (e) {
                 console.error(e);
-                errDiv.textContent = e.message;
+                errDiv.textContent = "Erreur: " + e.message;
                 errDiv.style.display = 'block';
             }
         });
+
+        // ----------------------------------------------------
+        // ADMIN ACTIONS: DELETE
+        // ----------------------------------------------------
+        const btnDelete = document.getElementById('btn-delete-profile');
+        if (btnDelete) {
+            btnDelete.addEventListener('click', async () => {
+                if (!currentProfileId) return;
+                if (!confirm("Êtes-vous sûr de vouloir SUPPRIMER ce profil ? Cette action est irréversible.")) return;
+
+                try {
+                    const res = await fetch(`/portal-api/profiles/${currentProfileId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) {
+                        const t = await res.text();
+                        throw new Error(`Delete failed (${res.status}): ${t}`);
+                    }
+
+                    // Success
+                    document.getElementById('profile-editor').style.display = 'none';
+                    currentProfileId = null;
+                    await fetchProfiles();
+                    alert("Profil supprimé.");
+
+                } catch (e) {
+                    alert("Erreur suppression: " + e.message);
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // ADMIN ACTIONS: ASSIGN / UNASSIGN
+        // ----------------------------------------------------
+        const btnAssign = document.getElementById('btn-assign');
+        if (btnAssign) {
+            btnAssign.addEventListener('click', async () => {
+                if (!currentProfileId) return;
+                const email = document.getElementById('f-assign-email').value.trim();
+                if (!email) {
+                    alert("Veuillez entrer un email.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/portal-api/admin/assign', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            profile_id: currentProfileId,
+                            user_email: email
+                        }),
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) {
+                        const t = await res.text();
+                        if (res.status === 400) throw new Error("Utilisateur introuvable ou email invalide.");
+                        if (res.status === 409) throw new Error("Déjà assigné.");
+                        throw new Error(`Assign Error (${res.status}): ${t}`);
+                    }
+
+                    // Success -> Refresh to see "assigned_to_email" updated
+                    await fetchProfiles();
+
+                    // Re-open editor to update state visually (or just rely on fetchProfiles -> openEditor call? 
+                    // Simpler: reload profiles, then re-open editor for same ID
+                    setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
+                    alert("Assignation réussie.");
+
+                } catch (e) {
+                    alert(e.message);
+                }
+            });
+        }
+
+        const btnUnassign = document.getElementById('btn-unassign');
+        if (btnUnassign) {
+            btnUnassign.addEventListener('click', async () => {
+                if (!currentProfileId) return;
+                if (!confirm("Retirer l'assignation ?")) return;
+
+                try {
+                    const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) {
+                        const t = await res.text();
+                        throw new Error(`Unassign Error (${res.status}): ${t}`);
+                    }
+
+                    await fetchProfiles();
+                    setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
+                    alert("Désassigné.");
+
+                } catch (e) {
+                    alert(e.message);
+                }
+            });
+        }
+
 
         // 5. Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -468,7 +583,36 @@
         // Init
         document.addEventListener('DOMContentLoaded', initDashboard);
 
+        // UPDATE initDashboard to store role
+        // We override the previous initDashboard to capture role
+        const oldInit = initDashboard;
+        initDashboard = async function () {
+            try {
+                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                if (res.status === 401) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Auth fetch error');
+
+                const user = await res.json();
+
+                // Store Role Global
+                currentUserRole = user.role; // 'admin' or 'user'
+                console.log("Logged as:", user.email, "Role:", currentUserRole);
+
+                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
+
+                // Load Profiles
+                fetchProfiles();
+
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
     </script>
 </body>
 
 </html>
+```
