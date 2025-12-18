@@ -76,33 +76,37 @@
     <script>
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const errorDiv = document.getElementById('error-message');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
 
-            const email = e.target.email.value;
-            const password = e.target.password.value;
-            const invite_code = e.target.invite_code.value;
+            const email = (e.target.email.value || '').trim().toLowerCase();
+            const password = e.target.password.value || '';
+            const inviteRaw = (e.target.invite_code.value || '').trim();
+
+            const payload = { email, password };
+            if (inviteRaw) payload.invite_code = inviteRaw; // IMPORTANT: seulement si non vide
 
             try {
                 const res = await fetch('/portal-api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ email, password, invite_code })
+                    body: JSON.stringify(payload)
                 });
+
+                let data = {};
+                try { data = await res.json(); } catch (e) { }
 
                 if (res.ok) {
                     window.location.href = '/dashboard.html';
-                } else {
-                    try {
-                        const data = await res.json();
-                        errorDiv.textContent = data.detail || 'Erreur d\'inscription';
-                    } catch (err) {
-                        errorDiv.textContent = 'Erreur inconnue (' + res.status + ')';
-                    }
-                    errorDiv.style.display = 'block';
+                    return;
                 }
+
+                errorDiv.textContent = data.detail || `Erreur (${res.status})`;
+                errorDiv.style.display = 'block';
+
             } catch (err) {
                 console.error(err);
                 errorDiv.textContent = 'Impossible de contacter le serveur';
