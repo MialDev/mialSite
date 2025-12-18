@@ -87,22 +87,7 @@
                     </div>
                 </div>
 
-                <div style="margin-top:14px;" class="pricing-switch-wrapper">
-                    <fieldset class="switcher-glass" id="editor-tabs">
-                        <label class="switcher-glass__option">
-                            <input class="switcher-glass__input" type="radio" name="editTab" value="schedule" checked />
-                            <span class="switcher-glass__text">Horaires</span>
-                        </label>
-                        <label class="switcher-glass__option">
-                            <input class="switcher-glass__input" type="radio" name="editTab" value="filters" />
-                            <span class="switcher-glass__text">Filtres</span>
-                        </label>
-                        <label class="switcher-glass__option">
-                            <input class="switcher-glass__input" type="radio" name="editTab" value="recap" />
-                            <span class="switcher-glass__text">Options</span>
-                        </label>
-                    </fieldset>
-                </div>
+
 
                 <div id="editor-error" style="display:none; margin-top:12px; color:#ef4444; font-size:0.95rem;"></div>
                 <div id="editor-ok" style="display:none; margin-top:12px; color:#16a34a; font-size:0.95rem;"></div>
@@ -122,11 +107,14 @@
                     <div id="assign-status" style="margin-top:8px; font-size:0.9rem; color:var(--muted);"></div>
                 </div>
 
-                <!-- Single Unified Form split into Views -->
+                <!-- Unified Form (All Visible) -->
                 <form id="form-settings" class="form" style="margin-top:16px;">
 
-                    <!-- View: Schedule -->
-                    <div id="view-schedule">
+                    <!-- Section: Horaires -->
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Horaires
+                        </h4>
+
                         <label>Timezone
                             <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
                         </label>
@@ -141,8 +129,10 @@
                         </div>
                     </div>
 
-                    <!-- View: Filters -->
-                    <div id="view-filters" style="display:none;">
+                    <!-- Section: Filtres -->
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Filtres &
+                            Historique</h4>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                             <label>Jours arrière START
                                 <input id="f-days-start" type="number" min="0" max="30" placeholder="1" />
@@ -166,8 +156,10 @@
                         </div>
                     </div>
 
-                    <!-- View: Recap Options -->
-                    <div id="view-recap" style="display:none;">
+                    <!-- Section: Options Recap -->
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Options
+                            Recap</h4>
 
                         <div
                             style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
@@ -234,8 +226,7 @@
                         </label>
                     </div>
 
-                    <!-- Common: Status (Always visible or in Schedule?) User didn't specify, but let's keep it common or in Schedule -->
-                    <!-- Let's put Status in Schedule as it's a "general" setting, or maybe just always visible at bottom -->
+                    <!-- Common: Status -->
                     <div style="border-top:1px solid rgba(148,163,184,0.3); margin:16px 0; padding-top:16px;">
                         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                             <div>
@@ -394,13 +385,11 @@
         }
 
         // Open functions now map to the editor
-        // We removed separate editSchedule/editFilters buttons in favor of "Paramètres"
-        // But we keep the function for backward compatibility if needed, or mapping "Paramètres" to openEditor
         function editSettings(id) {
-            openEditor(id, 'schedule');
+            openEditor(id);
         }
 
-        function openEditor(id, tab) {
+        function openEditor(id) {
             const p = PROFILES_BY_ID.get(id);
             if (!p) return;
 
@@ -466,15 +455,6 @@
                 deleteBtn.style.display = 'none';
             }
 
-            // Tabs
-            const radios = document.getElementsByName('editTab');
-            for (const r of radios) {
-                if (r.value === tab) {
-                    r.checked = true;
-                    updateEditorView(tab); // Trigger view update manually
-                }
-            }
-
             document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -485,37 +465,8 @@
         });
 
         document.getElementById('reset-schedule').addEventListener('click', () => {
-            if (currentProfileId) openEditor(currentProfileId, 'schedule');
+            if (currentProfileId) openEditor(currentProfileId);
         });
-
-        // ----------------------------------------------------
-        // SAVE SETTINGS (Unified)
-        // ----------------------------------------------------
-        // Tab Logic for Editor
-        const tabRadios = document.getElementsByName('editTab');
-
-        function updateEditorView(val) {
-            // Hide all
-            document.getElementById('view-filters').style.display = 'none';
-            document.getElementById('view-schedule').style.display = 'none';
-            document.getElementById('view-recap').style.display = 'none';
-
-            if (val === 'filters') document.getElementById('view-filters').style.display = 'block';
-            else if (val === 'recap') document.getElementById('view-recap').style.display = 'block';
-            else document.getElementById('view-schedule').style.display = 'block';
-        }
-
-        for (const r of tabRadios) {
-            r.addEventListener('change', () => {
-                if (r.checked) {
-                    updateEditorView(r.value);
-                }
-            });
-        }
-
-        // ----------------------------------------------------
-        // SAVE SETTINGS (Unified)
-        // ----------------------------------------------------
         document.getElementById('save-settings').addEventListener('click', async () => {
             if (!currentProfileId) return;
 
