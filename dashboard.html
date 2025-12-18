@@ -97,6 +97,10 @@
                             <input class="switcher-glass__input" type="radio" name="editTab" value="filters" />
                             <span class="switcher-glass__text">Filtres</span>
                         </label>
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="editTab" value="recap" />
+                            <span class="switcher-glass__text">Options</span>
+                        </label>
                     </fieldset>
                 </div>
 
@@ -160,6 +164,74 @@
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                    </div>
+
+                    <!-- View: Recap Options -->
+                    <div id="view-recap" style="display:none;">
+
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+                            <div>
+                                <div style="font-weight:600;">Seulement Non-lus</div>
+                                <div class="muted" style="font-size:0.8rem;">Ignorer les emails lus</div>
+                            </div>
+                            <label class="toggle">
+                                <input id="f-unread" type="checkbox" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div
+                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+                            <div>
+                                <div style="font-weight:600;">Audio Actif</div>
+                                <div class="muted" style="font-size:0.8rem;">Générer le podcast</div>
+                            </div>
+                            <label class="toggle">
+                                <input id="f-audio" type="checkbox" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <label>Voix
+                                <select id="f-voice"
+                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                    <option value="alloy">Alloy</option>
+                                    <option value="echo">Echo</option>
+                                    <option value="fable">Fable</option>
+                                    <option value="onyx">Onyx</option>
+                                    <option value="nova">Nova</option>
+                                    <option value="shimmer">Shimmer</option>
+                                </select>
+                            </label>
+                            <label>Vitesse (0.25 - 4.0)
+                                <input id="f-speed" type="number" step="0.05" min="0.25" max="4.0" placeholder="1.0" />
+                            </label>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <label>Tri
+                                <select id="f-sort"
+                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                    <option value="date_desc">Récents d'abord</option>
+                                    <option value="date_asc">Anciens d'abord</option>
+                                    <option value="priority">Priorité IA</option>
+                                </select>
+                            </label>
+                            <label>Langue
+                                <select id="f-lang"
+                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                    <option value="fr">Français</option>
+                                    <option value="en">Anglais</option>
+                                    <option value="es">Espagnol</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <label>Catégories (séparées par virgule)
+                            <input id="f-categories" type="text" placeholder="EX: ACTION,MEETING ou ALL" />
+                        </label>
                     </div>
 
                     <!-- Common: Status (Always visible or in Schedule?) User didn't specify, but let's keep it common or in Schedule -->
@@ -352,6 +424,15 @@
             document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
             document.getElementById('f-debug').checked = (p.debug_mode === true);
 
+            // Recap Fields
+            document.getElementById('f-unread').checked = (p.only_unread === true);
+            document.getElementById('f-audio').checked = (p.audio_actif === true);
+            document.getElementById('f-voice').value = p.voice || 'alloy'; // default
+            document.getElementById('f-speed').value = p.speed || 1.0;
+            document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
+            document.getElementById('f-lang').value = p.language || 'fr';
+            document.getElementById('f-categories').value = p.categories || '';
+
             // Status Toggle (Active/Inactive)
             const st = String(p.status ?? '').toLowerCase();
             document.getElementById('f-status').checked = (st === 'active');
@@ -412,13 +493,14 @@
         for (const r of tabRadios) {
             r.addEventListener('change', () => {
                 if (r.checked) {
-                    if (r.value === 'filters') {
-                        document.getElementById('view-filters').style.display = 'block';
-                        document.getElementById('view-schedule').style.display = 'none';
-                    } else {
-                        document.getElementById('view-filters').style.display = 'none';
-                        document.getElementById('view-schedule').style.display = 'block';
-                    }
+                    // Hide all
+                    document.getElementById('view-filters').style.display = 'none';
+                    document.getElementById('view-schedule').style.display = 'none';
+                    document.getElementById('view-recap').style.display = 'none';
+
+                    if (r.value === 'filters') document.getElementById('view-filters').style.display = 'block';
+                    else if (r.value === 'recap') document.getElementById('view-recap').style.display = 'block';
+                    else document.getElementById('view-schedule').style.display = 'block';
                 }
             });
         }
@@ -442,6 +524,15 @@
             const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
             const debugMode = document.getElementById('f-debug').checked;
             const statusActive = document.getElementById('f-status').checked;
+
+            // Recap values
+            const onlyUnread = document.getElementById('f-unread').checked;
+            const audioActif = document.getElementById('f-audio').checked;
+            const voice = document.getElementById('f-voice').value;
+            const speed = parseFloat(document.getElementById('f-speed').value);
+            const sortMode = document.getElementById('f-sort').value;
+            const language = document.getElementById('f-lang').value;
+            const categories = document.getElementById('f-categories').value.trim();
 
             if (!tz) {
                 errDiv.textContent = "La timezone est requise.";
@@ -478,7 +569,15 @@
                 jours_arriere_start: daysStart,
                 jours_arriere_end: daysEnd,
                 debug_mode: debugMode,
-                status: statusActive ? 'Active' : 'Inactive'
+                status: statusActive ? 'Active' : 'Inactive',
+                // Recap
+                only_unread: onlyUnread,
+                audio_actif: audioActif,
+                voice: voice,
+                speed: speed,
+                sort_mode: sortMode,
+                language: language,
+                categories: categories
             };
 
             try {
