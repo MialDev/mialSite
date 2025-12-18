@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inscription — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="acceuil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav-links">
+                <a href="acceuil.html">Accueil</a>
+                <a href="crm.html">CRM</a>
+                <a href="team.html">Équipe</a>
+                <a href="security.html">Sécurité</a>
+                <a href="#contact" class="btn btn-primary" style="display:none">Demander une démo</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px; min-height: 80vh; display: flex; align-items: center;">
+        <div class="container" style="max-width: 480px;">
+            <div class="card glass-static">
+                <div class="center" style="margin-bottom: 24px;">
+                    <h2>Inscription</h2>
+                    <p class="muted">Créer un nouveau compte</p>
+                </div>
+
+                <form id="register-form" class="form">
+                    <label>Email
+                        <input type="email" name="email" required placeholder="votre@email.com" />
+                    </label>
+                    <label>Mot de passe
+                        <input type="password" name="password" required placeholder="••••••••" />
+                    </label>
+                    <label>Code d'invitation
+                        <input type="text" name="invite_code" placeholder="Code (optionnel ou requis)" />
+                    </label>
+
+                    <div id="error-message" style="color: #ef4444; font-size: 0.9rem; margin-top: 8px; display: none;">
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-primary w-full">S'inscrire</button>
+                    </div>
+                    <div class="center" style="margin-top: 16px; font-size: 0.9rem;">
+                        Déjà un compte ? <a href="login.html" style="color: var(--blue); font-weight: 600;">Se
+                            connecter</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted" style="font-size: 0.85rem;">© 2025 mial — Inbox IA pour PME</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            const invite_code = e.target.invite_code.value;
+
+            try {
+                const res = await fetch('/portal-api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password, invite_code })
+                });
+
+                if (res.ok) {
+                    window.location.href = '/dashboard.html';
+                } else {
+                    try {
+                        const data = await res.json();
+                        errorDiv.textContent = data.detail || 'Erreur d\'inscription';
+                    } catch (err) {
+                        errorDiv.textContent = 'Erreur inconnue (' + res.status + ')';
+                    }
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = 'Impossible de contacter le serveur';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

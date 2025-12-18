@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="acceuil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav-links">
+                <a href="acceuil.html">Accueil</a>
+                <a href="crm.html">CRM</a>
+                <a href="team.html">Équipe</a>
+                <a href="security.html">Sécurité</a>
+                <a href="#contact" class="btn btn-primary" style="display:none">Demander une démo</a>
+                <!-- Hidden on login page? Or redirect to main? -->
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px; min-height: 80vh; display: flex; align-items: center;">
+        <div class="container" style="max-width: 480px;">
+            <div class="card glass-static">
+                <div class="center" style="margin-bottom: 24px;">
+                    <h2>Connexion</h2>
+                    <p class="muted">Accédez à votre espace client</p>
+                </div>
+
+                <form id="login-form" class="form">
+                    <label>Email
+                        <input type="email" name="email" required placeholder="votre@email.com" />
+                    </label>
+                    <label>Mot de passe
+                        <input type="password" name="password" required placeholder="••••••••" />
+                    </label>
+
+                    <div id="error-message" style="color: #ef4444; font-size: 0.9rem; margin-top: 8px; display: none;">
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button type="submit" class="btn btn-primary w-full">Se connecter</button>
+                    </div>
+                    <div class="center" style="margin-top: 16px; font-size: 0.9rem;">
+                        Pas encore de compte ? <a href="register.html"
+                            style="color: var(--blue); font-weight: 600;">S'inscrire</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted" style="font-size: 0.85rem;">© 2025 mial — Inbox IA pour PME</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+
+            try {
+                const res = await fetch('/portal-api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (res.ok) {
+                    window.location.href = '/dashboard.html';
+                } else {
+                    try {
+                        const data = await res.json();
+                        errorDiv.textContent = data.detail || 'Erreur de connexion';
+                    } catch (err) {
+                        errorDiv.textContent = 'Erreur inconnue (' + res.status + ')';
+                    }
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = 'Impossible de contacter le serveur';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // Simple mobile nav toggle functionality (copied from main.js logic implied)
+        const navToggle = document.querySelector('.nav-toggle');
+        const nav = document.querySelector('.nav');
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('nav-open');
+            });
+        }
+    </script>
+</body>
+
+</html>

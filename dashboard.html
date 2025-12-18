@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <meta name="theme-color" content="#1fb6ff">
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="acceuil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav-links">
+                <a href="acceuil.html">Accueil</a>
+                <a href="crm.html">CRM</a>
+                <!-- Logout button -->
+                <button id="logout-btn" class="btn btn-ghost"
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
+
+            <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Tableau de bord</h1>
+                        <p class="muted">Bienvenue, <span id="user-email"
+                                style="font-weight:600; color:var(--ink);">...</span></p>
+                    </div>
+                    <button class="btn btn-primary btn-small" onclick="fetchProfiles()">Rafraîchir</button>
+                </div>
+            </div>
+
+            <div class="card glass-static" style="padding: 0; overflow:hidden;">
+                <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
+                    <h2 style="font-size: 1.25rem; margin:0;">Vos Profils</h2>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email source</th>
+                                <th>Timezone</th>
+                                <th>Heures</th>
+                                <th>Jours (Arrière)</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profiles-body">
+                            <tr>
+                                <td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted">© 2025 mial — Dashboard Client</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // 1. Check Auth & Load Me
+        async function initDashboard() {
+            try {
+                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                if (res.status === 401) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Auth fetch error');
+
+                const user = await res.json();
+                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
+
+                // Load Profiles
+                fetchProfiles();
+
+            } catch (err) {
+                console.error(err);
+                // Fallback or validation error - maybe token expired
+                // window.location.href = 'login.html';
+            }
+        }
+
+        // 2. Load Profiles
+        async function fetchProfiles() {
+            const tbody = document.getElementById('profiles-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
+
+            try {
+                const res = await fetch('/portal-api/profiles', { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load profiles');
+                const profiles = await res.json();
+                renderProfiles(profiles);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur: ${err.message}</td></tr>`;
+            }
+        }
+
+        // 3. Render Profiles
+        function renderProfiles(profiles) {
+            const tbody = document.getElementById('profiles-body');
+            if (!profiles || profiles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Aucun profil trouvé.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = profiles.map(p => {
+                const statusClass = p.is_active ? 'status-active' : 'status-inactive';
+                const statusText = p.is_active ? 'Actif' : 'Inactif';
+                const debugBadge = p.debug_mode ? '<span style="color:orange; font-size:0.7rem; margin-left:4px;">(DEBUG)</span>' : '';
+
+                return `
+          <tr>
+            <td style="font-family:monospace; color:var(--muted);">${p.id}</td>
+            <td><strong>${p.email_account}</strong> ${debugBadge}</td>
+            <td>${p.timezone}</td>
+            <td>${p.start_time_str} - ${p.end_time_str}</td>
+            <td>${p.lookback_days_start}j - ${p.lookback_days_end}j</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-ghost btn-small" onclick="editSchedule('${p.id}')">Horaires</button>
+                <button class="btn btn-ghost btn-small" onclick="editFilters('${p.id}')">Filtres</button>
+              </div>
+            </td>
+          </tr>
+        `;
+            }).join('');
+        }
+
+        // 4. Actions
+        async function editSchedule(id) {
+            // Placeholder for MVP - could be a prompt or modal
+            const newStart = prompt("Nouvelle heure de début (HH:MM) ?", "08:00");
+            if (!newStart) return;
+
+            try {
+                await fetch(`/portal-api/profiles/${id}/schedule`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start_time_str: newStart }), // Simplified for MVP demo
+                    credentials: 'include'
+                });
+                fetchProfiles();
+            } catch (e) { alert("Erreur update"); }
+        }
+
+        async function editFilters(id) {
+            alert("Édition des filtres bientôt disponible !");
+            // Envoi PUT /portal-api/profiles/{id}/filters
+        }
+
+        // 5. Logout
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                window.location.href = 'login.html';
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+    </script>
+</body>
+
+</html>
