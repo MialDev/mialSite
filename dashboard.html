@@ -87,7 +87,7 @@
                     </div>
                 </div>
 
-                <div style="margin-top:14px;">
+                <div style="margin-top:14px;" class="pricing-switch-wrapper">
                     <fieldset class="switcher-glass" id="editor-tabs">
                         <label class="switcher-glass__option">
                             <input class="switcher-glass__input" type="radio" name="editTab" value="schedule" checked />
@@ -469,7 +469,10 @@
             // Tabs
             const radios = document.getElementsByName('editTab');
             for (const r of radios) {
-                if (r.value === tab) r.checked = true;
+                if (r.value === tab) {
+                    r.checked = true;
+                    updateEditorView(tab); // Trigger view update manually
+                }
             }
 
             document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
@@ -490,17 +493,22 @@
         // ----------------------------------------------------
         // Tab Logic for Editor
         const tabRadios = document.getElementsByName('editTab');
+
+        function updateEditorView(val) {
+            // Hide all
+            document.getElementById('view-filters').style.display = 'none';
+            document.getElementById('view-schedule').style.display = 'none';
+            document.getElementById('view-recap').style.display = 'none';
+
+            if (val === 'filters') document.getElementById('view-filters').style.display = 'block';
+            else if (val === 'recap') document.getElementById('view-recap').style.display = 'block';
+            else document.getElementById('view-schedule').style.display = 'block';
+        }
+
         for (const r of tabRadios) {
             r.addEventListener('change', () => {
                 if (r.checked) {
-                    // Hide all
-                    document.getElementById('view-filters').style.display = 'none';
-                    document.getElementById('view-schedule').style.display = 'none';
-                    document.getElementById('view-recap').style.display = 'none';
-
-                    if (r.value === 'filters') document.getElementById('view-filters').style.display = 'block';
-                    else if (r.value === 'recap') document.getElementById('view-recap').style.display = 'block';
-                    else document.getElementById('view-schedule').style.display = 'block';
+                    updateEditorView(r.value);
                 }
             });
         }
