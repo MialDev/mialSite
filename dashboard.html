@@ -73,6 +73,80 @@
                 </div>
             </div>
 
+            <!-- Profile Editor -->
+            <section id="profile-editor" class="card glass-static" style="margin-top:24px; display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                    <div>
+                        <h3 style="margin:0;">Paramètres du profil</h3>
+                        <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
+                    </div>
+                    <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+                </div>
+
+                <div style="margin-top:14px;">
+                    <fieldset class="switcher-glass" id="editor-tabs">
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="editTab" value="schedule" checked />
+                            <span class="switcher-glass__text">Horaires</span>
+                        </label>
+                        <label class="switcher-glass__option">
+                            <input class="switcher-glass__input" type="radio" name="editTab" value="filters" />
+                            <span class="switcher-glass__text">Filtres</span>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <div id="editor-error" style="display:none; margin-top:12px; color:#ef4444; font-size:0.95rem;"></div>
+                <div id="editor-ok" style="display:none; margin-top:12px; color:#16a34a; font-size:0.95rem;"></div>
+
+                <form id="form-schedule" class="form" style="margin-top:16px;">
+                    <label>Timezone
+                        <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
+                    </label>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <label>Heure début
+                            <input id="f-start" type="time" step="1" />
+                        </label>
+                        <label>Heure fin
+                            <input id="f-end" type="time" step="1" />
+                        </label>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <label>Jours arrière START
+                            <input id="f-days-start" type="number" min="0" max="30" placeholder="1" />
+                        </label>
+                        <label>Jours arrière END
+                            <input id="f-days-end" type="number" min="0" max="30" placeholder="1" />
+                        </label>
+                    </div>
+
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px;">
+                        <div>
+                            <div style="font-weight:600;">Debug mode</div>
+                            <div class="muted" style="font-size:0.9rem;">Active les logs / mode test</div>
+                        </div>
+
+                        <label class="toggle">
+                            <input id="f-debug" type="checkbox" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:16px;">
+                        <button type="button" class="btn btn-primary" id="save-schedule">Enregistrer</button>
+                        <button type="button" class="btn btn-ghost" id="reset-schedule">Réinitialiser</button>
+                    </div>
+                </form>
+
+                <form id="form-filters" class="form" style="margin-top:16px; display:none;">
+                    <div class="muted">Filtres: le formulaire est actuellement combiné avec les horaires pour simplifier
+                        l'édition.</div>
+                </form>
+            </section>
+
         </div>
     </section>
 
@@ -189,7 +263,10 @@
             }).join('');
         }
 
-        // 4. Actions
+        // 4. Actions & Editor Logic
+
+        let currentProfileId = null;
+
         function normalizeTimeToHHMMSS(t) {
             const s = String(t ?? '').trim();
             if (!s) return null;
@@ -201,101 +278,182 @@
             return null;
         }
 
-        async function editSchedule(id) {
-            const p = PROFILES_BY_ID.get(id) || {};
+        // Open functions now map to the editor
+        function editSchedule(id) {
+            openEditor(id, 'schedule');
+        }
 
-            const curStart = (p.heure_debut ?? '08:00:00');
-            const curEnd = (p.heure_fin ?? '18:00:00');
-            const curTz = (p.timezone ?? 'Europe/Brussels');
+        function editFilters(id) {
+            openEditor(id, 'filters');
+        }
 
-            const newStartRaw = prompt("Heure de début (HH:MM ou HH:MM:SS) ?", curStart);
-            if (newStartRaw === null) return;
-            const newEndRaw = prompt("Heure de fin (HH:MM ou HH:MM:SS) ?", curEnd);
-            if (newEndRaw === null) return;
-            const newTz = prompt("Timezone (ex: Europe/Brussels) ?", curTz);
-            if (newTz === null) return;
+        function openEditor(id, tab) {
+            const p = PROFILES_BY_ID.get(id);
+            if (!p) return;
 
-            const newStart = normalizeTimeToHHMMSS(newStartRaw);
-            const newEnd = normalizeTimeToHHMMSS(newEndRaw);
+            currentProfileId = id;
+            document.getElementById('edit-profile-id').textContent = id;
 
-            if (!newStart || !newEnd) {
-                alert("Format heure invalide. Utilise HH:MM ou HH:MM:SS.");
+            // Reset status messages
+            document.getElementById('editor-error').style.display = 'none';
+            document.getElementById('editor-ok').style.display = 'none';
+
+            // Show Editor
+            document.getElementById('profile-editor').style.display = 'block';
+
+            // Set Inputs
+            document.getElementById('f-timezone').value = p.timezone || '';
+            document.getElementById('f-start').value = p.heure_debut || '';
+            document.getElementById('f-end').value = p.heure_fin || '';
+            document.getElementById('f-days-start').value = p.jours_arriere_start ?? 0;
+            document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
+            document.getElementById('f-debug').checked = (p.debug_mode === true);
+
+            // Select Tab (UI only for now since we merged fields into one form - user asked for separation but provided combined fields in HTML A example... 
+            // Wait, looking at the user HTML request: 
+            // <form id="form-schedule"> contains EVERYTHING: timezone, start/end, days-start/end, debug.
+            // <form id="form-filters"> is empty/placeholder.
+            // So we just simulate tab switching to show/hide sections, OR we just show everything in 'schedule' tab as the user pasted code does.
+            // But wait, the user's HTML shows form-schedule having filters fields (days-start, days-end) too? 
+            // Yes: "Jours arrière START" is inside form-schedule in the user's snippet.
+            // So practically, "Horaires" tab shows all fields in the provided snippet.
+            // Let's implement the tab switcher to be cleaner if we want to separate, but adhering to the user snippet:
+
+            // Auto-select the requested radio
+            const radios = document.getElementsByName('editTab');
+            for (const r of radios) {
+                if (r.value === tab) r.checked = true;
+            }
+
+            // Logic to switch forms if they were split, but currently fields are in form-schedule.
+            // Users snippet puts ALL fields in form-schedule. So tabs might just be visual or for future.
+            // We will scroll to editor
+            document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Editor Event Listeners
+        document.getElementById('editor-close').addEventListener('click', () => {
+            document.getElementById('profile-editor').style.display = 'none';
+            currentProfileId = null;
+        });
+
+        document.getElementById('reset-schedule').addEventListener('click', () => {
+            if (currentProfileId) openEditor(currentProfileId, 'schedule');
+        });
+
+        // Handle Tab Switching
+        // Since the user put all inputs in form-schedule, tabs are mostly decorative or for future separation.
+        // We can leave them as is.
+
+        // SAVE LOGIC
+        document.getElementById('save-schedule').addEventListener('click', async () => {
+            if (!currentProfileId) return;
+
+            const errDiv = document.getElementById('editor-error');
+            const okDiv = document.getElementById('editor-ok');
+            errDiv.style.display = 'none';
+            okDiv.style.display = 'none';
+
+            // 1. Gather & Validate
+            const tz = document.getElementById('f-timezone').value.trim();
+            const rawStart = document.getElementById('f-start').value;
+            const rawEnd = document.getElementById('f-end').value;
+            const daysStart = parseInt(document.getElementById('f-days-start').value, 10);
+            const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
+            const debugMode = document.getElementById('f-debug').checked;
+
+            if (!tz) {
+                errDiv.textContent = "La timezone est requise.";
+                errDiv.style.display = 'block';
                 return;
             }
 
-            // Payload attendu (très probable) par l'API: heure_debut / heure_fin / timezone
-            const payload = {
-                heure_debut: newStart,
-                heure_fin: newEnd,
-                timezone: String(newTz).trim() || curTz
-            };
+            const cleanStart = normalizeTimeToHHMMSS(rawStart);
+            const cleanEnd = normalizeTimeToHHMMSS(rawEnd);
 
-            try {
-                const res = await fetch(`/portal-api/profiles/${id}/schedule`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    credentials: 'include'
-                });
-
-                if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(`API ${res.status}: ${txt}`);
-                }
-
-                await fetchProfiles();
-            } catch (e) {
-                alert("Erreur update horaires:\n" + e.message);
-            }
-        }
-
-        async function editFilters(id) {
-            const p = PROFILES_BY_ID.get(id) || {};
-
-            const curStart = (p.jours_arriere_start ?? 0);
-            const curEnd = (p.jours_arriere_end ?? 0);
-            const curDebug = (p.debug_mode === true);
-
-            const s1 = prompt("Jours arrière START (entier) ?", String(curStart));
-            if (s1 === null) return;
-            const s2 = prompt("Jours arrière END (entier) ?", String(curEnd));
-            if (s2 === null) return;
-            const s3 = prompt("Debug mode ? (true/false)", String(curDebug));
-
-            const n1 = Number.parseInt(String(s1).trim(), 10);
-            const n2 = Number.parseInt(String(s2).trim(), 10);
-            const dbg = String(s3).trim().toLowerCase() === 'true';
-
-            if (!Number.isFinite(n1) || !Number.isFinite(n2)) {
-                alert("Jours arrière invalide. Mets des entiers.");
+            if (!cleanStart || !cleanEnd) {
+                errDiv.textContent = "Heures invalides.";
+                errDiv.style.display = 'block';
                 return;
             }
 
-            // Payload attendu (très probable) côté filters: jours_arriere_* + debug_mode
-            const payload = {
-                jours_arriere_start: n1,
-                jours_arriere_end: n2,
-                debug_mode: dbg
-            };
+            if (isNaN(daysStart) || isNaN(daysEnd)) {
+                errDiv.textContent = "Les jours doivent être des nombres.";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            if (daysStart > daysEnd) {
+                errDiv.textContent = "Attention: Jours arrière START > END ?";
+                errDiv.style.display = 'block';
+                // We let it pass or block? User said "daysStart<=daysEnd" in requirements text but didn't code it. 
+                // We will block as it implies a range.
+                return;
+            }
+
+            // 2. Build Payloads
+            // API separates schedule and filters updates. We have one save button.
+            // We should call BOTH endpoints if needed, or arguably the user wants "save-schedule" to save schedule fields 
+            // and a "save-filters" to save filters.
+
+            // HOWEVER, the user's HTML snippet only has ONE visible form "form-schedule" containing ALL fields (timezone, hours, days, debug).
+            // And ONE save button: id="save-schedule".
+            // So we must trigger updates to BOTH endpoints: 
+            // 1. PUT /profiles/{id}/schedule (start, end, timezone)
+            // 2. PUT /profiles/{id}/filters (days_start, days_end, debug)
 
             try {
-                const res = await fetch(`/portal-api/profiles/${id}/filters`, {
+                // Update Schedule
+                const payloadSchedule = {
+                    heure_debut: cleanStart,
+                    heure_fin: cleanEnd,
+                    timezone: tz
+                };
+
+                const r1 = await fetch(`/portal-api/profiles/${currentProfileId}/schedule`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify(payloadSchedule),
                     credentials: 'include'
                 });
 
-                if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(`API ${res.status}: ${txt}`);
+                if (!r1.ok) {
+                    const t = await r1.text();
+                    throw new Error(`Schedule API ${r1.status}: ${t}`);
                 }
 
+                // Update Filters
+                const payloadFilters = {
+                    jours_arriere_start: daysStart,
+                    jours_arriere_end: daysEnd,
+                    debug_mode: debugMode
+                };
+
+                const r2 = await fetch(`/portal-api/profiles/${currentProfileId}/filters`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadFilters),
+                    credentials: 'include'
+                });
+
+                if (!r2.ok) {
+                    const t = await r2.text();
+                    throw new Error(`Filters API ${r2.status}: ${t}`);
+                }
+
+                // Success
+                okDiv.textContent = "Modifications enregistrées avec succès !";
+                okDiv.style.display = 'block';
+
+                // Refresh table
                 await fetchProfiles();
+
             } catch (e) {
-                alert("Erreur update filtres:\n" + e.message);
+                console.error(e);
+                errDiv.textContent = e.message;
+                errDiv.style.display = 'block';
             }
-        }
+        });
 
         // 5. Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
