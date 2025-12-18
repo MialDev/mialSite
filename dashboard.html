@@ -142,6 +142,29 @@
                             </label>
                         </div>
 
+                        <!-- Extended Filters (CSV) -->
+                        <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <label>Expéditeurs autorisés (sep. virgule)
+                                <input id="f-filter-sender" type="text" placeholder="ex: @gmail.com, bob@example.com" />
+                            </label>
+                            <label>Expéditeurs exclus (sep. virgule)
+                                <input id="f-filter-exclude" type="text" placeholder="ex: no-reply, newsletter" />
+                            </label>
+                        </div>
+                        <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <label>CC autorisés (sep. virgule)
+                                <input id="f-filter-cc" type="text" placeholder="ex: admin@corp.com" />
+                            </label>
+                            <label>Destiné à (sep. virgule)
+                                <input id="f-filter-destined" type="text" placeholder="ex: support@mial.com" />
+                            </label>
+                        </div>
+                        <div style="margin-top:12px;">
+                            <label>Transféré de (sep. virgule)
+                                <input id="f-filter-forwarded" type="text" placeholder="ex: old-address@legacy.com" />
+                            </label>
+                        </div>
+
                         <div
                             style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px;">
                             <div>
@@ -413,6 +436,15 @@
             document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
             document.getElementById('f-debug').checked = (p.debug_mode === true);
 
+            // Extended Filters
+            const f = p.filters || {};
+            function arrToCsv(a) { return Array.isArray(a) ? a.join(', ') : ''; }
+            document.getElementById('f-filter-sender').value = arrToCsv(f.sender);
+            document.getElementById('f-filter-exclude').value = arrToCsv(f.exclude);
+            document.getElementById('f-filter-cc').value = arrToCsv(f.cc);
+            document.getElementById('f-filter-destined').value = arrToCsv(f.destined_to);
+            document.getElementById('f-filter-forwarded').value = arrToCsv(f.forwarded_from);
+
             // Recap Fields
             document.getElementById('f-unread').checked = (p.only_unread === true);
             document.getElementById('f-audio').checked = (p.audio_actif === true);
@@ -521,6 +553,13 @@
             }
 
             // 2. Build Unified Payload
+
+            // Helper CSV -> Array
+            function csvToArr(s) {
+                if (!s) return [];
+                return s.split(',').map(x => x.trim()).filter(x => x.length > 0);
+            }
+
             const payload = {
                 heure_debut: cleanStart,
                 heure_fin: cleanEnd,
@@ -529,6 +568,16 @@
                 jours_arriere_end: daysEnd,
                 debug_mode: debugMode,
                 status: statusActive ? 'Active' : 'Inactive',
+
+                // Filters Object
+                filters: {
+                    sender: csvToArr(document.getElementById('f-filter-sender').value),
+                    exclude: csvToArr(document.getElementById('f-filter-exclude').value),
+                    cc: csvToArr(document.getElementById('f-filter-cc').value),
+                    destined_to: csvToArr(document.getElementById('f-filter-destined').value),
+                    forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
+                },
+
                 // Recap
                 only_unread: onlyUnread,
                 audio_actif: audioActif,
