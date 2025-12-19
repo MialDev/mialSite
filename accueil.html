@@ -458,21 +458,23 @@
         <input type="hidden" name="offre_choisie" id="hidden-plan-input" value="">
 
         <div class="grid-2">
-          <label>Nom <input name="name" required placeholder="Votre nom"></label>
-          <label>Email <input name="email" type="email" required placeholder="votre@email.com"></label>
+          <label>Nom <input id="name" name="name" required placeholder="Votre nom"></label>
+          <label>Email <input id="email" name="email" type="email" required placeholder="votre@email.com"></label>
         </div>
         <div class="grid-2">
-          <label>Société <input name="company" placeholder="Nom de la société"></label>
-          <label>Profession <input name="profession" placeholder="Votre métier (optionnel)"></label>
+          <label>Société <input id="company" name="company" placeholder="Nom de la société"></label>
+          <label>Profession <input id="profession" name="profession" placeholder="Votre métier (optionnel)"></label>
         </div>
         <div class="grid-2">
-          <label>Volume <input name="volume" placeholder="Emails / jour (approx.)"></label>
-          <label>Téléphone <input name="phone" placeholder="06 12 34 56 78 (optionnel)"></label>
+          <label>Volume <input id="volume" name="volume" placeholder="Emails / jour (approx.)"></label>
+          <label>Téléphone <input id="phone" name="phone" placeholder="06 12 34 56 78 (optionnel)"></label>
         </div>
 
         <label>Message
-          <textarea name="message" rows="5" placeholder="Dites-nous en plus sur vos besoins..."></textarea>
+          <textarea id="message" name="message" rows="5" placeholder="Dites-nous en plus sur vos besoins..."></textarea>
         </label>
+
+        <div id="formMsg" style="margin-bottom: 1rem; font-weight: 500;"></div>
 
         <div class="form-actions">
           <label class="agree"><input type="checkbox" checked> J'accepte d'être contacté par mial</label>

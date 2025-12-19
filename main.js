@@ -220,6 +220,57 @@
     if (el) el.textContent = new Date().getFullYear();
   }
 
+  // --- 5b. CONTACT FORM ---
+  function initContactForm() {
+    const form = document.getElementById('contact-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msgDiv = document.getElementById('formMsg');
+      msgDiv.textContent = 'Envoi en cours...';
+      msgDiv.style.color = 'var(--blue)';
+
+      const data = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        profession: document.getElementById('profession').value.trim() || null,
+        volume: document.getElementById('volume').value,
+        phone: document.getElementById('phone').value.trim() || null,
+        message: document.getElementById('message').value.trim()
+      };
+
+      if (!data.name || !data.email || !data.company || !data.volume || !data.message) {
+        msgDiv.textContent = "Veuillez remplir les champs obligatoires.";
+        msgDiv.style.color = '#ef4444';
+        return;
+      }
+
+      try {
+        const res = await fetch('/portal-api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const json = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          msgDiv.textContent = "Message envoyé ! Nous vous répondrons très vite.";
+          msgDiv.style.color = 'green';
+          form.reset();
+        } else {
+          msgDiv.textContent = "Erreur: " + (json.detail || "Inconnue");
+          msgDiv.style.color = '#ef4444';
+        }
+      } catch (err) {
+        msgDiv.textContent = "Impossible de contacter le serveur.";
+        msgDiv.style.color = '#ef4444';
+      }
+    });
+  }
+
   // --- 6. COOKIE BANNER ---
   function initCookieBanner() {
     const CONSENT_KEY = 'mial_cookie_consent';
@@ -231,7 +282,7 @@
     banner.innerHTML = `
       <div>
         <h4>🍪 Cookies & Confidentialité</h4>
-        <p>Cela nous aide pour le développement de notre projet. Les données sont anonymisées.</p>
+        <p>Cela nous aide pour le développement de notre projet.</p>
       </div>
       <div class="cookie-actions">
         <button id="cookie-accept" class="btn btn-primary w-full" style="padding: 0.6rem;">Accepter</button>
