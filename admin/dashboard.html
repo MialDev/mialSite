@@ -379,6 +379,10 @@
     </footer>
 
     <script>
+        // Global State
+        let PROFILES_BY_ID = new Map();
+        let currentProfileId = null;
+
         // Nav
         const navToggle = document.querySelector('.nav-toggle');
         const nav = document.querySelector('.nav');
@@ -403,7 +407,12 @@
             setTimeout(() => { t.style.display = 'none'; }, 3000);
         }
 
-        // Logic
+        // --- MAIN LOAD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUsers();
+            fetchProfiles();
+        });
+
         async function fetchUsers() {
             const tbody = document.getElementById('users-body');
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
@@ -416,6 +425,22 @@
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red; padding: 24px;">Erreur: ${e.message}</td></tr>`;
             }
         }
+
+        async function fetchProfiles() {
+            const tbody = document.getElementById('profiles-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
+            try {
+                const res = await fetch('/portal-api/profiles', { credentials: 'include' });
+                // Note: /portal-api/profiles returns all profiles for admin
+                if (!res.ok) throw new Error('Failed to load profiles');
+                const profiles = await res.json();
+                renderProfiles(profiles);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur: ${e.message}</td></tr>`;
+            }
+        }
+
+        // --- RENDERING ---
 
         function renderUsers(users) {
             const tbody = document.getElementById('users-body');
@@ -453,6 +478,45 @@
             }).join('');
         }
 
+        function renderProfiles(profiles) {
+            const tbody = document.getElementById('profiles-body');
+            PROFILES_BY_ID = new Map();
+
+            if (!profiles.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Aucun profil trouvé.</td></tr>';
+                return;
+            }
+
+            profiles.forEach(p => PROFILES_BY_ID.set(p.id, p));
+
+            tbody.innerHTML = profiles.map(p => {
+                const status = escapeHtml(p.status ?? '—');
+                const isStatusActive = (String(p.status).toLowerCase() === 'active');
+                const statusClass = isStatusActive ? 'badge-active' : 'badge-inactive';
+
+                // For Admin, show account_email if exists, else recap_recipient
+                const recipient = p.recap_recipient || '—';
+                const hours = `${p.heure_debut || '—'} - ${p.heure_fin || '—'}`;
+                const jours = `${p.jours_arriere_start || 0} → ${p.jours_arriere_end || 0}`;
+
+                return `
+                <tr>
+                    <td style="font-family:monospace; font-size:0.85rem; color:#64748b;">${p.id.substring(0, 8)}...</td>
+                    <td><strong>${escapeHtml(recipient)}</strong></td>
+                    <td>${escapeHtml(p.timezone || '—')}</td>
+                    <td>${hours}</td>
+                    <td>${jours}</td>
+                    <td><span class="${statusClass}">${status}</span></td>
+                    <td style="text-align: right;">
+                         <button class="action-btn" onclick="openEditor('${p.id}')">Éditer / Détails</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        // --- USER API ---
+
         async function updateUser(id, field, value) {
             try {
                 const payload = {};
@@ -467,7 +531,7 @@
 
                 if (!res.ok) throw new Error('Update failed');
                 showToast("Mis à jour avec succès");
-                fetchUsers(); // Refresh to ensure state sync
+                fetchUsers();
             } catch (e) {
                 showToast(e.message, true);
             }
@@ -488,12 +552,198 @@
             }
         }
 
+        // --- EDITOR LOGIC ---
+
+        function openEditor(id) {
+            const p = PROFILES_BY_ID.get(id);
+            if (!p) return;
+            currentProfileId = id;
+            document.getElementById('edit-profile-id').textContent = id;
+
+            // Reset msgs
+            document.getElementById('editor-error').style.display = 'none';
+            document.getElementById('editor-ok').style.display = 'none';
+
+            // Show
+            const editorData = document.getElementById('profile-editor');
+            editorData.style.display = 'block';
+
+            // Fill Fields
+            document.getElementById('f-timezone').value = p.timezone || '';
+            document.getElementById('f-start').value = p.heure_debut || '';
+            document.getElementById('f-end').value = p.heure_fin || '';
+            document.getElementById('f-days-start').value = p.jours_arriere_start ?? 0;
+            document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
+            document.getElementById('f-debug').checked = (p.debug_mode === true);
+
+            const f = p.filters || {};
+            const arrToCsv = (a) => Array.isArray(a) ? a.join(', ') : '';
+            document.getElementById('f-filter-sender').value = arrToCsv(f.sender);
+            document.getElementById('f-filter-exclude').value = arrToCsv(f.exclude);
+            document.getElementById('f-filter-cc').value = arrToCsv(f.cc);
+            document.getElementById('f-filter-destined').value = arrToCsv(f.destined_to);
+            document.getElementById('f-filter-forwarded').value = arrToCsv(f.forwarded_from);
+
+            document.getElementById('f-unread').checked = (p.only_unread === true);
+            document.getElementById('f-audio').checked = (p.audio_actif === true);
+            document.getElementById('f-voice').value = p.voice || 'alloy';
+            document.getElementById('f-speed').value = p.speed || 1.0;
+            document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
+            document.getElementById('f-lang').value = p.language || 'fr';
+            document.getElementById('f-categories').value = p.categories || '';
+
+            const st = String(p.status ?? '').toLowerCase();
+            document.getElementById('f-status').checked = (st === 'active');
+
+            // Assignment block
+            const assignEmailInput = document.getElementById('f-assign-email');
+            const unassignBtn = document.getElementById('btn-unassign');
+            const assignStatus = document.getElementById('assign-status');
+
+            if (p.assigned_to_email) {
+                assignEmailInput.value = p.assigned_to_email;
+                unassignBtn.style.display = 'inline-block';
+                assignStatus.textContent = `Assigné à : ${p.assigned_to_email}`;
+            } else {
+                assignEmailInput.value = '';
+                unassignBtn.style.display = 'none';
+                assignStatus.textContent = "Non assigné (Orphelin)";
+            }
+
+            editorData.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Editor Listeners
+        const closeBtn = document.getElementById('editor-close');
+        if (closeBtn) closeBtn.addEventListener('click', () => {
+            document.getElementById('profile-editor').style.display = 'none';
+            currentProfileId = null;
+        });
+
+        // SAVE
+        const saveBtn = document.getElementById('save-settings');
+        if (saveBtn) saveBtn.addEventListener('click', async () => {
+            if (!currentProfileId) return;
+            const errDiv = document.getElementById('editor-error');
+            const okDiv = document.getElementById('editor-ok');
+            errDiv.style.display = 'none';
+            okDiv.style.display = 'none';
+
+            // Validate time
+            const normalizeTime = (t) => {
+                if (!t) return null;
+                const m = t.match(/^(\d{1,2}):(\d{2})$/);
+                if (m) return `${m[1].padStart(2, '0')}:${m[2]}:00`;
+                return t.length === 8 ? t : null;
+            };
+
+            const tz = document.getElementById('f-timezone').value.trim();
+            const cleanStart = normalizeTime(document.getElementById('f-start').value);
+            const cleanEnd = normalizeTime(document.getElementById('f-end').value);
+
+            if (!tz) { errDiv.innerText = "Timezone requise"; errDiv.style.display = 'block'; return; }
+            if (!cleanStart || !cleanEnd) { errDiv.innerText = "Heures invalides"; errDiv.style.display = 'block'; return; }
+
+            const csvToArr = (s) => s.split(',').map(x => x.trim()).filter(x => x.length > 0);
+
+            const payload = {
+                timezone: tz,
+                heure_debut: cleanStart,
+                heure_fin: cleanEnd,
+                jours_arriere_start: parseInt(document.getElementById('f-days-start').value) || 0,
+                jours_arriere_end: parseInt(document.getElementById('f-days-end').value) || 0,
+                debug_mode: document.getElementById('f-debug').checked,
+                status: document.getElementById('f-status').checked ? 'Active' : 'Inactive',
+                filters: {
+                    sender: csvToArr(document.getElementById('f-filter-sender').value),
+                    exclude: csvToArr(document.getElementById('f-filter-exclude').value),
+                    cc: csvToArr(document.getElementById('f-filter-cc').value),
+                    destined_to: csvToArr(document.getElementById('f-filter-destined').value),
+                    forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
+                },
+                only_unread: document.getElementById('f-unread').checked,
+                audio_actif: document.getElementById('f-audio').checked,
+                voice: document.getElementById('f-voice').value,
+                speed: parseFloat(document.getElementById('f-speed').value),
+                sort_mode: document.getElementById('f-sort').value,
+                language: document.getElementById('f-lang').value,
+                categories: document.getElementById('f-categories').value.trim()
+            };
+
+            try {
+                const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+
+                okDiv.textContent = "Sauvegardé !";
+                okDiv.style.display = 'block';
+                fetchProfiles();
+            } catch (e) {
+                errDiv.textContent = "Erreur: " + e.message;
+                errDiv.style.display = 'block';
+            }
+        });
+
+        // DELETE Profile
+        const btnDel = document.getElementById('btn-delete-profile');
+        if (btnDel) btnDel.addEventListener('click', async () => {
+            if (!currentProfileId) return;
+            if (!confirm("Vraiment supprimer ce profil ?")) return;
+            try {
+                const res = await fetch(`/portal-api/profiles/${currentProfileId}`, { method: 'DELETE', credentials: 'include' });
+                if (!res.ok) throw new Error(await res.text());
+                document.getElementById('profile-editor').style.display = 'none';
+                currentProfileId = null;
+                fetchProfiles();
+                showToast("Profil supprimé");
+            } catch (e) {
+                showToast("Erreur suppression: " + e.message, true);
+            }
+        });
+
+        // ASSIGN
+        const btnAssign = document.getElementById('btn-assign');
+        if (btnAssign) btnAssign.addEventListener('click', async () => {
+            if (!currentProfileId) return;
+            const email = document.getElementById('f-assign-email').value.trim();
+            if (!email) return alert("Email requis");
+            try {
+                const res = await fetch('/portal-api/admin/assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ profile_id: currentProfileId, user_email: email }),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                showToast("Assigné avec succès");
+                fetchProfiles();
+                // Close/Reopen to refresh assignment text
+                setTimeout(() => openEditor(currentProfileId), 500);
+            } catch (e) { showToast(e.message, true); }
+        });
+
+        // DESASSIGN
+        const btnUnassign = document.getElementById('btn-unassign');
+        if (btnUnassign) btnUnassign.addEventListener('click', async () => {
+            if (!currentProfileId) return;
+            if (!confirm("Retirer l'assignation ?")) return;
+            try {
+                const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, { method: 'DELETE', credentials: 'include' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast("Désassigné");
+                fetchProfiles();
+                setTimeout(() => openEditor(currentProfileId), 500);
+            } catch (e) { showToast(e.message, true); }
+        });
+
+
         function escapeHtml(s) {
             return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
         }
-
-        // Init
-        document.addEventListener('DOMContentLoaded', fetchUsers);
     </script>
 </body>
 
