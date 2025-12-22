@@ -272,17 +272,57 @@
   }
 
   // --- 6. COOKIE BANNER ---
+  // --- 6. COOKIE BANNER (CONSENT V2) ---
   function initCookieBanner() {
     const CONSENT_KEY = 'mial_cookie_consent';
-    if (localStorage.getItem(CONSENT_KEY)) return; // Déjà répondu
+    const SCRIPT_URL = '/assets/js/analytics.js';
 
-    // Création du HTML
+    // Global Consent Function
+    window.mialSetConsent = function (consent) {
+      if (consent.analytics) {
+        localStorage.setItem(CONSENT_KEY, 'accepted');
+        loadAnalytics();
+        closeBanner();
+      } else {
+        localStorage.setItem(CONSENT_KEY, 'declined');
+        // Reload to ensure tracking is stopped/cleaned
+        window.location.reload();
+      }
+    };
+
+    function loadAnalytics() {
+      // Avoid double load
+      if (document.querySelector(`script[src="${SCRIPT_URL}"]`)) return;
+      const script = document.createElement('script');
+      script.src = SCRIPT_URL;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    function closeBanner() {
+      const banner = document.getElementById('cookie-banner');
+      if (banner) {
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 500);
+      }
+    }
+
+    // Check existing consent
+    const current = localStorage.getItem(CONSENT_KEY);
+    if (current === 'accepted') {
+      loadAnalytics();
+      return; // Banner hidden
+    } else if (current === 'declined') {
+      return; // Banner hidden, tracking off
+    }
+
+    // Show Banner if no choice yet
     const banner = document.createElement('div');
     banner.id = 'cookie-banner';
     banner.innerHTML = `
       <div>
         <h4>🍪 Cookies & Confidentialité</h4>
-        <p>Cela nous aide pour le développement de notre projet.</p>
+        <p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes.</p>
       </div>
       <div class="cookie-actions">
         <button id="cookie-accept" class="btn btn-primary w-full" style="padding: 0.6rem;">Accepter</button>
@@ -291,26 +331,17 @@
     `;
     document.body.appendChild(banner);
 
-    // Animation d'entrée
-    requestAnimationFrame(() => {
-      banner.classList.add('visible');
-    });
+    // Animation
+    requestAnimationFrame(() => banner.classList.add('visible'));
 
     // Listeners
     document.getElementById('cookie-accept').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'accepted');
-      closeBanner();
+      window.mialSetConsent({ analytics: true });
     });
 
     document.getElementById('cookie-decline').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'declined');
-      closeBanner();
+      window.mialSetConsent({ analytics: false });
     });
-
-    function closeBanner() {
-      banner.classList.remove('visible');
-      setTimeout(() => banner.remove(), 500);
-    }
   }
 
   // --- INIT ---

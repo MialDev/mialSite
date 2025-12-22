@@ -33,10 +33,10 @@
         <a href="#how">Fonctionnement</a>
         <a href="#pricing">Tarifs</a>
         <a href="security.html">Sécurité</a>
-        <a href="login.html">Connexion</a>
-        <a href="#contact" class="btn btn-primary mobile-cta">Demander une démo</a>
+        <a href="login.html" data-track="cta_login">Connexion</a>
+        <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top">Demander une démo</a>
       </nav>
-      <a href="#contact" class="btn btn-primary desktop-cta">Demander une démo</a>
+      <a href="#contact" class="btn btn-primary desktop-cta" data-track="cta_demo_top">Demander une démo</a>
     </div>
   </header>
 
@@ -55,7 +55,7 @@
             sensibles)</li>
         </ul>
         <div class="cta-row">
-          <a href="#contact" class="btn btn-primary">Demander une démo</a>
+          <a href="#contact" class="btn btn-primary" data-track="cta_demo_mid">Demander une démo</a>
           <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
         </div>
       </div>
@@ -418,7 +418,8 @@
           <li>Résumé quotidien (texte)</li>
           <li><strong>Brief audio vocal</strong></li>
         </ul>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Brief">Choisir</a>
+        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Brief"
+          data-track="cta_choose_offer_basic">Choisir</a>
       </article>
 
       <article class="card glass-static card-hover pricing-card">
@@ -435,7 +436,8 @@
           <li>Extraction de données</li>
         </ul>
         <p style="font-size:0.75rem; color:#64748b; margin-top:12px;">* Coût de développement initial non inclus.</p>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Gestion">Choisir</a>
+        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Gestion"
+          data-track="cta_choose_offer_pro">Choisir</a>
       </article>
 
       <article class="card glass-static card-hover pricing-card">
