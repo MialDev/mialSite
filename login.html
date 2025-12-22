@@ -140,16 +140,16 @@
                         if (meRes.ok) {
                             const user = await meRes.json();
                             if (user.role === 'admin' || user.is_admin === true) {
-                                window.location.href = '/portal-api/admin/dashboard';
+                                window.location.href = '/portal-api/admin/ui/dashboard';
                             } else {
-                                window.location.href = 'dashboard.html';
+                                window.location.href = '/dashboard.html';
                             }
                         } else {
                             // Fallback
-                            window.location.href = 'dashboard.html';
+                            window.location.href = '/dashboard.html';
                         }
                     } catch (e) {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = '/dashboard.html';
                     }
                 } else {
                     try {

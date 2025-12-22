@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Admin — mial</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/admin.css">
+    <meta name="robots" content="noindex">
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="/portal-api/admin/ui/dashboard" class="brand">
+                <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <nav class="nav-links">
+                <a href="/portal-api/admin/ui/dashboard" style="color:var(--primary); font-weight:600;">Dashboard</a>
+                <a href="/portal-api/admin/ui/analytics">Analytics</a>
+                <button id="logout-btn" class="btn btn-ghost"
+                    style="border:none; background:transparent;">Déconnexion</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
+            <div class="card glass-static">
+                <h1>Admin Dashboard</h1>
+                <p class="muted">Bienvenue dans l'espace d'administration sécurisé.</p>
+
+                <div
+                    style="margin-top:2rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:24px;">
+                    <a href="/portal-api/admin/ui/analytics" class="card"
+                        style="text-decoration:none; color:inherit; border:1px solid #e2e8f0; transition:transform 0.2s;">
+                        <h3 style="margin-top:0; color:var(--primary);">📊 Analytics</h3>
+                        <p class="muted">Consulter les statistiques de trafic et conversions.</p>
+                    </a>
+
+                    <a href="/dashboard.html" class="card"
+                        style="text-decoration:none; color:inherit; border:1px solid #e2e8f0; transition:transform 0.2s;">
+                        <h3 style="margin-top:0; color:var(--blue);">👤 Vue Utilisateur</h3>
+                        <p class="muted">Accéder au dashboard client standard.</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                window.location.href = '/login.html';
+            } catch (e) {
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

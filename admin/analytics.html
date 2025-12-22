@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analytics — mial Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/admin.css">
+    <meta name="robots" content="noindex">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Analytics Specific overrides */
+        body {
+            background: #f8fafc;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .kpi-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media(max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="/portal-api/admin/ui/dashboard" class="brand">
+                <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <nav class="nav-links">
+                <a href="/portal-api/admin/ui/dashboard">Dashboard</a>
+                <a href="/portal-api/admin/ui/analytics" style="color:var(--primary); font-weight:600;">Analytics</a>
+                <button id="logout-btn" class="btn btn-ghost"
+                    style="border:none; background:transparent;">Déconnexion</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h1 style="margin:0; font-size:1.5rem;">Analytics</h1>
+                <select id="period-selector"
+                    style="padding: 8px 16px; border:1px solid #cbd5e1; border-radius:6px; background:white;">
+                    <option value="7d">7 derniers jours</option>
+                    <option value="30d" selected>30 derniers jours</option>
+                    <option value="90d">90 derniers jours</option>
+                </select>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h3>Sessions</h3>
+                    <div class="kpi-value" id="kpi-sessions">—</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Vues</h3>
+                    <div class="kpi-value" id="kpi-pageviews">—</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Engagées (>10s)</h3>
+                    <div class="kpi-value" id="kpi-engaged">—</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Conversions</h3>
+                    <div class="kpi-value" id="kpi-conversions" style="color:#16a34a;">—</div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card glass-static" style="margin-bottom: 24px; padding:24px;">
+                <h3 style="margin:0 0 16px 0;">Evolution</h3>
+                <canvas id="mainChart"></canvas>
+            </div>
+
+            <!-- Tables -->
+            <div class="grid-2">
+                <div class="card glass-static" style="padding:24px;">
+                    <h3 style="margin-top:0;">Top Sources</h3>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th style="text-align:right">Sessions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-sources-body"></tbody>
+                    </table>
+                </div>
+                <div class="card glass-static" style="padding:24px;">
+                    <h3 style="margin-top:0;">Top Pages</h3>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Page</th>
+                                <th style="text-align:right">Vues</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-pages-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card glass-static" style="padding:24px; margin-bottom:40px;">
+                <h3 style="margin-top:0;">Web Vitals (Médiane)</h3>
+                <div style="display:flex; justify-content: space-around; text-align: center; margin-top:20px;">
+                    <div>
+                        <div class="muted">LCP</div>
+                        <div class="kpi-value" id="vital-lcp" style="font-size:1.5rem">—</div>
+                    </div>
+                    <div>
+                        <div class="muted">CLS</div>
+                        <div class="kpi-value" id="vital-cls" style="font-size:1.5rem">—</div>
+                    </div>
+                    <div>
+                        <div class="muted">INP</div>
+                        <div class="kpi-value" id="vital-inp" style="font-size:1.5rem">—</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        const API_BASE = '/portal-api/admin/api/analytics';
+        let chartInstance = null;
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try { await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (e) { }
+            window.location.href = '/login.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData('30d');
+            document.getElementById('period-selector').addEventListener('change', (e) => loadData(e.target.value));
+        });
+
+        async function loadData(range) {
+            const to = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            if (range === '7d') d.setDate(d.getDate() - 7);
+            if (range === '30d') d.setDate(d.getDate() - 30);
+            if (range === '90d') d.setDate(d.getDate() - 90);
+            const from = d.toISOString().split('T')[0];
+
+            await Promise.all([
+                fetchSummary(from, to),
+                fetchTimeseries(from, to),
+                fetchSources(from, to),
+                fetchPages(from, to),
+                fetchVitals(from, to)
+            ]);
+        }
+
+        async function api(path) {
+            const res = await fetch(`${API_BASE}${path}`, { credentials: 'include' });
+            if (res.status === 401 || res.status === 403) {
+                alert("Session expirée ou accès non autorisé.");
+                window.location.href = '/login.html';
+                throw new Error("Unauthorized");
+            }
+            return res.json();
+        }
+
+        async function fetchSummary(from, to) {
+            const data = await api(`/summary?from=${from}&to=${to}`);
+            document.getElementById('kpi-sessions').innerText = data.sessions || 0;
+            document.getElementById('kpi-pageviews').innerText = data.pageviews || 0;
+            document.getElementById('kpi-engaged').innerText = data.engaged_sessions || 0;
+            document.getElementById('kpi-conversions').innerText = data.conversions || 0;
+        }
+
+        async function fetchTimeseries(from, to) {
+            const sData = await api(`/timeseries?metric=sessions&from=${from}&to=${to}`);
+            const cData = await api(`/timeseries?metric=conversions&from=${from}&to=${to}`);
+            renderChart(sData, cData);
+        }
+
+        async function fetchSources(from, to) {
+            const list = await api(`/sources?from=${from}&to=${to}`);
+            document.getElementById('table-sources-body').innerHTML = list.slice(0, 5).map(x => `
+                <tr><td><b>${esc(x.source)}</b> <span class="muted" style="font-size:0.8em">${esc(x.medium)}</span></td><td style="text-align:right">${x.sessions}</td></tr>
+            `).join('');
+        }
+
+        async function fetchPages(from, to) {
+            const list = await api(`/pages?from=${from}&to=${to}`);
+            document.getElementById('table-pages-body').innerHTML = list.slice(0, 5).map(x => `
+                <tr><td>${esc(x.path)}</td><td style="text-align:right">${x.pageviews}</td></tr>
+            `).join('');
+        }
+
+        async function fetchVitals(from, to) {
+            const data = await api(`/vitals?from=${from}&to=${to}`);
+            document.getElementById('vital-lcp').innerText = (data.lcp ? Math.round(data.lcp) + 'ms' : '—');
+            document.getElementById('vital-cls').innerText = (data.cls || 0).toFixed(2);
+            document.getElementById('vital-inp').innerText = (data.inp ? Math.round(data.inp) + 'ms' : '—');
+        }
+
+        function renderChart(sessions, conversions) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = sessions.map(x => x.date);
+            const dataS = sessions.map(x => x.value);
+            const dataC = labels.map(d => (conversions.find(y => y.date === d) || { value: 0 }).value);
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Sessions', data: dataS, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 },
+                        { label: 'Conversions', data: dataC, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', fill: true, tension: 0.3, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true },
+                        y1: { beginAtZero: true, display: false, position: 'right', grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        function esc(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    </script>
+</body>
+
+</html>
