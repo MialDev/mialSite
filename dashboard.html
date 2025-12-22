@@ -12,6 +12,20 @@
 </head>
 
 <body>
+    <script>
+        // ADMIN GUARD: Immediate Check
+        (async function () {
+            try {
+                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                if (res.status === 200) {
+                    const data = await res.json();
+                    if (data.role === 'admin' || data.is_admin === true) {
+                        window.location.replace('/portal-api/admin/dashboard');
+                    }
+                }
+            } catch (e) { }
+        })();
+    </script>
 
     <header id="site-header" class="nav">
         <div class="container nav-inner">
@@ -504,247 +518,256 @@
         }
 
         // Editor Event Listeners
-        document.getElementById('editor-close').addEventListener('click', () => {
-            document.getElementById('profile-editor').style.display = 'none';
-            currentProfileId = null;
-        });
-
-        document.getElementById('reset-schedule').addEventListener('click', () => {
-            if (currentProfileId) openEditor(currentProfileId);
-        });
-        document.getElementById('save-settings').addEventListener('click', async () => {
-            if (!currentProfileId) return;
-
-            const errDiv = document.getElementById('editor-error');
-            const okDiv = document.getElementById('editor-ok');
-            errDiv.style.display = 'none';
-            okDiv.style.display = 'none';
-
-            // 1. Validate
-            const tz = document.getElementById('f-timezone').value.trim();
-            const rawStart = document.getElementById('f-start').value;
-            const rawEnd = document.getElementById('f-end').value;
-            const daysStart = parseInt(document.getElementById('f-days-start').value, 10);
-            const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
-            const debugMode = document.getElementById('f-debug').checked;
-            const statusActive = document.getElementById('f-status').checked;
-
-            // Recap values
-            const onlyUnread = document.getElementById('f-unread').checked;
-            const audioActif = document.getElementById('f-audio').checked;
-            const voice = document.getElementById('f-voice').value;
-            const speed = parseFloat(document.getElementById('f-speed').value);
-            const sortMode = document.getElementById('f-sort').value;
-            const language = document.getElementById('f-lang').value;
-            const categories = document.getElementById('f-categories').value.trim();
-
-            if (!tz) {
-                errDiv.textContent = "La timezone est requise.";
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            const cleanStart = normalizeTimeToHHMMSS(rawStart);
-            const cleanEnd = normalizeTimeToHHMMSS(rawEnd);
-
-            if (!cleanStart || !cleanEnd) {
-                errDiv.textContent = "Heures invalides.";
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            if (isNaN(daysStart) || isNaN(daysEnd)) {
-                errDiv.textContent = "Les jours doivent être des nombres.";
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            if (daysStart > daysEnd) {
-                errDiv.textContent = "Attention: Jours arrière START > END ?";
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            // 2. Build Unified Payload
-
-            // Helper CSV -> Array
-            function csvToArr(s) {
-                if (!s) return [];
-                return s.split(',').map(x => x.trim()).filter(x => x.length > 0);
-            }
-
-            const payload = {
-                heure_debut: cleanStart,
-                heure_fin: cleanEnd,
-                timezone: tz,
-                jours_arriere_start: daysStart,
-                jours_arriere_end: daysEnd,
-                debug_mode: debugMode,
-                status: statusActive ? 'Active' : 'Inactive',
-
-                // Filters Object
-                filters: {
-                    sender: csvToArr(document.getElementById('f-filter-sender').value),
-                    exclude: csvToArr(document.getElementById('f-filter-exclude').value),
-                    cc: csvToArr(document.getElementById('f-filter-cc').value),
-                    destined_to: csvToArr(document.getElementById('f-filter-destined').value),
-                    forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
-                },
-
-                // Recap
-                only_unread: onlyUnread,
-                audio_actif: audioActif,
-                voice: voice,
-                speed: speed,
-                sort_mode: sortMode,
-                language: language,
-                categories: categories
-            };
-
-            try {
-                const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    credentials: 'include'
-                });
-
-                if (!res.ok) {
-                    const t = await res.text();
-                    throw new Error(`API ${res.status}: ${t}`);
-                }
-
-                // Success
-                okDiv.textContent = "Modifications enregistrées avec succès !";
-                okDiv.style.display = 'block';
-
-                // Refresh table
-                await fetchProfiles();
-
-            } catch (e) {
-                console.error(e);
-                errDiv.textContent = "Erreur: " + e.message;
-                errDiv.style.display = 'block';
-            }
-        });
-
-        // ----------------------------------------------------
-        // ADMIN ACTIONS: DELETE
-        // ----------------------------------------------------
-        const btnDelete = document.getElementById('btn-delete-profile');
-        if (btnDelete) {
-            btnDelete.addEventListener('click', async () => {
-                if (!currentProfileId) return;
-                if (!confirm("Êtes-vous sûr de vouloir SUPPRIMER ce profil ? Cette action est irréversible.")) return;
-
-                try {
-                    const res = await fetch(`/portal-api/profiles/${currentProfileId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
-
-                    if (!res.ok) {
-                        const t = await res.text();
-                        throw new Error(`Delete failed (${res.status}): ${t}`);
-                    }
-
-                    // Success
-                    document.getElementById('profile-editor').style.display = 'none';
-                    currentProfileId = null;
-                    await fetchProfiles();
-                    alert("Profil supprimé.");
-
-                } catch (e) {
-                    alert("Erreur suppression: " + e.message);
-                }
+        const btnClose = document.getElementById('editor-close');
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                document.getElementById('profile-editor').style.display = 'none';
+                currentProfileId = null;
             });
         }
 
-        // ----------------------------------------------------
-        // ADMIN ACTIONS: ASSIGN / UNASSIGN
-        // ----------------------------------------------------
-        const btnAssign = document.getElementById('btn-assign');
-        if (btnAssign) {
-            btnAssign.addEventListener('click', async () => {
+        const btnReset = document.getElementById('reset-schedule');
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                if (currentProfileId) openEditor(currentProfileId);
+            });
+        }
+
+        const btnSave = document.getElementById('save-settings');
+        if (btnSave) {
+            btnSave.addEventListener('click', async () => {
                 if (!currentProfileId) return;
-                const email = document.getElementById('f-assign-email').value.trim();
-                if (!email) {
-                    alert("Veuillez entrer un email.");
+
+                const errDiv = document.getElementById('editor-error');
+                const okDiv = document.getElementById('editor-ok');
+                if (errDiv) errDiv.style.display = 'none';
+                if (okDiv) okDiv.style.display = 'none';
+
+                // 1. Validate
+                const tz = document.getElementById('f-timezone').value.trim();
+                const rawStart = document.getElementById('f-start').value;
+                const rawEnd = document.getElementById('f-end').value;
+                const daysStart = parseInt(document.getElementById('f-days-start').value, 10);
+                const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
+                const debugMode = document.getElementById('f-debug').checked;
+                const statusActive = document.getElementById('f-status').checked;
+
+                // Recap values
+                const onlyUnread = document.getElementById('f-unread').checked;
+                const audioActif = document.getElementById('f-audio').checked;
+                const voice = document.getElementById('f-voice').value;
+                const speed = parseFloat(document.getElementById('f-speed').value);
+                const sortMode = document.getElementById('f-sort').value;
+                const language = document.getElementById('f-lang').value;
+                const categories = document.getElementById('f-categories').value.trim();
+
+                if (!tz) {
+                    errDiv.textContent = "La timezone est requise.";
+                    errDiv.style.display = 'block';
                     return;
                 }
 
+                const cleanStart = normalizeTimeToHHMMSS(rawStart);
+                const cleanEnd = normalizeTimeToHHMMSS(rawEnd);
+
+                if (!cleanStart || !cleanEnd) {
+                    errDiv.textContent = "Heures invalides.";
+                    errDiv.style.display = 'block';
+                    return;
+                }
+
+                if (isNaN(daysStart) || isNaN(daysEnd)) {
+                    errDiv.textContent = "Les jours doivent être des nombres.";
+                    errDiv.style.display = 'block';
+                    return;
+                }
+
+                if (daysStart > daysEnd) {
+                    errDiv.textContent = "Attention: Jours arrière START > END ?";
+                    errDiv.style.display = 'block';
+                    return;
+                }
+
+                // 2. Build Unified Payload
+
+                // Helper CSV -> Array
+                function csvToArr(s) {
+                    if (!s) return [];
+                    return s.split(',').map(x => x.trim()).filter(x => x.length > 0);
+                }
+
+                const payload = {
+                    heure_debut: cleanStart,
+                    heure_fin: cleanEnd,
+                    timezone: tz,
+                    jours_arriere_start: daysStart,
+                    jours_arriere_end: daysEnd,
+                    debug_mode: debugMode,
+                    status: statusActive ? 'Active' : 'Inactive',
+
+                    // Filters Object
+                    filters: {
+                        sender: csvToArr(document.getElementById('f-filter-sender').value),
+                        exclude: csvToArr(document.getElementById('f-filter-exclude').value),
+                        cc: csvToArr(document.getElementById('f-filter-cc').value),
+                        destined_to: csvToArr(document.getElementById('f-filter-destined').value),
+                        forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
+                    },
+
+                    // Recap
+                    only_unread: onlyUnread,
+                    audio_actif: audioActif,
+                    voice: voice,
+                    speed: speed,
+                    sort_mode: sortMode,
+                    language: language,
+                    categories: categories
+                };
+
                 try {
-                    const res = await fetch('/portal-api/admin/assign', {
-                        method: 'POST',
+                    const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
+                        method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            profile_id: currentProfileId,
-                            user_email: email
-                        }),
+                        body: JSON.stringify(payload),
                         credentials: 'include'
                     });
 
                     if (!res.ok) {
                         const t = await res.text();
-                        if (res.status === 400) throw new Error("Utilisateur introuvable ou email invalide.");
-                        if (res.status === 409) throw new Error("Déjà assigné.");
-                        throw new Error(`Assign Error (${res.status}): ${t}`);
+                        throw new Error(`API ${res.status}: ${t}`);
                     }
 
-                    // Success -> Refresh to see "assigned_to_email" updated
+                    // Success
+                    okDiv.textContent = "Modifications enregistrées avec succès !";
+                    okDiv.style.display = 'block';
+
+                    // Refresh table
                     await fetchProfiles();
 
-                    // Re-open editor to update state visually (or just rely on fetchProfiles -> openEditor call? 
-                    // Simpler: reload profiles, then re-open editor for same ID
-                    setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
-                    alert("Assignation réussie.");
-
                 } catch (e) {
-                    alert(e.message);
+                    console.error(e);
+                    errDiv.textContent = "Erreur: " + e.message;
+                    errDiv.style.display = 'block';
                 }
             });
-        }
 
-        const btnUnassign = document.getElementById('btn-unassign');
-        if (btnUnassign) {
-            btnUnassign.addEventListener('click', async () => {
-                if (!currentProfileId) return;
-                if (!confirm("Retirer l'assignation ?")) return;
+            // ----------------------------------------------------
+            // ADMIN ACTIONS: DELETE
+            // ----------------------------------------------------
+            const btnDelete = document.getElementById('btn-delete-profile');
+            if (btnDelete) {
+                btnDelete.addEventListener('click', async () => {
+                    if (!currentProfileId) return;
+                    if (!confirm("Êtes-vous sûr de vouloir SUPPRIMER ce profil ? Cette action est irréversible.")) return;
 
-                try {
-                    const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
+                    try {
+                        const res = await fetch(`/portal-api/profiles/${currentProfileId}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
 
-                    if (!res.ok) {
-                        const t = await res.text();
-                        throw new Error(`Unassign Error (${res.status}): ${t}`);
+                        if (!res.ok) {
+                            const t = await res.text();
+                            throw new Error(`Delete failed (${res.status}): ${t}`);
+                        }
+
+                        // Success
+                        document.getElementById('profile-editor').style.display = 'none';
+                        currentProfileId = null;
+                        await fetchProfiles();
+                        alert("Profil supprimé.");
+
+                    } catch (e) {
+                        alert("Erreur suppression: " + e.message);
                     }
-
-                    await fetchProfiles();
-                    setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
-                    alert("Désassigné.");
-
-                } catch (e) {
-                    alert(e.message);
-                }
-            });
-        }
-
-
-        // 5. Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            try {
-                await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
-                window.location.href = 'login.html';
-            } catch (e) {
-                window.location.href = 'login.html';
+                });
             }
-        });
 
-        // Init
-        document.addEventListener('DOMContentLoaded', initDashboard);
+            // ----------------------------------------------------
+            // ADMIN ACTIONS: ASSIGN / UNASSIGN
+            // ----------------------------------------------------
+            const btnAssign = document.getElementById('btn-assign');
+            if (btnAssign) {
+                btnAssign.addEventListener('click', async () => {
+                    if (!currentProfileId) return;
+                    const email = document.getElementById('f-assign-email').value.trim();
+                    if (!email) {
+                        alert("Veuillez entrer un email.");
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch('/portal-api/admin/assign', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                profile_id: currentProfileId,
+                                user_email: email
+                            }),
+                            credentials: 'include'
+                        });
+
+                        if (!res.ok) {
+                            const t = await res.text();
+                            if (res.status === 400) throw new Error("Utilisateur introuvable ou email invalide.");
+                            if (res.status === 409) throw new Error("Déjà assigné.");
+                            throw new Error(`Assign Error (${res.status}): ${t}`);
+                        }
+
+                        // Success -> Refresh to see "assigned_to_email" updated
+                        await fetchProfiles();
+
+                        // Re-open editor to update state visually (or just rely on fetchProfiles -> openEditor call? 
+                        // Simpler: reload profiles, then re-open editor for same ID
+                        setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
+                        alert("Assignation réussie.");
+
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+            }
+
+            const btnUnassign = document.getElementById('btn-unassign');
+            if (btnUnassign) {
+                btnUnassign.addEventListener('click', async () => {
+                    if (!currentProfileId) return;
+                    if (!confirm("Retirer l'assignation ?")) return;
+
+                    try {
+                        const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+
+                        if (!res.ok) {
+                            const t = await res.text();
+                            throw new Error(`Unassign Error (${res.status}): ${t}`);
+                        }
+
+                        await fetchProfiles();
+                        setTimeout(() => openEditor(currentProfileId, 'schedule'), 100);
+                        alert("Désassigné.");
+
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                });
+            }
+
+
+            // 5. Logout
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try {
+                    await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                    window.location.href = 'login.html';
+                } catch (e) {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // Init
+            document.addEventListener('DOMContentLoaded', initDashboard);
 
 
 
