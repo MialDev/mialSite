@@ -24,6 +24,8 @@
             </button>
             <nav class="nav-links">
                 <a href="accueil.html">Accueil</a>
+                <a href="/portal-api/admin/analytics" id="nav-analytics"
+                    style="display:none; color: var(--primary);">Analytics</a>
                 <a href="crm.html">CRM</a>
                 <a href="audio.html">Audio</a>
                 <!-- Logout button -->
@@ -751,6 +753,11 @@
                 // Store Role Global
                 currentUserRole = user.role; // 'admin' or 'user'
                 console.log("Logged as:", user.email, "Role:", currentUserRole);
+
+                if (currentUserRole === 'admin') {
+                    const navAnalytics = document.getElementById('nav-analytics');
+                    if (navAnalytics) navAnalytics.style.display = 'inline-block';
+                }
 
                 document.getElementById('user-email').textContent = user.email || 'Utilisateur';
 
