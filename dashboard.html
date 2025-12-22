@@ -744,14 +744,17 @@
 
 
             // 5. Logout
-            document.getElementById('logout-btn').addEventListener('click', async () => {
-                try {
-                    await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
-                    window.location.href = 'login.html';
-                } catch (e) {
-                    window.location.href = 'login.html';
-                }
-            });
+            const btnLogout = document.getElementById('logout-btn');
+            if (btnLogout) {
+                btnLogout.addEventListener('click', async () => {
+                    try {
+                        await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                        window.location.href = 'login.html';
+                    } catch (e) {
+                        window.location.href = 'login.html';
+                    }
+                });
+            }
 
             // Init
             document.addEventListener('DOMContentLoaded', initDashboard);

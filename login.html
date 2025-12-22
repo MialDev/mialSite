@@ -118,9 +118,17 @@
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
             const errorDiv = document.getElementById('error-message');
+
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
+
+            // Disable button
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Connexion...';
+            }
 
             const email = e.target.email.value;
             const password = e.target.password.value;
@@ -135,32 +143,27 @@
 
                 if (res.ok) {
                     console.log("LOGIN OK, checking /me...");
-                    // Check Role for Redirection
                     try {
                         const meRes = await fetch('/portal-api/me', { credentials: 'include' });
-                        console.log("ME status=", meRes.status);
-
                         if (meRes.ok) {
                             const user = await meRes.json();
-                            console.log("ME body=", user);
-
                             if (user.role === 'admin' || user.is_admin === true) {
-                                console.log("REDIRECT admin -> /portal-api/admin/dashboard");
-                                window.location.href = '/portal-api/admin/dashboard';
+                                window.location.replace('/portal-api/admin/dashboard');
                             } else {
-                                console.log("REDIRECT user -> /dashboard.html");
-                                window.location.href = '/dashboard.html';
+                                window.location.replace('/dashboard.html');
                             }
                         } else {
-                            console.error("Login success but /me failed");
-                            // Fallback safety
-                            window.location.href = '/dashboard.html';
+                            // Fallback
+                            window.location.replace('/dashboard.html');
                         }
                     } catch (e) {
-                        console.error("Error fetching /me", e);
-                        window.location.href = '/dashboard.html';
+                        window.location.replace('/dashboard.html');
                     }
                 } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'Se connecter';
+                    }
                     try {
                         const data = await res.json();
                         errorDiv.textContent = data.detail || 'Erreur de connexion';
@@ -171,6 +174,10 @@
                 }
             } catch (err) {
                 console.error(err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Se connecter';
+                }
                 errorDiv.textContent = 'Impossible de contacter le serveur';
                 errorDiv.style.display = 'block';
             }
