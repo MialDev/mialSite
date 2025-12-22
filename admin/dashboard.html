@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="/style.css">
 
-    <!-- Light Admin Guard -->
+    <!-- Admin Guard -->
     <script>
         (async () => {
             try {
@@ -29,6 +29,64 @@
     </script>
 
     <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        .action-btn:hover {
+            background: #f8fafc;
+        }
+
+        .badge-active {
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-inactive {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -44,6 +102,7 @@
             <nav class="nav-links">
                 <a href="/accueil.html">Accueil</a>
                 <a href="/portal-api/admin/dashboard" style="font-weight: 600;">Admin</a>
+                <a href="/portal-api/admin/analytics">Analytics</a>
                 <a href="/dashboard.html">User View</a>
                 <button id="logout-btn" class="btn btn-ghost"
                     style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
@@ -53,35 +112,52 @@
 
     <section class="section" style="padding-top: 140px;">
         <div class="container">
+            <!-- Hero -->
             <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
-                <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Admin Dashboard</h1>
-                <p class="muted">Administration globale</p>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
-                <!-- Card 1: Analytics -->
-                <div class="card glass-static"
-                    style="padding: 24px; display: flex; flex-direction: column; align-items: flex-start;">
-                    <h2 style="font-size: 1.25rem; margin-bottom: 8px;">Analytics</h2>
-                    <p class="muted" style="margin-bottom: 16px;">Vues, sessions et métriques de performance.</p>
-                    <a href="/portal-api/admin/analytics" class="btn btn-primary">Voir les stats</a>
-                </div>
-
-                <!-- Card 2: User Dashboard -->
-                <div class="card glass-static"
-                    style="padding: 24px; display: flex; flex-direction: column; align-items: flex-start;">
-                    <h2 style="font-size: 1.25rem; margin-bottom: 8px;">User Dashboard</h2>
-                    <p class="muted" style="margin-bottom: 16px;">Accéder à la vue utilisateur standard.</p>
-                    <a href="/dashboard.html" class="btn btn-ghost">Aller au dashboard user</a>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Admin Dashboard</h1>
+                        <p class="muted">Administration globale</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <a href="/portal-api/admin/analytics" class="btn btn-ghost btn-small">Analytics</a>
+                        <a href="/dashboard.html" class="btn btn-primary btn-small">User Dashboard</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="card glass-static" style="margin-top: 32px; padding: 32px;">
-                <h2 style="font-size: 1.25rem; margin-bottom: 16px;">Admin Tools</h2>
-                <p class="muted">Fonctionnalités à venir (Gestion utilisateurs, Logs, etc.)</p>
+            <!-- Users Table -->
+            <div class="card glass-static" style="padding: 0; overflow:hidden;">
+                <div
+                    style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.25rem; margin:0;">Gestion des utilisateurs</h2>
+                    <button class="action-btn" onclick="fetchUsers()">Rafraîchir</button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Actif</th>
+                                <th>Créé le</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-body">
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
     </section>
+
+    <div id="toast" class="toast">Action effectuée</div>
 
     <footer class="footer">
         <div class="container center">
@@ -90,14 +166,12 @@
     </footer>
 
     <script>
+        // Nav
         const navToggle = document.querySelector('.nav-toggle');
         const nav = document.querySelector('.nav');
-        if (navToggle) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('nav-open');
-            });
-        }
+        if (navToggle) navToggle.addEventListener('click', () => nav.classList.toggle('nav-open'));
 
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
             try {
                 await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -106,6 +180,107 @@
                 window.location.href = '/login.html';
             }
         });
+
+        // Toast
+        function showToast(msg, error = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = error ? '#ef4444' : '#333';
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3000);
+        }
+
+        // Logic
+        async function fetchUsers() {
+            const tbody = document.getElementById('users-body');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
+            try {
+                const res = await fetch('/portal-api/admin/api/users', { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load users');
+                const users = await res.json();
+                renderUsers(users);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red; padding: 24px;">Erreur: ${e.message}</td></tr>`;
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-body');
+            if (!users.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Aucun utilisateur trouvé.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const created = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+                const activeBadge = u.is_active
+                    ? `<span class="badge-active">OUI</span>`
+                    : `<span class="badge-inactive">NON</span>`;
+
+                return `
+                <tr data-id="${u.id}">
+                    <td><strong>${escapeHtml(u.email)}</strong></td>
+                    <td>
+                        <select onchange="updateUser('${u.id}', 'role', this.value)" class="action-btn" style="padding: 2px;">
+                            <option value="user" ${u.role !== 'admin' ? 'selected' : ''}>User</option>
+                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button onclick="updateUser('${u.id}', 'is_active', ${!u.is_active})" class="action-btn" title="Basculer actif/inactif">
+                            ${activeBadge}
+                        </button>
+                    </td>
+                    <td class="muted">${created}</td>
+                    <td style="text-align: right;">
+                        <button class="action-btn" style="color: #ef4444; border-color: #fecaca;" onclick="deleteUser('${u.id}')">Supprimer</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        async function updateUser(id, field, value) {
+            try {
+                const payload = {};
+                payload[field] = value;
+
+                const res = await fetch(`/portal-api/admin/api/users/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                if (!res.ok) throw new Error('Update failed');
+                showToast("Mis à jour avec succès");
+                fetchUsers(); // Refresh to ensure state sync
+            } catch (e) {
+                showToast(e.message, true);
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("Attention: Supprimer cet utilisateur ?")) return;
+            try {
+                const res = await fetch(`/portal-api/admin/api/users/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error('Delete failed');
+                showToast("Utilisateur supprimé");
+                fetchUsers();
+            } catch (e) {
+                showToast(e.message, true);
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', fetchUsers);
     </script>
 </body>
 

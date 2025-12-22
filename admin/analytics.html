@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="/style.css">
 
-    <!-- Light Admin Guard -->
+    <!-- Admin Guard -->
     <script>
         (async () => {
             try {
@@ -29,6 +29,48 @@
     </script>
 
     <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .kpi-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media(max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -45,6 +87,7 @@
                 <a href="/accueil.html">Accueil</a>
                 <a href="/portal-api/admin/dashboard">Admin</a>
                 <a href="/portal-api/admin/analytics" style="font-weight: 600;">Analytics</a>
+                <a href="/dashboard.html">User View</a>
                 <button id="logout-btn" class="btn btn-ghost"
                     style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
             </nav>
@@ -53,20 +96,76 @@
 
     <section class="section" style="padding-top: 140px;">
         <div class="container">
+            <!-- Hero -->
             <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
-                <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Analytics</h1>
-                <p class="muted">Métriques et statistiques</p>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Analytics</h1>
+                        <p class="muted">Métriques (7 derniers jours)</p>
+                    </div>
+                    <a href="/portal-api/admin/dashboard" class="btn btn-ghost btn-small">Retour Admin</a>
+                </div>
             </div>
 
-            <div class="card glass-static" style="padding: 40px; text-align: center;">
-                <h2 style="font-size: 1.5rem; margin-bottom: 16px;">Coming Soon</h2>
-                <p class="muted" style="margin-bottom: 24px;">Les outils d'analyse avancés seront disponibles
-                    prochainement.</p>
-                <a href="/portal-api/admin/dashboard" class="btn btn-primary">Retour au Dashboard Admin</a>
-
-                <div id="analytics-content" style="margin-top: 32px;">
-                    <!-- Placeholder for future charts injection -->
+            <!-- Content -->
+            <div id="analytics-container">
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <h3>Sessions</h3>
+                        <div class="kpi-value" id="k-sessions">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Vues</h3>
+                        <div class="kpi-value" id="k-pageviews">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Sessions engagées</h3>
+                        <div class="kpi-value" id="k-engaged">—</div>
+                    </div>
                 </div>
+
+                <div class="grid-2">
+                    <!-- Top Pages -->
+                    <div class="card glass-static" style="padding: 24px;">
+                        <h3 style="margin-top:0; margin-bottom:16px;">Pages les plus vues</h3>
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Page</th>
+                                    <th style="text-align:right">Vues</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-pages">
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Last Events -->
+                    <div class="card glass-static" style="padding: 24px;">
+                        <h3 style="margin-top:0; margin-bottom:16px;">Derniers événements</h3>
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Quand</th>
+                                    <th>Quoi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-events">
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-data" style="display:none; text-align:center; padding: 40px;" class="card glass-static">
+                <h3 class="muted">Aucune donnée pour le moment.</h3>
+                <p>Installez le script de tracking et générez du trafic.</p>
             </div>
 
         </div>
@@ -81,11 +180,7 @@
     <script>
         const navToggle = document.querySelector('.nav-toggle');
         const nav = document.querySelector('.nav');
-        if (navToggle) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('nav-open');
-            });
-        }
+        if (navToggle) navToggle.addEventListener('click', () => nav.classList.toggle('nav-open'));
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             try {
@@ -95,6 +190,53 @@
                 window.location.href = '/login.html';
             }
         });
+
+        // Analytics Logic
+        async function loadAnalytics() {
+            try {
+                const res = await fetch('/portal-api/admin/api/analytics/summary?days=7', { credentials: 'include' });
+                if (!res.ok) throw new Error('Fetch Error');
+                const data = await res.json();
+
+                // If completely empty (no sessions), show fallback maybe?
+                // But data structure is expected: { sessions: N, pageviews: N, ... top_pages: [], last_events: [] }
+
+                document.getElementById('k-sessions').textContent = data.sessions || 0;
+                document.getElementById('k-pageviews').textContent = data.pageviews || 0;
+                document.getElementById('k-engaged').textContent = data.engaged_sessions || 0;
+
+                // Tables
+                const tPages = document.getElementById('table-pages');
+                if (data.top_pages && data.top_pages.length > 0) {
+                    tPages.innerHTML = data.top_pages.map(p => `<tr><td>${esc(p.path)}</td><td style="text-align:right">${p.count}</td></tr>`).join('');
+                } else {
+                    tPages.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                }
+
+                const tEvents = document.getElementById('table-events');
+                if (data.last_events && data.last_events.length > 0) {
+                    tEvents.innerHTML = data.last_events.map(e => `
+                        <tr>
+                            <td class="muted" style="font-size:0.85rem">${new Date(e.time).toLocaleTimeString()}</td>
+                            <td>${esc(e.path)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tEvents.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                }
+
+            } catch (e) {
+                console.error(e);
+                // Assume 404 or backend not ready -> Show "No Data" or Error
+                document.getElementById('analytics-container').style.display = 'none';
+                document.getElementById('no-data').style.display = 'block';
+                document.getElementById('no-data').querySelector('h3').textContent = "Données indisponibles (Backend)";
+            }
+        }
+
+        function esc(s) { return String(s ?? '').replaceAll('<', '&lt;'); }
+
+        document.addEventListener('DOMContentLoaded', loadAnalytics);
     </script>
 </body>
 
