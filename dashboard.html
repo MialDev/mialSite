@@ -298,6 +298,13 @@
                 currentUserRole = user.role; // 'admin' or 'user'
                 console.log("Logged as:", user.email, "Role:", currentUserRole);
 
+                // SAFETY NET: Admins should not be here
+                if (currentUserRole === 'admin' || user.is_admin === true) {
+                    console.warn("Admin detected on User Dashboard. Redirecting...");
+                    window.location.replace("/portal-api/admin/dashboard");
+                    return;
+                }
+
                 document.getElementById('user-email').textContent = user.email || 'Utilisateur';
 
                 // Load Profiles

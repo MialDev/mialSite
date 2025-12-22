@@ -134,21 +134,30 @@
                 });
 
                 if (res.ok) {
+                    console.log("LOGIN OK, checking /me...");
                     // Check Role for Redirection
                     try {
                         const meRes = await fetch('/portal-api/me', { credentials: 'include' });
+                        console.log("ME status=", meRes.status);
+
                         if (meRes.ok) {
                             const user = await meRes.json();
+                            console.log("ME body=", user);
+
                             if (user.role === 'admin' || user.is_admin === true) {
-                                window.location.href = '/portal-api/admin/ui/dashboard';
+                                console.log("REDIRECT admin -> /portal-api/admin/dashboard");
+                                window.location.href = '/portal-api/admin/dashboard';
                             } else {
+                                console.log("REDIRECT user -> /dashboard.html");
                                 window.location.href = '/dashboard.html';
                             }
                         } else {
-                            // Fallback
+                            console.error("Login success but /me failed");
+                            // Fallback safety
                             window.location.href = '/dashboard.html';
                         }
                     } catch (e) {
+                        console.error("Error fetching /me", e);
                         window.location.href = '/dashboard.html';
                     }
                 } else {
