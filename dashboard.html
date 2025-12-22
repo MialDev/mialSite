@@ -7,25 +7,12 @@
     <title>Dashboard — mial</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="admin.css">
+
     <meta name="theme-color" content="#1fb6ff">
 </head>
 
 <body>
-    <script>
-        // ADMIN GUARD: Immediate Check
-        (async function () {
-            try {
-                const res = await fetch('/portal-api/me', { credentials: 'include' });
-                if (res.status === 200) {
-                    const data = await res.json();
-                    if (data.role === 'admin' || data.is_admin === true) {
-                        window.location.replace('/portal-api/admin/dashboard');
-                    }
-                }
-            } catch (e) { }
-        })();
-    </script>
+
 
     <header id="site-header" class="nav">
         <div class="container nav-inner">
