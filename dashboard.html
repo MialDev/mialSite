@@ -24,8 +24,6 @@
             </button>
             <nav class="nav-links">
                 <a href="accueil.html">Accueil</a>
-                <a href="/portal-api/admin/analytics" id="nav-analytics"
-                    style="display:none; color: var(--primary);">Analytics</a>
                 <a href="crm.html">CRM</a>
                 <a href="audio.html">Audio</a>
                 <!-- Logout button -->
@@ -295,6 +293,11 @@
                 if (!res.ok) throw new Error('Auth fetch error');
 
                 const user = await res.json();
+
+                // Store Role Global
+                currentUserRole = user.role; // 'admin' or 'user'
+                console.log("Logged as:", user.email, "Role:", currentUserRole);
+
                 document.getElementById('user-email').textContent = user.email || 'Utilisateur';
 
                 // Load Profiles
@@ -736,38 +739,7 @@
         // Init
         document.addEventListener('DOMContentLoaded', initDashboard);
 
-        // UPDATE initDashboard to store role
-        // We override the previous initDashboard to capture role
-        const oldInit = initDashboard;
-        initDashboard = async function () {
-            try {
-                const res = await fetch('/portal-api/me', { credentials: 'include' });
-                if (res.status === 401) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                if (!res.ok) throw new Error('Auth fetch error');
 
-                const user = await res.json();
-
-                // Store Role Global
-                currentUserRole = user.role; // 'admin' or 'user'
-                console.log("Logged as:", user.email, "Role:", currentUserRole);
-
-                if (currentUserRole === 'admin') {
-                    const navAnalytics = document.getElementById('nav-analytics');
-                    if (navAnalytics) navAnalytics.style.display = 'inline-block';
-                }
-
-                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
-
-                // Load Profiles
-                fetchProfiles();
-
-            } catch (err) {
-                console.error(err);
-            }
-        };
 
     </script>
 </body>
