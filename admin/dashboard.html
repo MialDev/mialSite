@@ -4,55 +4,100 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Admin — mial</title>
+    <title>Admin Dashboard — mial</title>
     <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/admin.css">
-    <meta name="robots" content="noindex">
+
+    <!-- Light Admin Guard -->
+    <script>
+        (async () => {
+            try {
+                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                if (!res.ok) {
+                    if (res.status === 401) window.location.replace('/login.html');
+                    else window.location.replace('/dashboard.html');
+                    return;
+                }
+                const user = await res.json();
+                if (user.role !== 'admin' && user.is_admin !== true) {
+                    window.location.replace('/dashboard.html');
+                }
+            } catch (e) {
+                window.location.replace('/login.html');
+            }
+        })();
+    </script>
+
+    <meta name="theme-color" content="#1fb6ff">
 </head>
 
 <body>
-
     <header id="site-header" class="nav">
         <div class="container nav-inner">
             <a href="/portal-api/admin/dashboard" class="brand">
                 <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
                     height="88">
             </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
             <nav class="nav-links">
-                <a href="/portal-api/admin/dashboard" style="color:var(--primary); font-weight:600;">Dashboard</a>
-                <a href="/portal-api/admin/analytics">Analytics</a>
+                <a href="/accueil.html">Accueil</a>
+                <a href="/portal-api/admin/dashboard" style="font-weight: 600;">Admin</a>
+                <a href="/dashboard.html">User View</a>
                 <button id="logout-btn" class="btn btn-ghost"
-                    style="border:none; background:transparent;">Déconnexion</button>
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
             </nav>
         </div>
     </header>
 
     <section class="section" style="padding-top: 140px;">
         <div class="container">
-            <div class="card glass-static">
-                <h1>Admin Dashboard</h1>
-                <p class="muted">Bienvenue dans l'espace d'administration sécurisé.</p>
+            <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
+                <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Admin Dashboard</h1>
+                <p class="muted">Administration globale</p>
+            </div>
 
-                <div
-                    style="margin-top:2rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:24px;">
-                    <a href="/portal-api/admin/analytics" class="card"
-                        style="text-decoration:none; color:inherit; border:1px solid #e2e8f0; transition:transform 0.2s;">
-                        <h3 style="margin-top:0; color:var(--primary);">📊 Analytics</h3>
-                        <p class="muted">Consulter les statistiques de trafic et conversions.</p>
-                    </a>
-
-                    <a href="/dashboard.html" class="card"
-                        style="text-decoration:none; color:inherit; border:1px solid #e2e8f0; transition:transform 0.2s;">
-                        <h3 style="margin-top:0; color:var(--blue);">👤 Vue Utilisateur</h3>
-                        <p class="muted">Accéder au dashboard client standard.</p>
-                    </a>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                <!-- Card 1: Analytics -->
+                <div class="card glass-static"
+                    style="padding: 24px; display: flex; flex-direction: column; align-items: flex-start;">
+                    <h2 style="font-size: 1.25rem; margin-bottom: 8px;">Analytics</h2>
+                    <p class="muted" style="margin-bottom: 16px;">Vues, sessions et métriques de performance.</p>
+                    <a href="/portal-api/admin/analytics" class="btn btn-primary">Voir les stats</a>
                 </div>
+
+                <!-- Card 2: User Dashboard -->
+                <div class="card glass-static"
+                    style="padding: 24px; display: flex; flex-direction: column; align-items: flex-start;">
+                    <h2 style="font-size: 1.25rem; margin-bottom: 8px;">User Dashboard</h2>
+                    <p class="muted" style="margin-bottom: 16px;">Accéder à la vue utilisateur standard.</p>
+                    <a href="/dashboard.html" class="btn btn-ghost">Aller au dashboard user</a>
+                </div>
+            </div>
+
+            <div class="card glass-static" style="margin-top: 32px; padding: 32px;">
+                <h2 style="font-size: 1.25rem; margin-bottom: 16px;">Admin Tools</h2>
+                <p class="muted">Fonctionnalités à venir (Gestion utilisateurs, Logs, etc.)</p>
             </div>
         </div>
     </section>
 
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted">© 2025 mial — Admin · <a href="/mentions-legales.html">Mentions Légales</a></p>
+        </div>
+    </footer>
+
     <script>
+        const navToggle = document.querySelector('.nav-toggle');
+        const nav = document.querySelector('.nav');
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('nav-open');
+            });
+        }
+
         document.getElementById('logout-btn').addEventListener('click', async () => {
             try {
                 await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
