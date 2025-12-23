@@ -282,11 +282,12 @@
     </footer>
 
     <script src="main.js"></script>
+    <script src="/api.js"></script>
     <script>
         // 1. Check Auth & Load Me
         async function initDashboard() {
             try {
-                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (res.status === 401) {
                     window.location.href = 'login.html';
                     return;
@@ -324,7 +325,7 @@
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
 
             try {
-                const res = await fetch('/portal-api/profiles', { credentials: 'include' });
+                const res = await fetch(apiUrl('/profiles'), { credentials: 'include' });
                 if (!res.ok) throw new Error('Failed to load profiles');
                 const profiles = await res.json();
                 renderProfiles(profiles);
@@ -619,7 +620,7 @@
                 };
 
                 try {
-                    const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
+                    const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
@@ -655,7 +656,7 @@
                     if (!confirm("Êtes-vous sûr de vouloir SUPPRIMER ce profil ? Cette action est irréversible.")) return;
 
                     try {
-                        const res = await fetch(`/portal-api/profiles/${currentProfileId}`, {
+                        const res = await fetch(apiUrl(`/profiles/${currentProfileId}`), {
                             method: 'DELETE',
                             credentials: 'include'
                         });
@@ -691,7 +692,7 @@
                     }
 
                     try {
-                        const res = await fetch('/portal-api/admin/assign', {
+                        const res = await fetch(apiUrl('/admin/assign'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -729,7 +730,7 @@
                     if (!confirm("Retirer l'assignation ?")) return;
 
                     try {
-                        const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, {
+                        const res = await fetch(apiUrl(`/admin/assign/${currentProfileId}`), {
                             method: 'DELETE',
                             credentials: 'include'
                         });
@@ -755,7 +756,7 @@
             if (btnLogout) {
                 btnLogout.addEventListener('click', async () => {
                     try {
-                        await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                        await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' });
                         window.location.href = 'login.html';
                     } catch (e) {
                         window.location.href = 'login.html';

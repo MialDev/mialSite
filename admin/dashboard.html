@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="/style.css">
 
     <!-- Admin Guard -->
+    <script src="/api.js"></script>
     <script>
         (async () => {
             try {
-                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (!res.ok) {
                     if (res.status === 401) window.location.replace('/login.html');
                     else window.location.replace('/dashboard.html');
@@ -417,7 +418,7 @@
             const tbody = document.getElementById('users-body');
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
             try {
-                const res = await fetch('/portal-api/admin/api/users', { credentials: 'include' });
+                const res = await fetch(apiUrl('/admin/api/users'), { credentials: 'include' });
                 if (!res.ok) throw new Error('Failed to load users');
                 const users = await res.json();
                 renderUsers(users);
@@ -430,7 +431,7 @@
             const tbody = document.getElementById('profiles-body');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
             try {
-                const res = await fetch('/portal-api/profiles', { credentials: 'include' });
+                const res = await fetch(apiUrl('/profiles'), { credentials: 'include' });
                 // Note: /portal-api/profiles returns all profiles for admin
                 if (!res.ok) throw new Error('Failed to load profiles');
                 const profiles = await res.json();
@@ -521,8 +522,8 @@
             try {
                 const payload = {};
                 payload[field] = value;
-
-                const res = await fetch(`/portal-api/admin/api/users/${id}`, {
+                const path = apiUrl(`/admin/api/users/${id}`);
+                const res = await fetch(path, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -540,7 +541,7 @@
         async function deleteUser(id) {
             if (!confirm("Attention: Supprimer cet utilisateur ?")) return;
             try {
-                const res = await fetch(`/portal-api/admin/api/users/${id}`, {
+                const res = await fetch(apiUrl(`/admin/api/users/${id}`), {
                     method: 'DELETE',
                     credentials: 'include'
                 });
@@ -671,7 +672,7 @@
             };
 
             try {
-                const res = await fetch(`/portal-api/profiles/${currentProfileId}/settings`, {
+                const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -694,7 +695,7 @@
             if (!currentProfileId) return;
             if (!confirm("Vraiment supprimer ce profil ?")) return;
             try {
-                const res = await fetch(`/portal-api/profiles/${currentProfileId}`, { method: 'DELETE', credentials: 'include' });
+                const res = await fetch(apiUrl(`/profiles/${currentProfileId}`), { method: 'DELETE', credentials: 'include' });
                 if (!res.ok) throw new Error(await res.text());
                 document.getElementById('profile-editor').style.display = 'none';
                 currentProfileId = null;
@@ -712,7 +713,7 @@
             const email = document.getElementById('f-assign-email').value.trim();
             if (!email) return alert("Email requis");
             try {
-                const res = await fetch('/portal-api/admin/assign', {
+                const res = await fetch(apiUrl('/admin/assign'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ profile_id: currentProfileId, user_email: email }),
@@ -732,7 +733,7 @@
             if (!currentProfileId) return;
             if (!confirm("Retirer l'assignation ?")) return;
             try {
-                const res = await fetch(`/portal-api/admin/assign/${currentProfileId}`, { method: 'DELETE', credentials: 'include' });
+                const res = await fetch(apiUrl(`/admin/assign/${currentProfileId}`), { method: 'DELETE', credentials: 'include' });
                 if (!res.ok) throw new Error(await res.text());
                 showToast("Désassigné");
                 fetchProfiles();

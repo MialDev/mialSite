@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="/style.css">
 
     <!-- Admin Guard -->
+    <script src="/api.js"></script>
     <script>
         (async () => {
             try {
-                const res = await fetch('/portal-api/me', { credentials: 'include' });
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (!res.ok) {
                     if (res.status === 401) window.location.replace('/login.html');
                     else window.location.replace('/dashboard.html');
@@ -184,7 +185,7 @@
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             try {
-                await fetch('/portal-api/auth/logout', { method: 'POST', credentials: 'include' });
+                await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' });
                 window.location.href = '/login.html';
             } catch (e) {
                 window.location.href = '/login.html';
@@ -194,7 +195,7 @@
         // Analytics Logic
         async function loadAnalytics() {
             try {
-                const res = await fetch('/portal-api/admin/api/analytics/summary?days=7', { credentials: 'include' });
+                const res = await fetch(apiUrl('/admin/api/analytics/summary?days=7'), { credentials: 'include' });
                 if (!res.ok) throw new Error('Fetch Error');
                 const data = await res.json();
 

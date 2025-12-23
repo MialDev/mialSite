@@ -5,7 +5,7 @@
 (() => {
     'use strict';
 
-    const ENDPOINT = '/portal-api/a/collect';
+    const ENDPOINT = (window.apiUrl) ? window.apiUrl('/a/collect') : '/portal-api/a/collect';
     const SESSION_KEY = 'mial_sid';
 
     // 1. Session Management
