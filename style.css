@@ -1404,3 +1404,53 @@ p {
     display: none !important;
   }
 }
+
+/* =========================================================
+   E. ADMIN UI BUTTONS (Added for DA Consistency)
+   ========================================================= */
+
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  min-height: 32px;
+}
+
+/* Table Actions & Small UI Buttons */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: #ffffff;
+  border-color: var(--blue);
+  color: var(--blue);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Toggle Button Override (Clean Look) */
+.action-btn[title="Basculer actif/inactif"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.action-btn[title="Basculer actif/inactif"]:hover {
+  transform: scale(1.05);
+  background: transparent;
+  box-shadow: none;
+}
