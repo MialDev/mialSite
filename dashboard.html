@@ -50,7 +50,12 @@
 
             <div class="card glass-static" style="padding: 0; overflow:hidden;">
                 <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
-                    <h2 style="font-size: 1.25rem; margin:0;">Vos Profils</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 style="font-size: 1.25rem; margin:0;">Vos Profils</h2>
+                        <div id="mailbox-status" style="font-size: 0.9rem; color: var(--muted);">
+                            Status Mailbox: <span id="mb-status-text">Chargement...</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="overflow-x: auto;">
@@ -315,8 +320,11 @@
 
                 document.getElementById('user-email').textContent = user.email || 'Utilisateur';
 
-                // Load Profiles
+                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
+
+                // Load Profiles & Mailbox Status
                 fetchProfiles();
+                fetchMailboxStatus();
 
             } catch (err) {
                 console.error("initDashboard Error:", err);
@@ -325,6 +333,32 @@
                 if (tbody) {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur lors du chargement de l'utilisateur: ${err.message}</td></tr>`;
                 }
+            }
+        }
+
+        async function fetchMailboxStatus() {
+            const statusText = document.getElementById('mb-status-text');
+            if (!statusText) return;
+
+            try {
+                const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    // server returns { connected: true/false, email: "..." } or similar
+                    if (data.connected) {
+                        statusText.textContent = "Connecté (" + data.email + ")";
+                        statusText.style.color = "#16a34a"; // Green
+                    } else {
+                        statusText.textContent = "Non connecté";
+                        statusText.style.color = "#ef4444"; // Red
+                    }
+                } else {
+                    statusText.textContent = "Erreur status";
+                    statusText.style.color = "#ef4444";
+                }
+            } catch (e) {
+                console.warn("Mailbox status check failed:", e);
+                statusText.textContent = "Erreur network";
             }
         }
 
