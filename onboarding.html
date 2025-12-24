@@ -217,7 +217,10 @@
             const errDiv = document.getElementById('error-message');
             errDiv.style.display = 'none';
 
-            const provider = select.value;
+            let provider = select.value;
+            // Backend expects 'microsoft' for Outlook
+            if (provider === 'outlook') provider = 'microsoft';
+
             const email = document.getElementById('f-email').value.trim();
             const secret = document.getElementById('f-secret').value.trim();
 

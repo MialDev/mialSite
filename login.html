@@ -149,9 +149,9 @@
                         if (meRes.ok) {
                             const user = await meRes.json();
                             if (user.role === 'admin' || user.is_admin === true) {
-                                window.location.replace('/portal-api/admin/dashboard');
+                                window.location.replace("/admin/dashboard.html");
                             } else {
-                                window.location.replace('/dashboard.html');
+                                window.location.replace("/dashboard.html");
                             }
                         } else {
                             // Fallback
