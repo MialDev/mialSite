@@ -233,23 +233,24 @@
                 const res = await fetch(apiUrl('/mailbox/connect'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
                 });
 
-                if (res.ok) {
-                    window.location.href = 'dashboard.html';
-                    return;
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    // Display detailed error from backend
+                    const errorMsg = data.detail || JSON.stringify(data) || res.statusText;
+                    throw new Error(errorMsg);
                 }
 
-                let data = {};
-                try { data = await res.json(); } catch (e) { }
-                errDiv.textContent = data.detail || `Erreur connexion (${res.status})`;
-                errDiv.style.display = 'block';
+                // Success
+                window.location.href = 'dashboard.html';
 
             } catch (e) {
-                console.error(e);
-                errDiv.textContent = "Erreur réseau.";
+                console.error("Mailbox Connect Error:", e);
+                errDiv.textContent = `Erreur de connexion : ${e.message}`;
                 errDiv.style.display = 'block';
             }
         });

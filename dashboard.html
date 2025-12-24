@@ -287,12 +287,18 @@
         // 1. Check Auth & Load Me
         async function initDashboard() {
             try {
+                console.log("initDashboard: Starting...");
+                console.log("Fetching /me...");
+
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                console.log("Response /me:", res.status);
+
                 if (res.status === 401) {
+                    console.warn("401 Unauthorized -> redirecting login");
                     window.location.href = 'login.html';
                     return;
                 }
-                if (!res.ok) throw new Error('Auth fetch error');
+                if (!res.ok) throw new Error(`Auth fetch error: ${res.status} ${res.statusText}`);
 
                 const user = await res.json();
 
@@ -303,7 +309,7 @@
                 // SAFETY NET: Admins should not be here
                 if (currentUserRole === 'admin' || user.is_admin === true) {
                     console.warn("Admin detected on User Dashboard. Redirecting...");
-                    window.location.replace("/portal-api/admin/dashboard");
+                    window.location.replace("/admin/dashboard.html");
                     return;
                 }
 
@@ -313,23 +319,35 @@
                 fetchProfiles();
 
             } catch (err) {
-                console.error(err);
-                // Fallback or validation error - maybe token expired
-                // window.location.href = 'login.html';
+                console.error("initDashboard Error:", err);
+                // Update UI to show error instead of "Chargement..."
+                const tbody = document.getElementById('profiles-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur lors du chargement de l'utilisateur: ${err.message}</td></tr>`;
+                }
             }
         }
 
         // 2. Load Profiles
         async function fetchProfiles() {
+            console.log("fetchProfiles: Loading profiles...");
             const tbody = document.getElementById('profiles-body');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement des profils...</td></tr>';
 
             try {
                 const res = await fetch(apiUrl('/profiles'), { credentials: 'include' });
-                if (!res.ok) throw new Error('Failed to load profiles');
+                console.log("Response /profiles:", res.status);
+
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => "");
+                    throw new Error(`Failed to load profiles (${res.status}): ${txt}`);
+                }
+
                 const profiles = await res.json();
+                console.log("Profiles loaded:", profiles.length);
                 renderProfiles(profiles);
             } catch (err) {
+                console.error("fetchProfiles Error:", err);
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur: ${err.message}</td></tr>`;
             }
         }
@@ -359,7 +377,7 @@
                         <td colspan="7" style="text-align:center; padding: 48px;">
                             <div style="margin-bottom:16px; font-size:1.1rem; color:#64748b;">Aucun profil actif trouvé.</div>
                             <p style="color:#94a3b8; margin-bottom:24px;">Vous n'avez pas encore de configuration de synthèse d'emails.</p>
-                            <a href="/onboarding.html" class="btn btn-primary">Créer mon premier profil</a>
+                            <a href="onboarding.html" class="btn btn-primary">Créer mon premier profil</a>
                         </td>
                     </tr>`;
                 return;
