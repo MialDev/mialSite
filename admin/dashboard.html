@@ -127,33 +127,64 @@
                 </div>
             </div>
 
-            <!-- Users Table -->
-            <div class="card glass-static" style="padding: 0; overflow:hidden;">
-                <div
-                    style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3); display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.25rem; margin:0;">Gestion des utilisateurs</h2>
-                    <button class="action-btn" onclick="fetchUsers()">Rafraîchir</button>
+            <!-- Gestion Section -->
+            <div style="margin-bottom: 24px; border-bottom:1px solid rgba(148,163,184,0.3); padding-bottom:8px;">
+                <h2 style="font-size: 1.5rem; margin:0;">Gestion</h2>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 32px;">
+                <!-- Users Table -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3 style="margin:0;">Utilisateurs</h3>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Mailboxes</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-users">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div style="overflow-x: auto;">
-                    <table class="dashboard-table">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Rôle</th>
-                                <th>Actif</th>
-                                <th>Créé le</th>
-                                <th style="text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-body">
-                            <tr>
-                                <td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Mailboxes Table -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3 style="margin:0;">Boîtes Mail</h3>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Email</th>
+                                    <th>Owner</th>
+                                    <th>Status</th>
+                                    <th>Update</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-mailboxes">
+                                <tr>
+                                    <td colspan="6" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            <div id="toast" class="toast"></div>
 
             <!-- Profiles Table -->
             <div class="card glass-static" style="margin-top: 32px; padding: 0; overflow:hidden;">
@@ -745,7 +776,128 @@
         function escapeHtml(s) {
             return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
         }
+        // ------------------------------------------
+        // ADMIN DATA LOGIC
+        // ------------------------------------------
+
+        async function loadAdminData() {
+            try {
+                // Parallel fetch
+                const [rUsers, rMailboxes] = await Promise.all([
+                    fetch(apiUrl('/admin/api/users'), { credentials: 'include' }),
+                    fetch(apiUrl('/admin/api/mailboxes'), { credentials: 'include' })
+                ]);
+
+                if (rUsers.ok) renderUsers(await rUsers.json());
+                else showError('table-users', 'Erreur chargement utilisateurs');
+
+                if (rMailboxes.ok) renderMailboxes(await rMailboxes.json());
+                else showError('table-mailboxes', 'Erreur chargement mailboxes');
+
+            } catch (e) {
+                console.error(e);
+                showError('table-users', 'Erreur réseau');
+                showError('table-mailboxes', 'Erreur réseau');
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('table-users');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucun utilisateur</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td><strong>${esc(u.email)}</strong></td>
+                    <td><span class="badge-${u.role === 'admin' ? 'active' : 'inactive'}">${esc(u.role)}</span></td>
+                    <td>${u.mailboxes_count ?? 0}</td>
+                    <td>
+                        <button class="action-btn" style="color:red; border-color:red;" onclick="deleteUser('${u.id}')">Supprimer</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMailboxes(mailboxes) {
+            const tbody = document.getElementById('table-mailboxes');
+            if (!mailboxes || mailboxes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucune boîte mail</td></tr>';
+                return;
+            }
+            tbody.innerHTML = mailboxes.map(m => {
+                const updated = m.updated_at ? new Date(m.updated_at).toLocaleDateString() : '—';
+                const statusClass = (m.status === 'valid') ? 'badge-active' : 'badge-inactive';
+                return `
+                <tr>
+                    <td>${esc(m.provider)}</td>
+                    <td><strong>${esc(m.email)}</strong></td>
+                    <td class="muted" style="font-size:0.85rem">${esc(m.owner_email)}</td>
+                    <td><span class="${statusClass}">${esc(m.status)}</span></td>
+                    <td class="muted" style="font-size:0.8em">${updated}</td>
+                    <td>
+                        <button class="action-btn" style="color:red; border-color:red;" onclick="deleteMailbox('${m.id}')">X</button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function showError(id, msg) {
+            document.getElementById(id).innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${msg}</td></tr>`;
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("Supprimer cet utilisateur ? Irréversible.")) return;
+            try {
+                const res = await fetch(apiUrl(`/admin/api/users/${id}`), { method: 'DELETE', credentials: 'include' });
+                if (!res.ok) throw new Error(await res.text());
+                toast("Utilisateur supprimé");
+                loadAdminData(); // reload
+            } catch (e) {
+                alert("Erreur: " + e.message);
+            }
+        }
+
+        async function deleteMailbox(id) {
+            if (!confirm("Déconnecter cette boîte mail ?")) return;
+            try {
+                const res = await fetch(apiUrl(`/admin/api/mailboxes/${id}`), { method: 'DELETE', credentials: 'include' });
+                if (!res.ok) throw new Error(await res.text());
+                toast("Boîte mail supprimée");
+                loadAdminData(); // reload
+            } catch (e) {
+                alert("Erreur: " + e.message);
+            }
+        }
+
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            if (t) {
+                t.textContent = msg;
+                t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
+        }
+
+        function showToast(msg, isErr = false) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.style.backgroundColor = isErr ? '#ef4444' : '#333';
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        function escapeHtml(s) {
+            return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        }
+        const esc = escapeHtml;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initDashboard(); // existing function
+            loadAdminData(); // new function
+        });
     </script>
-</body>
 
 </html>

@@ -87,7 +87,7 @@
             <nav class="nav-links">
                 <a href="/accueil.html">Accueil</a>
                 <a href="/admin/dashboard.html">Admin</a>
-                <a href="/portal-api/admin/analytics" style="font-weight: 600;">Analytics</a>
+                <a href="/admin/analytics.html" style="font-weight: 600;">Analytics</a>
                 <a href="/dashboard.html">User View</a>
                 <button id="logout-btn" class="btn btn-ghost"
                     style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
@@ -104,7 +104,7 @@
                         <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Analytics</h1>
                         <p class="muted">Métriques (7 derniers jours)</p>
                     </div>
-                    <a href="/portal-api/admin/dashboard" class="btn btn-ghost btn-small">Retour Admin</a>
+                    <a href="/admin/dashboard.html" class="btn btn-ghost btn-small">Retour Admin</a>
                 </div>
             </div>
 
@@ -152,11 +152,12 @@
                                 <tr>
                                     <th>Quand</th>
                                     <th>Quoi</th>
+                                    <th>Page</th>
                                 </tr>
                             </thead>
                             <tbody id="table-events">
                                 <tr>
-                                    <td colspan="2" style="text-align:center;">Chargement...</td>
+                                    <td colspan="3" style="text-align:center;">Chargement...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -199,9 +200,7 @@
                 if (!res.ok) throw new Error('Fetch Error');
                 const data = await res.json();
 
-                // If completely empty (no sessions), show fallback maybe?
-                // But data structure is expected: { sessions: N, pageviews: N, ... top_pages: [], last_events: [] }
-
+                // KPIs
                 document.getElementById('k-sessions').textContent = data.sessions || 0;
                 document.getElementById('k-pageviews').textContent = data.pageviews || 0;
                 document.getElementById('k-engaged').textContent = data.engaged_sessions || 0;
@@ -219,16 +218,16 @@
                     tEvents.innerHTML = data.last_events.map(e => `
                         <tr>
                             <td class="muted" style="font-size:0.85rem">${new Date(e.time).toLocaleTimeString()}</td>
-                            <td>${esc(e.path)}</td>
+                            <td>${esc(e.event)}</td>
+                            <td style="font-size:0.85rem">${esc(e.path)}</td>
                         </tr>
                     `).join('');
                 } else {
-                    tEvents.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                    tEvents.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
             } catch (e) {
                 console.error(e);
-                // Assume 404 or backend not ready -> Show "No Data" or Error
                 document.getElementById('analytics-container').style.display = 'none';
                 document.getElementById('no-data').style.display = 'block';
                 document.getElementById('no-data').querySelector('h3').textContent = "Données indisponibles (Backend)";

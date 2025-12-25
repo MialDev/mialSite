@@ -243,6 +243,9 @@
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok) {
+                    if (res.status === 409) {
+                        throw new Error("Cette boîte est déjà connectée à un autre utilisateur. Contacte un admin pour la libérer (Admin > Gestion > Mailboxes).");
+                    }
                     // Display detailed error from backend
                     const errorMsg = data.detail || JSON.stringify(data) || res.statusText;
                     throw new Error(errorMsg);

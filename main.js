@@ -346,6 +346,32 @@
     });
   }
 
+  // --- 8. TRACKING (Internal) ---
+  function trackPageView() {
+    if (window.__mialTracked) return;
+    window.__mialTracked = true;
+
+    // Check availability of apiUrl (api.js must be loaded)
+    if (typeof apiUrl !== 'function') return;
+
+    const payload = {
+      event: 'pageview',
+      path: window.location.pathname,
+      referrer: document.referrer || null,
+      ts: Date.now()
+    };
+
+    try {
+      fetch(apiUrl('/a/collect'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+        keepalive: true
+      }).catch(err => console.debug('Tracking error', err));
+    } catch (e) { /* ignore */ }
+  }
+
   // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initMobileNav();
@@ -357,6 +383,8 @@
     initContactForm();
     initCookieBanner();
     onScroll();
+
+    trackPageView();
   });
 
   window.addEventListener('scroll', onScroll, { passive: true });
