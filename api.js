@@ -49,3 +49,21 @@ function apiUrl(path) {
 // Expose globally
 window.apiUrl = apiUrl;
 window.API_BASE = API_BASE;
+
+/**
+ * Standard Logout
+ * Calls the API to clear cookies, then redirects to login.
+ */
+async function doLogout() {
+    try {
+        await fetch(apiUrl('/auth/logout'), {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.warn('Logout fetch error', e);
+    } finally {
+        window.location.href = '/login.html';
+    }
+}
+window.doLogout = doLogout;

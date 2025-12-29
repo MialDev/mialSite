@@ -9,6 +9,19 @@
     <link rel="stylesheet" href="style.css">
 
     <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -25,11 +38,12 @@
             </button>
             <nav class="nav-links">
                 <a href="accueil.html">Accueil</a>
-                <a href="crm.html">CRM</a>
-                <a href="audio.html">Audio</a>
+                <a href="crm-dashboard.html">CRM</a>
+                <a href="audio-dashboard.html">Audio</a>
                 <!-- Logout button -->
                 <button id="logout-btn" class="btn btn-ghost"
-                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;"
+                    data-action="logout">Déconnexion</button>
             </nav>
         </div>
     </header>
@@ -44,7 +58,57 @@
                         <p class="muted">Bienvenue, <span id="user-email"
                                 style="font-weight:600; color:var(--ink);">...</span></p>
                     </div>
-                    <button class="btn btn-primary btn-small" onclick="fetchProfiles()">Rafraîchir</button>
+                    <button class="btn btn-primary btn-small" onclick="location.reload()">Rafraîchir</button>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 32px;">
+                <!-- Mon Compte -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <h3 style="margin-top:0;">Mon Compte</h3>
+                    <div style="margin-bottom:16px;">
+                        <label class="muted">Email connecté</label>
+                        <div style="font-weight:600;" id="account-email-display">...</div>
+                    </div>
+
+                    <form id="form-password">
+                        <h4 style="font-size: 1rem; margin-bottom: 8px;">Changer mot de passe</h4>
+                        <div style="margin-bottom: 8px;">
+                            <input type="password" name="old_password" placeholder="Ancien mot de passe" required
+                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="password" name="new_password" placeholder="Nouveau mot de passe" required
+                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        </div>
+                        <button type="submit" class="btn btn-ghost btn-small">Mettre à jour mot de passe</button>
+                        <div id="pwd-msg" style="margin-top: 8px; font-size: 0.9rem;"></div>
+                    </form>
+                </div>
+
+                <!-- Boîte Mail -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <h3 style="margin-top:0;">Boîte Mail</h3>
+                    <div id="mailbox-list" style="margin-bottom:16px;">
+                        <p class="muted">Chargement...</p>
+                    </div>
+
+                    <div style="border-top: 1px solid #eee; padding-top: 16px;">
+                        <h4 style="font-size: 1rem; margin-bottom: 8px;">Connecter / Mettre à jour (Gmail)</h4>
+                        <form id="form-connect-gmail">
+                            <div style="margin-bottom: 8px;">
+                                <input type="email" name="email" placeholder="Email Address Gmail" required
+                                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <textarea name="secret" placeholder="Collez le contenu JSON du fichier client_secret..."
+                                    required
+                                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.8rem; height: 60px;"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-small">Connecter</button>
+                            <div id="connect-msg" style="margin-top: 8px; font-size: 0.9rem;"></div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -322,13 +386,16 @@
 
                 document.getElementById('user-email').textContent = user.email || 'Utilisateur';
 
+                // New: Fill Account Email
+                const accEmailDisp = document.getElementById('account-email-display');
+                if (accEmailDisp) accEmailDisp.textContent = user.email || '—';
+
                 // Load Profiles & Mailbox Status
                 fetchProfiles();
-                fetchMailboxStatus();
+                fetchUserMailboxes();
 
             } catch (err) {
                 console.error("initDashboard Error:", err);
-                // Update UI to show error instead of "Chargement..."
                 const tbody = document.getElementById('profiles-body');
                 if (tbody) {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur lors du chargement de l'utilisateur: ${err.message}</td></tr>`;
@@ -336,31 +403,133 @@
             }
         }
 
-        async function fetchMailboxStatus() {
+        // --- MAILBOXES & ACCOUNT ---
+
+        async function fetchUserMailboxes() {
+            const div = document.getElementById('mailbox-list');
             const statusText = document.getElementById('mb-status-text');
-            if (!statusText) return;
 
             try {
+                // Expecting list of mailboxes
                 const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
-                    // server returns { connected: true/false, email: "..." } or similar
-                    if (data.connected) {
-                        statusText.textContent = "Connecté (" + data.email + ")";
-                        statusText.style.color = "#16a34a"; // Green
-                    } else {
-                        statusText.textContent = "Non connecté";
-                        statusText.style.color = "#ef4444"; // Red
-                    }
-                } else {
-                    statusText.textContent = "Erreur status";
-                    statusText.style.color = "#ef4444";
+                if (!res.ok) throw new Error("Erreur fetch");
+
+                let data = await res.json();
+                // Adapt to legacy single object if necessary, or array
+                const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
+
+                if (list.length === 0) {
+                    div.innerHTML = '<div class="muted">Aucune boîte mail connectée.</div>';
+                    if (statusText) { statusText.textContent = "Non connecté"; statusText.style.color = "#ef4444"; }
+                    return;
                 }
+
+                if (statusText) {
+                    statusText.textContent = "Connecté (" + list.length + ")";
+                    statusText.style.color = "#16a34a";
+                }
+
+                div.innerHTML = list.map(mb => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                        <div>
+                           <div style="font-weight:600; font-size:0.9rem;">${escapeHtml(mb.email)}</div>
+                           <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
+                        </div>
+                        <button class="btn btn-ghost btn-small" style="color:#ef4444; padding:4px 8px; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                    </div>
+                `).join('');
+
             } catch (e) {
-                console.warn("Mailbox status check failed:", e);
-                statusText.textContent = "Erreur network";
+                console.warn(e);
+                div.innerHTML = '<div style="color:red">Erreur chargement</div>';
             }
         }
+
+        window.disconnectMailbox = async function (id) {
+            if (!confirm("Voulez-vous vraiment déconnecter cette boîte mail ?")) return;
+            try {
+                const res = await fetch(apiUrl('/mailbox/disconnect'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email_account_id: id }),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                fetchUserMailboxes();
+            } catch (e) { alert("Erreur: " + e.message); }
+        };
+
+        // --- FORMS BINDING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Form Password
+            const formPwd = document.getElementById('form-password');
+            if (formPwd) formPwd.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('pwd-msg');
+                msg.textContent = "Mise à jour..."; msg.style.color = "var(--muted)";
+
+                const formData = new FormData(formPwd);
+                const payload = Object.fromEntries(formData.entries()); // { old_password, new_password }
+
+                try {
+                    const res = await fetch(apiUrl('/me/change-password'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error(await res.text());
+                    msg.textContent = "Mot de passe modifié !"; msg.style.color = "green";
+                    formPwd.reset();
+                } catch (err) {
+                    msg.textContent = "Erreur: " + err.message; msg.style.color = "red";
+                }
+            });
+
+            // Form Connect Gmail
+            const formGmail = document.getElementById('form-connect-gmail');
+            if (formGmail) formGmail.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('connect-msg');
+                msg.textContent = "Connexion..."; msg.style.color = "var(--muted)";
+
+                const formData = new FormData(formGmail);
+                const payload = {
+                    provider: 'gmail',
+                    email: formData.get('email'),
+                    secret: formData.get('secret') // assuming valid JSON string
+                };
+
+                // Try parsing JSON secret to be safe, or send as is? 
+                // Backend likely expects parsed JSON or string? Prompt says "Update secret gmail en refaisant connect".
+                // Usually secret is a complex object. Let's try to parse it to ensure validity, 
+                // but if backend expects a string, we might need to adjust.
+                // "POST /portal-api/mailbox/connect (provider=gmail, email, secret)" -> implies JSON body with these keys.
+                // If secret is the JSON *content*, we should probably pass it as object or string.
+                // Let's pass it as parsed object if possible, or string if that fails.
+                try {
+                    payload.secret = JSON.parse(payload.secret);
+                } catch (e) {
+                    msg.textContent = "Le secret doit être un JSON valide."; msg.style.color = "red";
+                    return;
+                }
+
+                try {
+                    const res = await fetch(apiUrl('/mailbox/connect'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error(await res.text());
+                    msg.textContent = "Boîte connectée !"; msg.style.color = "green";
+                    formGmail.reset();
+                    fetchUserMailboxes();
+                } catch (err) {
+                    msg.textContent = "Erreur: " + err.message; msg.style.color = "red";
+                }
+            });
+        });
 
         // 2. Load Profiles
         async function fetchProfiles() {

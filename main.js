@@ -346,18 +346,15 @@
     });
   }
 
-  // --- 8. TRACKING (Internal) ---
-  function trackPageView() {
-    if (window.__mialTracked) return;
-    window.__mialTracked = true;
-
+  // --- 8. TRACKING ---
+  function track(event, path, referrer) {
     // Check availability of apiUrl (api.js must be loaded)
     if (typeof apiUrl !== 'function') return;
 
     const payload = {
-      event: 'pageview',
-      path: window.location.pathname,
-      referrer: document.referrer || null,
+      event: event,
+      path: path || window.location.pathname,
+      referrer: referrer || null,
       ts: Date.now()
     };
 
@@ -372,6 +369,14 @@
     } catch (e) { /* ignore */ }
   }
 
+  // Global Click Listener for data-track
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-track]');
+    if (!el) return;
+    track('click:' + el.getAttribute('data-track'), window.location.pathname, document.referrer);
+  });
+
+  // --- INIT ---
   // --- INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initMobileNav();
@@ -384,7 +389,19 @@
     initCookieBanner();
     onScroll();
 
-    trackPageView();
+    // Auto-bind Logout
+    document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.doLogout) window.doLogout();
+      });
+    });
+
+    // Initial Pageview
+    if (!window.__mialTracked) {
+      window.__mialTracked = true;
+      track('pageview', window.location.pathname + window.location.search, document.referrer);
+    }
   });
 
   window.addEventListener('scroll', onScroll, { passive: true });

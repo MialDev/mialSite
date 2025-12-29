@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CRM Dashboard — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#1fb6ff">
+</head>
+
+<body>
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="accueil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav-links">
+                <a href="accueil.html">Accueil</a>
+                <a href="crm-dashboard.html" style="font-weight: 600;">CRM</a>
+                <a href="audio-dashboard.html">Audio</a>
+                <a href="dashboard.html">Compte</a>
+                <button id="logout-btn" class="btn btn-ghost"
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;"
+                    data-action="logout">Déconnexion</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px; min-height: 80vh;">
+        <div class="container center">
+            <div class="card glass-static" style="padding: 48px; max-width: 600px; margin: 0 auto;">
+                <h1 style="font-size: 2rem; margin-bottom: 16px;">CRM Dashboard</h1>
+                <p class="muted" style="margin-bottom: 32px; font-size: 1.1rem;">Cette fonctionnalité sera bientôt
+                    disponible.</p>
+
+                <div style="margin-bottom: 32px;">
+                    <p>Nous travaillons activement sur la visualisation de vos opportunités.</p>
+                </div>
+
+                <a href="mailto:contact@mial.be" class="btn btn-primary">Contactez-nous pour un accès anticipé</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container center">
+            <p class="muted">© 2025 mial · <a href="mentions-legales.html">Mentions Légales</a></p>
+        </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>

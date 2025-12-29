@@ -121,8 +121,12 @@
                         <div class="kpi-value" id="k-pageviews">—</div>
                     </div>
                     <div class="kpi-card">
-                        <h3>Sessions engagées</h3>
+                        <h3>Unités (Engaged)</h3>
                         <div class="kpi-value" id="k-engaged">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Durée moy.</h3>
+                        <div class="kpi-value" id="k-duration">—</div>
                     </div>
                 </div>
 
@@ -144,23 +148,45 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Last Events -->
+
+                    <!-- Sources -->
                     <div class="card glass-static" style="padding: 24px;">
-                        <h3 style="margin-top:0; margin-bottom:16px;">Derniers événements</h3>
+                        <h3 style="margin-top:0; margin-bottom:16px;">Top Sources</h3>
                         <table class="dashboard-table">
                             <thead>
                                 <tr>
-                                    <th>Quand</th>
-                                    <th>Quoi</th>
-                                    <th>Page</th>
+                                    <th>Source / Referrer</th>
+                                    <th style="text-align:right">Sessions</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-events">
+                            <tbody id="table-sources">
                                 <tr>
-                                    <td colspan="3" style="text-align:center;">Chargement...</td>
+                                    <td colspan="2" style="text-align:center;">Chargement...</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Last Events -->
+                    <div class="card glass-static" style="padding: 24px; grid-column: 1 / -1;">
+                        <h3 style="margin-top:0; margin-bottom:16px;">Derniers événements</h3>
+                        <div style="overflow-x:auto;">
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Quand</th>
+                                        <th>Quoi</th>
+                                        <th>Page</th>
+                                        <th>Ref</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-events">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center;">Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -196,41 +222,71 @@
         // Analytics Logic
         async function loadAnalytics() {
             try {
-                const res = await fetch(apiUrl('/admin/api/analytics/summary?days=7'), { credentials: 'include' });
-                if (!res.ok) throw new Error('Fetch Error');
-                const data = await res.json();
+                const days = 7;
+                // 1. Summary
+                const rSummary = await fetch(apiUrl(`/admin/api/analytics/summary?days=${days}`), { credentials: 'include' });
+                const summary = rSummary.ok ? await rSummary.json() : {};
 
                 // KPIs
-                document.getElementById('k-sessions').textContent = data.sessions || 0;
-                document.getElementById('k-pageviews').textContent = data.pageviews || 0;
-                document.getElementById('k-engaged').textContent = data.engaged_sessions || 0;
+                document.getElementById('k-sessions').textContent = summary.sessions ?? 0;
+                document.getElementById('k-pageviews').textContent = summary.pageviews ?? 0;
+                document.getElementById('k-engaged').textContent = summary.engaged_sessions ?? 0;
+                if (summary.avg_duration_sec) {
+                    document.getElementById('k-duration').textContent = Math.round(summary.avg_duration_sec) + "s";
+                } else {
+                    document.getElementById('k-duration').textContent = "—";
+                }
 
-                // Tables
+                // 2. Pages
+                let pages = summary.top_pages || [];
+                if (!pages.length) {
+                    try {
+                        const rPages = await fetch(apiUrl(`/admin/api/analytics/pages?days=${days}`), { credentials: 'include' });
+                        if (rPages.ok) pages = await rPages.json();
+                    } catch (e) { }
+                }
                 const tPages = document.getElementById('table-pages');
-                if (data.top_pages && data.top_pages.length > 0) {
-                    tPages.innerHTML = data.top_pages.map(p => `<tr><td>${esc(p.path)}</td><td style="text-align:right">${p.count}</td></tr>`).join('');
+                if (pages.length > 0) {
+                    tPages.innerHTML = pages.map(p => `<tr><td>${esc(p.path)}</td><td style="text-align:right">${p.count}</td></tr>`).join('');
                 } else {
                     tPages.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
+                // 3. Sources
+                let sources = [];
+                try {
+                    const rSources = await fetch(apiUrl(`/admin/api/analytics/sources?days=${days}`), { credentials: 'include' });
+                    if (rSources.ok) sources = await rSources.json();
+                } catch (e) { }
+
+                const tSources = document.getElementById('table-sources');
+                if (sources.length > 0) {
+                    tSources.innerHTML = sources.map(s => `<tr><td>${esc(s.referrer || 'Direct')}</td><td style="text-align:right">${s.count}</td></tr>`).join('');
+                } else {
+                    tSources.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                }
+
+                // 4. Events
+                let events = summary.last_events || [];
                 const tEvents = document.getElementById('table-events');
-                if (data.last_events && data.last_events.length > 0) {
-                    tEvents.innerHTML = data.last_events.map(e => `
+                if (events.length > 0) {
+                    tEvents.innerHTML = events.map(e => `
                         <tr>
                             <td class="muted" style="font-size:0.85rem">${new Date(e.time).toLocaleTimeString()}</td>
                             <td>${esc(e.event)}</td>
-                            <td style="font-size:0.85rem">${esc(e.path)}</td>
+                            <td style="font-size:0.85rem; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${esc(e.path)}</td>
+                            <td style="font-size:0.85rem; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${esc(e.referrer)}</td>
                         </tr>
                     `).join('');
                 } else {
-                    tEvents.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                    tEvents.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
             } catch (e) {
                 console.error(e);
                 document.getElementById('analytics-container').style.display = 'none';
                 document.getElementById('no-data').style.display = 'block';
-                document.getElementById('no-data').querySelector('h3').textContent = "Données indisponibles (Backend)";
+                document.getElementById('no-data').querySelector('h3').textContent = "Erreur Backend";
             }
         }
 
