@@ -187,7 +187,7 @@
         message: document.getElementById('message') ? document.getElementById('message').value.trim() : ''
       };
 
-      // Simple client-side validation for mandatory fields
+      // Simple client-side validation
       if (!data.name || !data.email || !data.message) {
         if (msgDiv) {
           msgDiv.textContent = "Veuillez remplir les champs obligatoires.";
@@ -234,10 +234,9 @@
   }
 
 
-  // --- NEW ANALYTICS TRACKING & GA4 ---
+  // --- NEW ANALYTICS TRACKING ---
 
   const CONSENT_KEY = 'mial_consent';
-  const GA_ID = 'G-3TS6HMSLCK';
 
   // A. Shared State
   function uuidv4() {
@@ -259,24 +258,6 @@
     const c = JSON.parse(localStorage.getItem(CONSENT_KEY) || '{}');
     hasConsented = c.analytics === true;
   } catch (e) { }
-
-  // GA4 Loader
-  function loadGoogleAnalytics() {
-    if (window.gtag) return; // Prevent double load
-
-    // Inject Script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-    document.head.appendChild(script);
-
-    // Init DataLayer
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', GA_ID);
-  }
 
   // B. Send Event (Custom)
   function sendEvent(payload) {
@@ -402,7 +383,7 @@
     banner.innerHTML = `
       <div>
         <h4>🍪 Cookies & Confidentialité</h4>
-        <p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes (GA4 + Mial internal).</p>
+        <p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes.</p>
       </div>
       <div class="cookie-actions">
         <button id="cookie-accept" class="btn btn-primary w-full" style="padding: 0.6rem;">Accepter</button>
@@ -416,10 +397,7 @@
       localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: true }));
       hasConsented = true;
       banner.remove();
-
-      // Start Tracking
       trackPageview();
-      loadGoogleAnalytics();
     });
 
     document.getElementById('cookie-decline').addEventListener('click', () => {
@@ -447,7 +425,6 @@
     // If consented, start tracking immediately
     if (hasConsented) {
       trackPageview();
-      loadGoogleAnalytics();
     }
 
     // Always init listeners (checks consent internally)
