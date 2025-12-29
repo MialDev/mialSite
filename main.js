@@ -169,34 +169,30 @@
     const form = document.getElementById('contact-form');
     if (!form) return;
 
-    // Remove existing listener if any to avoid double submit (clean slate approach)
-    // We can't strictly remove anonymous listeners, but we are replacing the logic.
-
-    // NOTE: This form also acts as a conversion trigger "conversion:contact_submit"
-    // We will handle that in the global event delegation or here. 
-    // The requirement says "Track conversions... elements with data-analytics-conversion emit".
-    // So we will add attributes to the form in the HTML step. 
-    // Here we just handle the submission logic.
-
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const msgDiv = document.getElementById('formMsg');
-      msgDiv.textContent = 'Envoi en cours...';
-      msgDiv.style.color = 'var(--blue)';
+      if (msgDiv) {
+        msgDiv.textContent = 'Envoi en cours...';
+        msgDiv.style.color = 'var(--blue)';
+      }
 
       const data = {
-        name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        company: document.getElementById('company').value.trim(),
-        profession: document.getElementById('profession').value.trim() || null,
-        volume: document.getElementById('volume').value,
-        phone: document.getElementById('phone').value.trim() || null,
-        message: document.getElementById('message').value.trim()
+        name: document.getElementById('name') ? document.getElementById('name').value.trim() : '',
+        email: document.getElementById('email') ? document.getElementById('email').value.trim() : '',
+        company: document.getElementById('company') ? document.getElementById('company').value.trim() : '',
+        profession: document.getElementById('profession') ? document.getElementById('profession').value.trim() : null,
+        volume: document.getElementById('volume') ? document.getElementById('volume').value : '',
+        phone: document.getElementById('phone') ? document.getElementById('phone').value.trim() : null,
+        message: document.getElementById('message') ? document.getElementById('message').value.trim() : ''
       };
 
-      if (!data.name || !data.email || !data.company || !data.volume || !data.message) {
-        msgDiv.textContent = "Veuillez remplir les champs obligatoires.";
-        msgDiv.style.color = '#ef4444';
+      // Simple client-side validation for mandatory fields
+      if (!data.name || !data.email || !data.message) {
+        if (msgDiv) {
+          msgDiv.textContent = "Veuillez remplir les champs obligatoires.";
+          msgDiv.style.color = '#ef4444';
+        }
         return;
       }
 
@@ -211,16 +207,22 @@
         const json = await res.json().catch(() => ({}));
 
         if (res.ok) {
-          msgDiv.textContent = "Message envoyé ! Nous vous répondrons très vite.";
-          msgDiv.style.color = 'green';
+          if (msgDiv) {
+            msgDiv.textContent = "Message envoyé ! Nous vous répondrons très vite.";
+            msgDiv.style.color = 'green';
+          }
           form.reset();
         } else {
-          msgDiv.textContent = "Erreur: " + (json.detail || "Inconnue");
-          msgDiv.style.color = '#ef4444';
+          if (msgDiv) {
+            msgDiv.textContent = "Erreur: " + (json.detail || "Inconnue");
+            msgDiv.style.color = '#ef4444';
+          }
         }
       } catch (err) {
-        msgDiv.textContent = "Impossible de contacter le serveur.";
-        msgDiv.style.color = '#ef4444';
+        if (msgDiv) {
+          msgDiv.textContent = "Impossible de contacter le serveur.";
+          msgDiv.style.color = '#ef4444';
+        }
       }
     });
   }
@@ -232,9 +234,10 @@
   }
 
 
-  // --- NEW ANALYTICS TRACKING ---
+  // --- NEW ANALYTICS TRACKING & GA4 ---
 
   const CONSENT_KEY = 'mial_consent';
+  const GA_ID = 'G-3TS6HMSLCK';
 
   // A. Shared State
   function uuidv4() {
@@ -247,16 +250,9 @@
 
   const PAGE_ID = uuidv4();
   const PAGE_START = performance.now();
-  const PATH = window.location.pathname; // Keep query string out as requested in STEP 1 A? 
-  // Wait, User Request Step 1 A says "PATH = location.pathname (keep query string OUT unless current code uses it)".
-  // Previous code used pathname + search. 
-  // User Prompt says "path: string".
-  // I will stick to pathname to be safe and clean, unless there's a strong reason. 
-  // Actually, keeping query params in path is useful for UTMs if backend doesn't parse referrer. 
-  // But strict instructions say "keep query string OUT". I will follow that.
-
+  const PATH = window.location.pathname;
   const REF = document.referrer || null;
-  const ENDPOINT = '/portal-api/a/collect'; // Hardcoded as per requirement (relative)
+  const ENDPOINT = '/portal-api/a/collect';
 
   let hasConsented = false;
   try {
@@ -264,7 +260,25 @@
     hasConsented = c.analytics === true;
   } catch (e) { }
 
-  // B. Send Event
+  // GA4 Loader
+  function loadGoogleAnalytics() {
+    if (window.gtag) return; // Prevent double load
+
+    // Inject Script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+
+    // Init DataLayer
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }
+
+  // B. Send Event (Custom)
   function sendEvent(payload) {
     if (!hasConsented) return;
 
@@ -280,12 +294,10 @@
 
     const blob = new Blob([JSON.stringify(fullPayload)], { type: 'application/json' });
 
-    // Prefer Beacon
     if (navigator.sendBeacon) {
       if (navigator.sendBeacon(ENDPOINT, blob)) return;
     }
 
-    // Fallback
     fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -311,7 +323,6 @@
 
   // E. Heartbeat
   function initHeartbeat() {
-    // 15 seconds
     setInterval(() => {
       if (document.visibilityState === 'visible') {
         const duration = Math.round(performance.now() - PAGE_START);
@@ -373,19 +384,17 @@
       }
     });
 
-    // Also listen for submit on forms marked with conversion
     document.addEventListener('submit', (e) => {
       const formEl = e.target.closest('[data-analytics-conversion]');
       if (formEl) {
         const val = formEl.getAttribute('data-analytics-conversion');
-        sendEvent({ event: `conversion:${val}` }); // Fired before actual submit
+        sendEvent({ event: `conversion:${val}` });
       }
     });
   }
 
   // COOKIE BANNER (UI Logic)
   function initCookieBanner() {
-    // If we have a choice stored, respect it and hide banner
     if (localStorage.getItem(CONSENT_KEY)) return;
 
     const banner = document.createElement('div');
@@ -393,7 +402,7 @@
     banner.innerHTML = `
       <div>
         <h4>🍪 Cookies & Confidentialité</h4>
-        <p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes.</p>
+        <p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes (GA4 + Mial internal).</p>
       </div>
       <div class="cookie-actions">
         <button id="cookie-accept" class="btn btn-primary w-full" style="padding: 0.6rem;">Accepter</button>
@@ -407,8 +416,10 @@
       localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: true }));
       hasConsented = true;
       banner.remove();
-      // Track pageview immediately on accept
+
+      // Start Tracking
       trackPageview();
+      loadGoogleAnalytics();
     });
 
     document.getElementById('cookie-decline').addEventListener('click', () => {
@@ -433,12 +444,13 @@
     // Analytics Init
     initCookieBanner();
 
-    // If consented, start tracking
+    // If consented, start tracking immediately
     if (hasConsented) {
       trackPageview();
+      loadGoogleAnalytics();
     }
 
-    // Always init listeners, they check consent inside
+    // Always init listeners (checks consent internally)
     initHeartbeat();
     initScrollTracking();
     initInteractionTracking();
@@ -451,7 +463,7 @@
       }
     });
 
-    // Auto-bind Logout
+    // Logout Helper
     document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -459,7 +471,6 @@
       });
     });
 
-    // Initial Nav Scroll check
     onScroll();
   });
 
