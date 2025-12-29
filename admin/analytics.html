@@ -110,8 +110,17 @@
 
             <!-- Content -->
             <div id="analytics-container">
+                <div style="text-align: right; margin-bottom: 16px;">
+                    <a href="/portal-api/admin/api/analytics/export.csv?days=7" target="_blank"
+                        class="btn btn-ghost btn-small" style="font-size:0.85rem">📥 Exporter CSV (7j)</a>
+                </div>
+
                 <!-- KPIs -->
                 <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <h3>Visiteurs</h3>
+                        <div class="kpi-value" id="k-visitors">—</div>
+                    </div>
                     <div class="kpi-card">
                         <h3>Sessions</h3>
                         <div class="kpi-value" id="k-sessions">—</div>
@@ -121,12 +130,20 @@
                         <div class="kpi-value" id="k-pageviews">—</div>
                     </div>
                     <div class="kpi-card">
-                        <h3>Unités (Engaged)</h3>
-                        <div class="kpi-value" id="k-engaged">—</div>
+                        <h3>Pages / Session</h3>
+                        <div class="kpi-value" id="k-ppsession">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Bounce Rate</h3>
+                        <div class="kpi-value" id="k-bounce">—</div>
                     </div>
                     <div class="kpi-card">
                         <h3>Durée moy.</h3>
                         <div class="kpi-value" id="k-duration">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Conversions</h3>
+                        <div class="kpi-value" id="k-conversions">—</div>
                     </div>
                 </div>
 
@@ -142,6 +159,24 @@
                                 </tr>
                             </thead>
                             <tbody id="table-pages">
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Top Events -->
+                    <div class="card glass-static" style="padding: 24px;">
+                        <h3 style="margin-top:0; margin-bottom:16px;">Top Événements</h3>
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Événement</th>
+                                    <th style="text-align:right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-top-events">
                                 <tr>
                                     <td colspan="2" style="text-align:center;">Chargement...</td>
                                 </tr>
@@ -167,26 +202,22 @@
                         </table>
                     </div>
 
-                    <!-- Last Events -->
-                    <div class="card glass-static" style="padding: 24px; grid-column: 1 / -1;">
-                        <h3 style="margin-top:0; margin-bottom:16px;">Derniers événements</h3>
-                        <div style="overflow-x:auto;">
-                            <table class="dashboard-table">
-                                <thead>
-                                    <tr>
-                                        <th>Quand</th>
-                                        <th>Quoi</th>
-                                        <th>Page</th>
-                                        <th>Ref</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-events">
-                                    <tr>
-                                        <td colspan="4" style="text-align:center;">Chargement...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <!-- Funnel (Simple List) -->
+                    <div class="card glass-static" style="padding: 24px;">
+                        <h3 style="margin-top:0; margin-bottom:16px;">Entonnoir (Conversions)</h3>
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Étape</th>
+                                    <th style="text-align:right">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-funnel">
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -228,14 +259,27 @@
                 const summary = rSummary.ok ? await rSummary.json() : {};
 
                 // KPIs
+                document.getElementById('k-visitors').textContent = summary.visitors ?? 0;
                 document.getElementById('k-sessions').textContent = summary.sessions ?? 0;
                 document.getElementById('k-pageviews').textContent = summary.pageviews ?? 0;
-                document.getElementById('k-engaged').textContent = summary.engaged_sessions ?? 0;
-                if (summary.avg_duration_sec) {
-                    document.getElementById('k-duration').textContent = Math.round(summary.avg_duration_sec) + "s";
-                } else {
-                    document.getElementById('k-duration').textContent = "—";
-                }
+                document.getElementById('k-conversions').textContent = summary.conversions ?? 0;
+
+                // Derived KPIs
+                const sess = summary.sessions || 0;
+                const pvs = summary.pageviews || 0;
+                const bounce = summary.bounce_rate_pct != null ? Math.round(summary.bounce_rate_pct) : '—';
+                const avgDur = summary.avg_duration_seconds != null ? Math.round(summary.avg_duration_seconds) : 0;
+
+                let pps = 0;
+                if (sess > 0) pps = (pvs / sess).toFixed(1);
+
+                document.getElementById('k-ppsession').textContent = pps;
+                document.getElementById('k-bounce').textContent = bounce === '—' ? '—' : bounce + '%';
+
+                // Format MM:SS
+                const mins = Math.floor(avgDur / 60);
+                const secs = avgDur % 60;
+                document.getElementById('k-duration').textContent = `${mins}m ${secs.toString().padStart(2, '0')}s`;
 
                 // 2. Pages
                 let pages = summary.top_pages || [];
@@ -247,12 +291,26 @@
                 }
                 const tPages = document.getElementById('table-pages');
                 if (pages.length > 0) {
-                    tPages.innerHTML = pages.map(p => `<tr><td>${esc(p.path)}</td><td style="text-align:right">${p.count}</td></tr>`).join('');
+                    tPages.innerHTML = pages.map(p => `<tr><td style="font-size:0.9rem; word-break:break-all;">${esc(p.path)}</td><td style="text-align:right">${p.count}</td></tr>`).join('');
                 } else {
                     tPages.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
-                // 3. Sources
+                // 3. Top Events
+                let events = [];
+                try {
+                    const rEvt = await fetch(apiUrl(`/admin/api/analytics/events/top?days=${days}`), { credentials: 'include' });
+                    if (rEvt.ok) events = await rEvt.json();
+                } catch (e) { }
+
+                const tTopEvents = document.getElementById('table-top-events');
+                if (events.length > 0) {
+                    tTopEvents.innerHTML = events.map(e => `<tr><td>${esc(e.event)}</td><td style="text-align:right">${e.count}</td></tr>`).join('');
+                } else {
+                    tTopEvents.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                }
+
+                // 4. Sources
                 let sources = [];
                 try {
                     const rSources = await fetch(apiUrl(`/admin/api/analytics/sources?days=${days}`), { credentials: 'include' });
@@ -266,20 +324,15 @@
                     tSources.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
-                // 4. Events
-                let events = summary.last_events || [];
-                const tEvents = document.getElementById('table-events');
-                if (events.length > 0) {
-                    tEvents.innerHTML = events.map(e => `
-                        <tr>
-                            <td class="muted" style="font-size:0.85rem">${new Date(e.time).toLocaleTimeString()}</td>
-                            <td>${esc(e.event)}</td>
-                            <td style="font-size:0.85rem; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${esc(e.path)}</td>
-                            <td style="font-size:0.85rem; max-width:150px; overflow:hidden; text-overflow:ellipsis;">${esc(e.referrer)}</td>
-                        </tr>
-                    `).join('');
+                // 5. Funnel (Using events "conversion:xxx" logic or if backend sends a funnel object)
+                // Backend "summary" might not include funnel. We try "events/top" again or look for conversion events manually if no dedicated endpoint.
+                const funnelEvents = events.filter(e => e.event.startsWith('conversion:'));
+                const tFunnel = document.getElementById('table-funnel');
+
+                if (funnelEvents.length > 0) {
+                    tFunnel.innerHTML = funnelEvents.map(e => `<tr><td>${esc(e.event.replace('conversion:', ''))}</td><td style="text-align:right">${e.count}</td></tr>`).join('');
                 } else {
-                    tEvents.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted)">Vide</td></tr>';
+                    tFunnel.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Aucune conversion</td></tr>';
                 }
 
             } catch (e) {

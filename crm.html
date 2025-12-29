@@ -30,10 +30,12 @@
         <a href="crm.html" class="active">CRM</a>
         <a href="team.html">Équipe</a>
         <a href="#how">Fonctionnement</a>
-        <a href="login.html" data-track="cta_login">Connexion</a>
-        <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top">Demander une démo</a>
+        <a href="login.html" data-track="cta_login" data-analytics-click="cta_login">Connexion</a>
+        <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top"
+          data-analytics-click="cta_demo_top">Demander une démo</a>
       </nav>
-      <a href="#contact" class="btn btn-primary desktop-cta" data-track="cta_demo_top">Demander une démo</a>
+      <a href="#contact" class="btn btn-primary desktop-cta" data-track="cta_demo_top"
+        data-analytics-click="cta_demo_top">Demander une démo</a>
     </div>
   </header>
 
@@ -52,7 +54,8 @@
             sensibles)</li>
         </ul>
         <div class="cta-row">
-          <a href="#contact" class="btn btn-primary" data-track="cta_demo_mid">Demander une démo</a>
+          <a href="#contact" class="btn btn-primary" data-track="cta_demo_mid"
+            data-analytics-click="cta_demo_mid">Demander une démo</a>
           <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
         </div>
       </div>
@@ -416,7 +419,8 @@
           <li><strong>Brief audio vocal</strong></li>
         </ul>
         <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Brief"
-          data-track="cta_choose_offer_basic">Choisir</a>
+          data-track="cta_choose_offer_basic" data-analytics-click="cta_choose_offer_basic"
+          data-analytics-conversion="pricing_click_basic">Choisir</a>
       </article>
 
       <article class="card glass-static card-hover pricing-card">
@@ -434,7 +438,8 @@
         </ul>
         <p style="font-size:0.75rem; color:#64748b; margin-top:12px;">* Coût de développement initial non inclus.</p>
         <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Gestion"
-          data-track="cta_choose_offer_pro">Choisir</a>
+          data-track="cta_choose_offer_pro" data-analytics-click="cta_choose_offer_pro"
+          data-analytics-conversion="pricing_click_pro">Choisir</a>
       </article>
 
       <article class="card glass-static card-hover pricing-card">
@@ -602,8 +607,8 @@
 
   <section class="section" id="contact">
     <div class="container">
-      <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form"
-        id="contact-form">
+      <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form" id="contact-form"
+        data-analytics-conversion="contact_submit">
         <input type="hidden" name="form-name" value="contact" />
         <input type="hidden" name="offre_choisie" id="hidden-plan-input" value="">
 
