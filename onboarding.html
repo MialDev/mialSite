@@ -91,16 +91,19 @@
                     </fieldset>
                 </div>
 
-                <!-- Instructions Blocks -->
-                <div id="instr-outlook" class="instruction-block"
-                    style="margin-bottom:20px; font-size:0.9rem; color:var(--muted); background:rgba(255,255,255,0.6); padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.2);">
-                    <strong>Outlook :</strong>
-                    <ul style="margin:8px 0 0 18px; padding:0;">
-                        <li>Activez la vérification en deux étapes (2FA) sur votre compte Microsoft.</li>
-                        <li>Allez dans <em>Sécurité > Options de sécurité avancées</em>.</li>
-                        <li>Créez un <strong>Mot de passe d'application</strong>.</li>
-                        <li>Utilisez ce mot de passe ci-dessous (pas votre mot de passe habituel).</li>
-                    </ul>
+                <!-- Instructions Blocks & OAuth -->
+                <div id="instr-outlook" class="instruction-block" style="text-align: center; margin-bottom: 24px;">
+                    <!-- OAuth Button for Outlook -->
+                    <button type="button" id="btn-outlook-auth" class="btn btn-primary w-full"
+                        style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M11.55 21H3v-8.55h8.55V21zM21 21h-8.55v-8.55H21V21zm-9.45-9.45H3V3h8.55v8.55zm9.45 0h-8.55V3H21v8.55z" />
+                        </svg>
+                        Se connecter avec Microsoft
+                    </button>
+                    <div class="muted" style="margin-top:12px; font-size:0.85rem;">Plus besoin de mot de passe
+                        d'application. Connexion sécurisée via Microsoft.</div>
                 </div>
 
                 <div id="instr-gmail" class="instruction-block"
@@ -122,10 +125,7 @@
                 </div>
 
                 <form id="onboarding-form" class="form">
-
-                    <!-- Hidden Select as requested, or valid UI replacement. User said "formulaire : provider (select)". 
-                         I will make a select but maybe hide it and sync with tabs, or just show it if user prefers explicit control.
-                         Tabs are better UX. I'll sync tabs to a hidden input or select. -->
+                    <!-- Hidden Select -->
                     <div style="display:none;">
                         <label>Provider</label>
                         <select id="f-provider" name="provider">
@@ -135,32 +135,34 @@
                         </select>
                     </div>
 
-                    <label>Email
-                        <input type="email" name="email" id="f-email" required placeholder="nom@entreprise.com" />
-                    </label>
+                    <div id="manual-fields">
+                        <label>Email
+                            <input type="email" name="email" id="f-email" required placeholder="nom@entreprise.com" />
+                        </label>
 
-                    <label>Mot de passe d'application / Secret
-                        <div class="input-wrapper">
-                            <input type="password" name="secret" id="f-secret" required placeholder="••••••••••••" />
-                            <button type="button" class="eye-btn" onclick="togglePwd('f-secret')">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
+                        <label>Mot de passe d'application / Secret
+                            <div class="input-wrapper">
+                                <input type="password" name="secret" id="f-secret" required
+                                    placeholder="••••••••••••" />
+                                <button type="button" class="eye-btn" onclick="togglePwd('f-secret')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="muted" style="font-size:0.75rem; margin-top:4px;">
+                                Utilisez un mot de passe d'application pour Gmail/Outlook.
+                            </div>
+                        </label>
+                        <div style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-primary w-full">Connecter Manuellement</button>
                         </div>
-                        <div class="muted" style="font-size:0.75rem; margin-top:4px;">
-                            Utilisez un mot de passe d'application pour Gmail/Outlook.
-                        </div>
-                    </label>
-
-                    <div id="error-message" style="color: #ef4444; font-size: 0.9rem; margin-top: 8px; display: none;">
                     </div>
 
-                    <div style="margin-top: 16px;">
-                        <button type="submit" class="btn btn-primary w-full">Connecter</button>
+                    <div id="error-message" style="color: #ef4444; font-size: 0.9rem; margin-top: 8px; display: none;">
                     </div>
 
                     <div class="center" style="margin-top: 20px;">
@@ -199,6 +201,10 @@
         // Tabs Logic
         const tabs = document.getElementsByName('providerTab');
         const select = document.getElementById('f-provider');
+        const manualFields = document.getElementById('manual-fields');
+
+        // Initial State for Outlook
+        if (manualFields) manualFields.style.display = 'none';
 
         for (const t of tabs) {
             t.addEventListener('change', () => {
@@ -210,13 +216,46 @@
         }
 
         function updateInstructions(val) {
+            // Reset visibility
             document.getElementById('instr-outlook').style.display = 'none';
             document.getElementById('instr-gmail').style.display = 'none';
             document.getElementById('instr-other').style.display = 'none';
 
-            if (val === 'outlook') document.getElementById('instr-outlook').style.display = 'block';
+            // Default to showing manual form unless Outlook
+            if (manualFields) manualFields.style.display = 'block';
+
+            if (val === 'outlook') {
+                document.getElementById('instr-outlook').style.display = 'block';
+                if (manualFields) manualFields.style.display = 'none'; // OAuth only
+            }
             if (val === 'gmail') document.getElementById('instr-gmail').style.display = 'block';
             if (val === 'other') document.getElementById('instr-other').style.display = 'block';
+        }
+
+        // --- OAUTH LOGIC ---
+        const btnOutlook = document.getElementById('btn-outlook-auth');
+        if (btnOutlook) {
+            btnOutlook.addEventListener('click', async () => {
+                try {
+                    // Use correct redirect_uri (auto-detect current origin)
+                    const redirectUri = window.location.origin + '/callback.html';
+                    const res = await fetch(apiUrl(`/auth/microsoft/url?redirect_uri=${encodeURIComponent(redirectUri)}`), {
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error("Erreur lors de l'initiation OAuth");
+                    const data = await res.json();
+
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error("URL de redirection manquante");
+                    }
+                } catch (e) {
+                    const err = document.getElementById('error-message');
+                    err.textContent = e.message;
+                    err.style.display = 'block';
+                }
+            });
         }
 
         // Form Submit
@@ -252,9 +291,8 @@
 
                 if (!res.ok) {
                     if (res.status === 409) {
-                        throw new Error("Cette boîte est déjà connectée à un autre utilisateur. Contacte un admin pour la libérer (Admin > Gestion > Mailboxes).");
+                        throw new Error("Cette boîte est déjà connectée à un autre utilisateur. Contacte un admin pour la libérer.");
                     }
-                    // Display detailed error from backend
                     const errorMsg = data.detail || JSON.stringify(data) || res.statusText;
                     throw new Error(errorMsg);
                 }
