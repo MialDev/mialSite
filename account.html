@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mon Compte — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="accueil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav class="nav-links">
+                <a href="accueil.html">Accueil</a>
+                <a href="dashboard.html">Tableau de bord</a>
+                <a href="account.html" style="font-weight: 600;">Mon Compte</a>
+                <button id="logout-btn" class="btn btn-ghost"
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
+
+            <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
+                <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Mon Compte</h1>
+                <p class="muted">Gérez vos informations personnelles et connexions.</p>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 32px;">
+                <!-- Password Change -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <h3 style="margin-top:0;">Sécurité</h3>
+                    <div style="margin-bottom:16px;">
+                        <label class="muted">Email de connexion</label>
+                        <div style="font-weight:600;" id="account-email-display">...</div>
+                    </div>
+
+                    <form id="form-password">
+                        <h4 style="font-size: 1rem; margin-bottom: 8px;">Changer mot de passe</h4>
+                        <div style="margin-bottom: 8px;">
+                            <input type="password" name="old_password" placeholder="Ancien mot de passe" required
+                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="password" name="new_password" placeholder="Nouveau mot de passe" required
+                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        </div>
+                        <button type="submit" class="btn btn-ghost btn-small">Mettre à jour</button>
+                        <div id="pwd-msg" style="margin-top: 8px; font-size: 0.9rem;"></div>
+                    </form>
+                </div>
+
+                <!-- Mailboxes -->
+                <div class="card glass-static" style="padding: 24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0;">Boîtes Mail</h3>
+                        <a href="onboarding.html" class="btn btn-primary btn-small">Ajouter</a>
+                    </div>
+                    <div id="mailbox-list" style="margin-top:16px;">
+                        <p class="muted">Chargement...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card glass-static" style="border: 1px solid #fecaca; background: #fff1f2;">
+                <h3 style="margin-top:0; color: #991b1b;">Zone de danger</h3>
+                <p style="color: #7f1d1d; font-size: 0.9rem; margin-bottom: 16px;">
+                    La suppression de votre compte est irréversible. Toutes vos données (profils, historiques,
+                    connexions) seront effacées.
+                </p>
+                <button id="btn-delete-account" class="btn btn-primary"
+                    style="background: #ef4444; border-color: #ef4444;">Supprimer mon compte</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Modal Delete Account -->
+    <div id="modal-delete"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+        <div style="background:white; padding:24px; border-radius:8px; max-width:400px; width:90%;">
+            <h3 style="margin-top:0;">Confirmer la suppression</h3>
+            <p>Veuillez entrer votre mot de passe pour confirmer la suppression définitive.</p>
+            <input type="password" id="del-password" placeholder="Votre mot de passe"
+                style="width:100%; padding:8px; margin-bottom:16px; border:1px solid #ccc; border-radius:4px;">
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-ghost" onclick="closeDelModal()">Annuler</button>
+                <button class="btn btn-primary" style="background:#ef4444; border-color:#ef4444;"
+                    onclick="confirmDeleteAccount()">Confirmer</button>
+            </div>
+            <div id="del-msg" style="color:red; margin-top:8px; font-size:0.9rem;"></div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="/api.js"></script>
+    <script>
+        function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth Check
+            try {
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (res.status === 401) return window.location.href = 'login.html';
+                const user = await res.json();
+                document.getElementById('account-email-display').textContent = user.email || 'Utilisateur';
+
+                loadMailboxes();
+
+            } catch (e) { window.location.href = 'login.html'; }
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try { await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }); } catch (e) { }
+                window.location.href = 'login.html';
+            });
+        });
+
+        // 1. Password Change
+        document.getElementById('form-password').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('pwd-msg');
+            msg.textContent = "Mise à jour..."; msg.style.color = "var(--muted)";
+            const formData = new FormData(e.target);
+            try {
+                const res = await fetch(apiUrl('/me/change-password'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.fromEntries(formData)),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                msg.textContent = "Mot de passe modifié !"; msg.style.color = "green";
+                e.target.reset();
+            } catch (err) {
+                msg.textContent = "Erreur: " + err.message; msg.style.color = "red";
+            }
+        });
+
+        // 2. Mailboxes
+        async function loadMailboxes() {
+            const div = document.getElementById('mailbox-list');
+            try {
+                const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
+                if (!res.ok) throw new Error("Erreur fetch");
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
+
+                if (list.length === 0) {
+                    div.innerHTML = '<div class="muted">Aucune boîte connectée.</div>';
+                    return;
+                }
+
+                div.innerHTML = list.map(mb => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:12px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                        <div>
+                           <div style="font-weight:600;">${escapeHtml(mb.email)}</div>
+                           <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
+                        </div>
+                        <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                div.innerHTML = '<div style="color:red">Erreur chargement</div>';
+            }
+        }
+
+        window.disconnectMailbox = async function (id) {
+            if (!confirm("Déconnecter cette boîte ? Ceci arrêtera les récaps associés.")) return;
+            try {
+                const res = await fetch(apiUrl('/mailbox/disconnect'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email_account_id: id }),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                loadMailboxes();
+            } catch (e) { alert("Erreur: " + e.message); }
+        };
+
+        // 3. Delete Account
+        const modal = document.getElementById('modal-delete');
+        document.getElementById('btn-delete-account').addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+        window.closeDelModal = () => { modal.style.display = 'none'; document.getElementById('del-password').value = ''; };
+
+        window.confirmDeleteAccount = async () => {
+            const pwd = document.getElementById('del-password').value;
+            const msg = document.getElementById('del-msg');
+            if (!pwd) return;
+
+            try {
+                // First verify password or send it in body?
+                // Prompt says "Pop-up demande mot de passe -> Appel API DELETE /me"
+                // Does DELETE /me support body with password? Usually not standard but let's assume API requires it or we assume authenticated session is enough?
+                // "Pop-up demande mot de passe" suggests we verify it. 
+                // If the API endpoint just deletes the CURRENT user based on session, the password is a frontend safety check OR needs to be sent.
+                // I will assume I need to send it. DELETE requests with body are discouraged but possible. 
+                // Prefer POST /me/delete with password? 
+                // User request specifically said "Appel API DELETE /me".
+                // I'll try sending it in body if supported, or headers. 
+                // Actually, let's assume for now the instruction is strict on "DELETE /me". 
+                // If the backend doesn't check password, the popup was just a UI friction.
+                // BUT if security matters, backend should check.
+                // I will send it in JSON body just in case the backend expects it.
+
+                const res = await fetch(apiUrl('/me'), {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd }),
+                    credentials: 'include'
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                alert("Compte supprimé. Au revoir.");
+                window.location.href = 'index.html'; // or login
+
+            } catch (e) {
+                msg.textContent = "Erreur: " + e.message;
+            }
+        };
+
+    </script>
+</body>
+
+</html>

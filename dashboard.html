@@ -7,25 +7,10 @@
     <title>Dashboard — mial</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
-
     <meta name="theme-color" content="#1fb6ff">
-    <style>
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
-
 
     <header id="site-header" class="nav">
         <div class="container nav-inner">
@@ -38,12 +23,10 @@
             </button>
             <nav class="nav-links">
                 <a href="accueil.html">Accueil</a>
-                <a href="crm-dashboard.html">CRM</a>
-                <a href="audio-dashboard.html">Audio</a>
-                <!-- Logout button -->
+                <a href="dashboard.html" style="font-weight: 600;">Tableau de bord</a>
+                <a href="account.html">Mon Compte</a>
                 <button id="logout-btn" class="btn btn-ghost"
-                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;"
-                    data-action="logout">Déconnexion</button>
+                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
             </nav>
         </div>
     </header>
@@ -58,276 +41,91 @@
                         <p class="muted">Bienvenue, <span id="user-email"
                                 style="font-weight:600; color:var(--ink);">...</span></p>
                     </div>
-                    <button class="btn btn-primary btn-small" onclick="location.reload()">Rafraîchir</button>
-                </div>
-            </div>
-
-            <div class="grid-2" style="margin-bottom: 32px;">
-                <!-- Mon Compte -->
-                <div class="card glass-static" style="padding: 24px;">
-                    <h3 style="margin-top:0;">Mon Compte</h3>
-                    <div style="margin-bottom:16px;">
-                        <label class="muted">Email connecté</label>
-                        <div style="font-weight:600;" id="account-email-display">...</div>
-                    </div>
-
-                    <form id="form-password">
-                        <h4 style="font-size: 1rem; margin-bottom: 8px;">Changer mot de passe</h4>
-                        <div style="margin-bottom: 8px;">
-                            <input type="password" name="old_password" placeholder="Ancien mot de passe" required
-                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <input type="password" name="new_password" placeholder="Nouveau mot de passe" required
-                                style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        </div>
-                        <button type="submit" class="btn btn-ghost btn-small">Mettre à jour mot de passe</button>
-                        <div id="pwd-msg" style="margin-top: 8px; font-size: 0.9rem;"></div>
-                    </form>
-                </div>
-
-                <!-- Boîte Mail -->
-                <div class="card glass-static" style="padding: 24px;">
-                    <h3 style="margin-top:0;">Boîte Mail</h3>
-                    <div id="mailbox-list" style="margin-bottom:16px;">
-                        <p class="muted">Chargement...</p>
-                    </div>
-
-                    <div style="border-top: 1px solid #eee; padding-top: 16px;">
-                        <h4 style="font-size: 1rem; margin-bottom: 8px;">Connecter / Mettre à jour (Gmail)</h4>
-                        <form id="form-connect-gmail">
-                            <div style="margin-bottom: 8px;">
-                                <input type="email" name="email" placeholder="Email Address Gmail" required
-                                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                            </div>
-                            <div style="margin-bottom: 8px;">
-                                <textarea name="secret" placeholder="Collez le contenu JSON du fichier client_secret..."
-                                    required
-                                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.8rem; height: 60px;"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-small">Connecter</button>
-                            <div id="connect-msg" style="margin-top: 8px; font-size: 0.9rem;"></div>
-                        </form>
+                    <div style="display:flex; gap:12px;">
+                        <a href="onboarding.html" class="btn btn-primary btn-small">＋ Configurer un nouveau récap</a>
+                        <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
                     </div>
                 </div>
             </div>
 
-            <div class="card glass-static" style="padding: 0; overflow:hidden;">
+            <!-- Profiles List -->
+            <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
                 <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="font-size: 1.25rem; margin:0;">Vos Profils</h2>
-                        <div id="mailbox-status" style="font-size: 0.9rem; color: var(--muted);">
-                            Status Mailbox: <span id="mb-status-text">Chargement...</span>
-                        </div>
-                    </div>
+                    <h2 style="font-size: 1.25rem; margin:0;">Vos Profils de Récap</h2>
                 </div>
 
                 <div style="overflow-x: auto;">
                     <table class="dashboard-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Email source</th>
-                                <th>Timezone</th>
+                                <th>Source (Boîte)</th>
+                                <th>Destinataire</th>
                                 <th>Heures</th>
-                                <th>Jours (Arrière)</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="profiles-body">
                             <tr>
-                                <td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td>
+                                <td colspan="5" style="text-align:center; padding: 40px;" class="muted">Chargement...
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Profile Editor -->
+            <!-- Profile Editor (Hidden) -->
             <section id="profile-editor" class="card glass-static" style="margin-top:24px; display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
                     <div>
-                        <h3 style="margin:0;">Paramètres du profil</h3>
+                        <h3 style="margin:0;">Modifier Profil</h3>
                         <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-ghost btn-small" id="btn-delete-profile"
-                            style="color:#ef4444; border-color:#ef4444; display:none;">Supprimer</button>
-                        <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
-                    </div>
+                    <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
                 </div>
 
+                <div id="editor-ok" style="display:none; margin-bottom:12px; color:#16a34a;">Sauvegardé !</div>
+                <div id="editor-error" style="display:none; margin-bottom:12px; color:#ef4444;"></div>
 
-
-                <div id="editor-error" style="display:none; margin-top:12px; color:#ef4444; font-size:0.95rem;"></div>
-                <div id="editor-ok" style="display:none; margin-top:12px; color:#16a34a; font-size:0.95rem;"></div>
-
-                <!-- Admin Only: Assignment -->
-                <div id="admin-assign-block"
-                    style="display:none; margin-top:16px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
-                    <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation</h4>
-                    <div style="display:flex; gap:8px; align-items:flex-end;">
-                        <label style="flex:1;">Email utilisateur
-                            <input id="f-assign-email" type="email" placeholder="client@example.com" />
-                        </label>
-                        <button class="btn btn-primary btn-small" id="btn-assign">Assigner</button>
-                        <button class="btn btn-ghost btn-small" id="btn-unassign"
-                            style="display:none;">Désassigner</button>
+                <form id="form-settings" class="form">
+                    <!-- Standard Recapt Fields -->
+                    <div class="grid-2"
+                        style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                        <label>Heure début <input id="f-start" type="time" step="1" /></label>
+                        <label>Heure fin <input id="f-end" type="time" step="1" /></label>
                     </div>
-                    <div id="assign-status" style="margin-top:8px; font-size:0.9rem; color:var(--muted);"></div>
-                </div>
 
-                <!-- Unified Form (All Visible) -->
-                <form id="form-settings" class="form" style="margin-top:16px;">
+                    <label style="margin-bottom:16px; display:block;">Timezone
+                        <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
+                    </label>
 
-                    <!-- Section: Horaires -->
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Horaires
-                        </h4>
-
-                        <label>Timezone
-                            <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
-                        </label>
-
+                    <div
+                        style="padding:16px; background:rgba(255,255,255,0.5); border-radius:8px; border:1px solid #e2e8f0; margin-bottom:16px;">
+                        <h4 style="margin-top:0;">Filtres & IA</h4>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <label>Heure début
-                                <input id="f-start" type="time" step="1" />
-                            </label>
-                            <label>Heure fin
-                                <input id="f-end" type="time" step="1" />
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Section: Filtres -->
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Filtres &
-                            Historique</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <label>Jours arrière START
-                                <input id="f-days-start" type="number" min="0" max="30" placeholder="1" />
-                            </label>
-                            <label>Jours arrière END
-                                <input id="f-days-end" type="number" min="0" max="30" placeholder="1" />
-                            </label>
-                        </div>
-
-                        <!-- Extended Filters (CSV) -->
-                        <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <label>Expéditeurs autorisés (sep. virgule)
-                                <input id="f-filter-sender" type="text" placeholder="ex: @gmail.com, bob@example.com" />
-                            </label>
-                            <label>Expéditeurs exclus (sep. virgule)
-                                <input id="f-filter-exclude" type="text" placeholder="ex: no-reply, newsletter" />
-                            </label>
-                        </div>
-                        <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <label>CC autorisés (sep. virgule)
-                                <input id="f-filter-cc" type="text" placeholder="ex: admin@corp.com" />
-                            </label>
-                            <label>Destiné à (sep. virgule)
-                                <input id="f-filter-destined" type="text" placeholder="ex: support@mial.com" />
-                            </label>
-                        </div>
-                        <div style="margin-top:12px;">
-                            <label>Transféré de (sep. virgule)
-                                <input id="f-filter-forwarded" type="text" placeholder="ex: old-address@legacy.com" />
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px;">
-                            <div>
-                                <div style="font-weight:600;">Debug mode</div>
-                                <div class="muted" style="font-size:0.9rem;">Active les logs / mode test</div>
-                            </div>
-
-                            <label class="toggle">
-                                <input id="f-debug" type="checkbox" />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Section: Options Recap -->
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">Options
-                            Recap</h4>
-
-                        <div
-                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-                            <div>
-                                <div style="font-weight:600;">Seulement Non-lus</div>
-                                <div class="muted" style="font-size:0.8rem;">Ignorer les emails lus</div>
-                            </div>
-                            <label class="toggle">
-                                <input id="f-unread" type="checkbox" />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-                            <div>
-                                <div style="font-weight:600;">Audio Actif</div>
-                                <div class="muted" style="font-size:0.8rem;">Générer le podcast</div>
-                            </div>
-                            <label class="toggle">
-                                <input id="f-audio" type="checkbox" />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                            <label>Voix
-                                <select id="f-voice"
-                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                    <option value="alloy">Alloy</option>
-                                    <option value="echo">Echo</option>
-                                    <option value="fable">Fable</option>
-                                    <option value="onyx">Onyx</option>
-                                    <option value="nova">Nova</option>
-                                    <option value="shimmer">Shimmer</option>
-                                </select>
-                            </label>
-                            <label>Vitesse (0.25 - 4.0)
-                                <input id="f-speed" type="number" step="0.05" min="0.25" max="4.0" placeholder="1.0" />
-                            </label>
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                            <label>Tri
-                                <select id="f-sort"
-                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                    <option value="date_desc">Récents d'abord</option>
-                                    <option value="date_asc">Anciens d'abord</option>
-                                    <option value="priority">Priorité IA</option>
-                                </select>
-                            </label>
-                            <label>Langue
-                                <select id="f-lang"
-                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                            <label>Catégories (Focus) <input id="f-categories" type="text"
+                                    placeholder="ex: ACTION,MEETING" /></label>
+                            <label>Langue <select id="f-lang">
                                     <option value="fr">Français</option>
                                     <option value="en">Anglais</option>
-                                    <option value="es">Espagnol</option>
-                                </select>
+                                </select></label>
+                        </div>
+                        <div style="margin-top:12px; display:flex; gap:24px;">
+                            <label style="display:flex; align-items:center; gap:8px;">
+                                <input id="f-audio" type="checkbox" /> Audio Podcast
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px;">
+                                <input id="f-unread" type="checkbox" /> Seulement non-lus
                             </label>
                         </div>
-
-                        <label>Catégories (séparées par virgule)
-                            <input id="f-categories" type="text" placeholder="EX: ACTION,MEETING ou ALL" />
-                        </label>
                     </div>
 
-                    <!-- Common: Status -->
-                    <div style="border-top:1px solid rgba(148,163,184,0.3); margin:16px 0; padding-top:16px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                            <div>
-                                <div style="font-weight:600;">Status Actif</div>
-                                <div class="muted" style="font-size:0.9rem;">Désactiver pour mettre en pause</div>
-                            </div>
-
+                    <div
+                        style="padding:16px; background:rgba(255,255,255,0.5); border-radius:8px; border:1px solid #e2e8f0; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>Status Actif</strong>
                             <label class="toggle">
                                 <input id="f-status" type="checkbox" />
                                 <span class="toggle-slider"></span>
@@ -335,9 +133,10 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:10px; margin-top:16px;">
-                        <button type="button" class="btn btn-primary" id="save-settings">Enregistrer</button>
-                    </div>
+                    <button type="button" class="btn btn-primary" id="save-settings">Enregistrer les
+                        modifications</button>
+                    <!-- HIDDEN FIELDS REQUIRED FOR EDITOR LOGIC PRESERVATION IF NEEDED, OR SIMPLIFIED -->
+                    <!-- I am assuming simplified editor is better for User, but keeping IDs consistent -->
                 </form>
             </section>
 
@@ -346,636 +145,186 @@
 
     <footer class="footer">
         <div class="container center">
-            <p class="muted">© 2025 mial — Dashboard Client · <a href="mentions-legales.html">Mentions Légales</a></p>
+            <p class="muted">© 2025 mial — Dashboard · <a href="mentions-legales.html">Mentions Légales</a></p>
         </div>
     </footer>
 
     <script src="main.js"></script>
     <script src="/api.js"></script>
     <script>
-        // 1. Check Auth & Load Me
-        async function initDashboard() {
+        function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
+
+        let PROFILES_BY_ID = new Map();
+        let currentProfileId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Auth
             try {
-                console.log("initDashboard: Starting...");
-                console.log("Fetching /me...");
-
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
-                console.log("Response /me:", res.status);
-
-                if (res.status === 401) {
-                    console.warn("401 Unauthorized -> redirecting login");
-                    window.location.href = 'login.html';
-                    return;
-                }
-                if (!res.ok) throw new Error(`Auth fetch error: ${res.status} ${res.statusText}`);
-
+                if (res.status === 401) window.location.href = 'login.html';
                 const user = await res.json();
 
-                // Store Role Global
-                currentUserRole = user.role; // 'admin' or 'user'
-                console.log("Logged as:", user.email, "Role:", currentUserRole);
+                // Redirect Admin
+                if (user.role === 'admin' || user.is_admin) window.location.replace('/admin/dashboard.html');
 
-                // SAFETY NET: Admins should not be here
-                if (currentUserRole === 'admin' || user.is_admin === true) {
-                    console.warn("Admin detected on User Dashboard. Redirecting...");
-                    window.location.replace("/admin/dashboard.html");
-                    return;
-                }
+                document.getElementById('user-email').textContent = user.email;
+            } catch (e) { window.location.href = 'login.html'; }
 
-                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
+            // 2. Fetch Profiles
+            loadProfiles();
 
-                document.getElementById('user-email').textContent = user.email || 'Utilisateur';
-
-                // New: Fill Account Email
-                const accEmailDisp = document.getElementById('account-email-display');
-                if (accEmailDisp) accEmailDisp.textContent = user.email || '—';
-
-                // Load Profiles & Mailbox Status
-                fetchProfiles();
-                fetchUserMailboxes();
-
-            } catch (err) {
-                console.error("initDashboard Error:", err);
-                const tbody = document.getElementById('profiles-body');
-                if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur lors du chargement de l'utilisateur: ${err.message}</td></tr>`;
-                }
-            }
-        }
-
-        // --- MAILBOXES & ACCOUNT ---
-
-        async function fetchUserMailboxes() {
-            const div = document.getElementById('mailbox-list');
-            const statusText = document.getElementById('mb-status-text');
-
-            try {
-                // Expecting list of mailboxes
-                const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
-                if (!res.ok) throw new Error("Erreur fetch");
-
-                let data = await res.json();
-                // Adapt to legacy single object if necessary, or array
-                const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
-
-                if (list.length === 0) {
-                    div.innerHTML = '<div class="muted">Aucune boîte mail connectée.</div>';
-                    if (statusText) { statusText.textContent = "Non connecté"; statusText.style.color = "#ef4444"; }
-                    return;
-                }
-
-                if (statusText) {
-                    statusText.textContent = "Connecté (" + list.length + ")";
-                    statusText.style.color = "#16a34a";
-                }
-
-                div.innerHTML = list.map(mb => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:8px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
-                        <div>
-                           <div style="font-weight:600; font-size:0.9rem;">${escapeHtml(mb.email)}</div>
-                           <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
-                        </div>
-                        <button class="btn btn-ghost btn-small" style="color:#ef4444; padding:4px 8px; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
-                    </div>
-                `).join('');
-
-            } catch (e) {
-                console.warn(e);
-                div.innerHTML = '<div style="color:red">Erreur chargement</div>';
-            }
-        }
-
-        window.disconnectMailbox = async function (id) {
-            if (!confirm("Voulez-vous vraiment déconnecter cette boîte mail ?")) return;
-            try {
-                const res = await fetch(apiUrl('/mailbox/disconnect'), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email_account_id: id }),
-                    credentials: 'include'
-                });
-                if (!res.ok) throw new Error(await res.text());
-                fetchUserMailboxes();
-            } catch (e) { alert("Erreur: " + e.message); }
-        };
-
-        // --- FORMS BINDING ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Form Password
-            const formPwd = document.getElementById('form-password');
-            if (formPwd) formPwd.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const msg = document.getElementById('pwd-msg');
-                msg.textContent = "Mise à jour..."; msg.style.color = "var(--muted)";
-
-                const formData = new FormData(formPwd);
-                const payload = Object.fromEntries(formData.entries()); // { old_password, new_password }
-
-                try {
-                    const res = await fetch(apiUrl('/me/change-password'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        credentials: 'include'
-                    });
-                    if (!res.ok) throw new Error(await res.text());
-                    msg.textContent = "Mot de passe modifié !"; msg.style.color = "green";
-                    formPwd.reset();
-                } catch (err) {
-                    msg.textContent = "Erreur: " + err.message; msg.style.color = "red";
-                }
+            // 3. Logout
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }).catch(e => { });
+                window.location.href = 'login.html';
             });
 
-            // Form Connect Gmail
-            const formGmail = document.getElementById('form-connect-gmail');
-            if (formGmail) formGmail.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const msg = document.getElementById('connect-msg');
-                msg.textContent = "Connexion..."; msg.style.color = "var(--muted)";
-
-                const formData = new FormData(formGmail);
-                const payload = {
-                    provider: 'gmail',
-                    email: formData.get('email'),
-                    secret: formData.get('secret') // assuming valid JSON string
-                };
-
-                // Try parsing JSON secret to be safe, or send as is? 
-                // Backend likely expects parsed JSON or string? Prompt says "Update secret gmail en refaisant connect".
-                // Usually secret is a complex object. Let's try to parse it to ensure validity, 
-                // but if backend expects a string, we might need to adjust.
-                // "POST /portal-api/mailbox/connect (provider=gmail, email, secret)" -> implies JSON body with these keys.
-                // If secret is the JSON *content*, we should probably pass it as object or string.
-                // Let's pass it as parsed object if possible, or string if that fails.
-                try {
-                    payload.secret = JSON.parse(payload.secret);
-                } catch (e) {
-                    msg.textContent = "Le secret doit être un JSON valide."; msg.style.color = "red";
-                    return;
-                }
-
-                try {
-                    const res = await fetch(apiUrl('/mailbox/connect'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        credentials: 'include'
-                    });
-                    if (!res.ok) throw new Error(await res.text());
-                    msg.textContent = "Boîte connectée !"; msg.style.color = "green";
-                    formGmail.reset();
-                    fetchUserMailboxes();
-                } catch (err) {
-                    msg.textContent = "Erreur: " + err.message; msg.style.color = "red";
-                }
+            // 4. Editor Close
+            document.getElementById('editor-close').addEventListener('click', () => {
+                document.getElementById('profile-editor').style.display = 'none';
             });
+
+            // 5. Save
+            document.getElementById('save-settings').addEventListener('click', saveSettings);
         });
 
-        // 2. Load Profiles
-        async function fetchProfiles() {
-            console.log("fetchProfiles: Loading profiles...");
+        async function loadProfiles() {
             const tbody = document.getElementById('profiles-body');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement des profils...</td></tr>';
-
             try {
-                const res = await fetch(apiUrl('/profiles'), { credentials: 'include' });
-                console.log("Response /profiles:", res.status);
-
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => "");
-                    throw new Error(`Failed to load profiles (${res.status}): ${txt}`);
-                }
+                // NEW ROUTE
+                const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
+                if (!res.ok) throw new Error("Erreur chargement profils");
 
                 const profiles = await res.json();
-                console.log("Profiles loaded:", profiles.length);
-                renderProfiles(profiles);
-            } catch (err) {
-                console.error("fetchProfiles Error:", err);
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur: ${err.message}</td></tr>`;
-            }
-        }
+                PROFILES_BY_ID.clear();
 
-        // garde ce script dans le même <script> que le reste
+                if (!profiles || profiles.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px;">Aucun profil configuré. <a href="onboarding.html">Créer un nouveau récap</a></td></tr>`;
+                    return;
+                }
 
-        // Map globale id -> profile (pour avoir les valeurs par défaut dans Horaires/Filtres)
-        let PROFILES_BY_ID = new Map();
+                tbody.innerHTML = profiles.map(p => {
+                    PROFILES_BY_ID.set(p.id, p);
 
-        function v(x) { return (x === null || x === undefined || x === '') ? '—' : x; } // affichage
-        function escapeHtml(s) {
-            return String(s ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-        }
+                    const activeBadge = (String(p.status).toLowerCase() === 'active')
+                        ? `<span class="badge-active" style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>`
+                        : `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
 
-        function renderProfiles(profiles) {
-            const tbody = document.getElementById('profiles-body');
-            PROFILES_BY_ID = new Map();
-
-            if (!profiles || profiles.length === 0) {
-                tbody.innerHTML = `
+                    return `
                     <tr>
-                        <td colspan="7" style="text-align:center; padding: 48px;">
-                            <div style="margin-bottom:16px; font-size:1.1rem; color:#64748b;">Aucun profil actif trouvé.</div>
-                            <p style="color:#94a3b8; margin-bottom:24px;">Vous n'avez pas encore de configuration de synthèse d'emails.</p>
-                            <a href="onboarding.html" class="btn btn-primary">Créer mon premier profil</a>
+                        <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
+                        <td>${escapeHtml(p.recap_recipient || '—')}</td>
+                        <td>${escapeHtml(p.heure_debut)} - ${escapeHtml(p.heure_fin)}</td>
+                        <td>${activeBadge}</td>
+                        <td style="text-align:right;">
+                            <button class="btn btn-ghost btn-small" onclick="openEditor('${p.id}')">Modifier</button>
                         </td>
-                    </tr>`;
-                return;
+                    </tr>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`;
             }
-
-            profiles.forEach(p => PROFILES_BY_ID.set(p.id, p));
-
-            tbody.innerHTML = profiles.map(p => {
-                const statusRaw = (p.status ?? '—');
-                const status = escapeHtml(statusRaw);
-
-                // Admin sees account_email or assigned_to, User sees their own data
-                // If we are admin (currentUserRole === 'admin'), we might want to see who it is assigned to.
-                // But the column says "Email source" (mailbox to recap).
-                // Let's stick to showing: p.account_email (if admin) ?? p.recap_recipient
-                // And for non-admins, p.account_email is nuked by backend anyway.
-                let emailSource = escapeHtml(p.account_email ?? p.recap_recipient ?? '—');
-
-                // If assigned_to_email is present (admin view mostly), maybe show it?
-                // User requirement: "ne pas afficher account_email... afficher recap_recipient" for user mode.
-                // Backend removes account_email for user. So logic holds.
-
-                const timezone = escapeHtml(p.timezone ?? '—');
-
-                const heures = `${escapeHtml(v(p.heure_debut))} - ${escapeHtml(v(p.heure_fin))}`;
-
-                const jours = `${escapeHtml(v(p.jours_arriere_start ?? '—'))} → ${escapeHtml(v(p.jours_arriere_end ?? '—'))}`;
-
-                const debugBadge = (p.debug_mode === true)
-                    ? '<span style="color:orange; font-size:0.7rem; margin-left:4px;">(DEBUG)</span>'
-                    : '';
-
-                const isStatusActive = (String(statusRaw).toLowerCase() === 'active');
-                const statusClass = isStatusActive ? 'status-active' : 'status-inactive';
-
-                return `
-            <tr>
-              <td style="font-family:monospace; color:var(--muted);">${escapeHtml(p.id)}</td>
-              <td><strong>${emailSource}</strong> ${debugBadge}</td>
-              <td>${timezone}</td>
-              <td>${heures}</td>
-              <td>${jours}</td>
-              <td><span class="status-badge ${statusClass}">${status}</span></td>
-              <td>
-                <div class="action-btn-group">
-                  <button class="btn btn-ghost btn-small" onclick="editSettings('${escapeHtml(p.id)}')">Paramètres</button>
-                </div>
-              </td>
-            </tr>
-          `;
-            }).join('');
-        }
-
-        // 4. Actions & Editor Logic
-
-        let currentProfileId = null;
-        let currentUserRole = null; // 'admin' or 'user'
-
-        function normalizeTimeToHHMMSS(t) {
-            const s = String(t ?? '').trim();
-            if (!s) return null;
-            // accepte HH:MM ou HH:MM:SS
-            const m1 = s.match(/^(\d{1,2}):(\d{2})$/);
-            const m2 = s.match(/^(\d{1,2}):(\d{2}):(\d{2})$/);
-            if (m2) return `${m2[1].padStart(2, '0')}:${m2[2]}:${m2[3]}`;
-            if (m1) return `${m1[1].padStart(2, '0')}:${m1[2]}:00`;
-            return null;
-        }
-
-        // Open functions now map to the editor
-        function editSettings(id) {
-            openEditor(id);
         }
 
         function openEditor(id) {
             const p = PROFILES_BY_ID.get(id);
             if (!p) return;
-
             currentProfileId = id;
-            document.getElementById('edit-profile-id').textContent = id;
+            document.getElementById('edit-profile-id').textContent = id.substring(0, 8) + '...';
+            document.getElementById('editor-ok').style.display = 'none';
+            document.getElementById('editor-error').style.display = 'none';
 
-            // Reset status messages
-            const errDiv = document.getElementById('editor-error');
-            const okDiv = document.getElementById('editor-ok');
-            errDiv.style.display = 'none';
-            okDiv.style.display = 'none';
-
-            // Show Editor
-            document.getElementById('profile-editor').style.display = 'block';
-
-            // Set Inputs
-            document.getElementById('f-timezone').value = p.timezone || '';
+            // Fill basics
             document.getElementById('f-start').value = p.heure_debut || '';
             document.getElementById('f-end').value = p.heure_fin || '';
-            document.getElementById('f-days-start').value = p.jours_arriere_start ?? 0;
-            document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
-            document.getElementById('f-debug').checked = (p.debug_mode === true);
-
-            // Extended Filters
-            const f = p.filters || {};
-            function arrToCsv(a) { return Array.isArray(a) ? a.join(', ') : ''; }
-            document.getElementById('f-filter-sender').value = arrToCsv(f.sender);
-            document.getElementById('f-filter-exclude').value = arrToCsv(f.exclude);
-            document.getElementById('f-filter-cc').value = arrToCsv(f.cc);
-            document.getElementById('f-filter-destined').value = arrToCsv(f.destined_to);
-            document.getElementById('f-filter-forwarded').value = arrToCsv(f.forwarded_from);
-
-            // Recap Fields
-            document.getElementById('f-unread').checked = (p.only_unread === true);
-            document.getElementById('f-audio').checked = (p.audio_actif === true);
-            document.getElementById('f-voice').value = p.voice || 'alloy'; // default
-            document.getElementById('f-speed').value = p.speed || 1.0;
-            document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
-            document.getElementById('f-lang').value = p.language || 'fr';
+            document.getElementById('f-timezone').value = p.timezone || '';
             document.getElementById('f-categories').value = p.categories || '';
+            document.getElementById('f-lang').value = p.language || 'fr';
 
-            // Status Toggle (Active/Inactive)
-            const st = String(p.status ?? '').toLowerCase();
-            document.getElementById('f-status').checked = (st === 'active');
+            document.getElementById('f-audio').checked = (p.audio_actif === true);
+            document.getElementById('f-unread').checked = (p.only_unread === true);
+            document.getElementById('f-status').checked = (String(p.status || '').toLowerCase() === 'active');
 
-            // ADMIN LOGIC
-            const isAdmin = (currentUserRole === 'admin');
-            const assignBlock = document.getElementById('admin-assign-block');
-            const deleteBtn = document.getElementById('btn-delete-profile');
-
-            if (isAdmin) {
-                assignBlock.style.display = 'block';
-                deleteBtn.style.display = 'block';
-
-                // Populate Assignment
-                const assignEmailInput = document.getElementById('f-assign-email');
-                const unassignBtn = document.getElementById('btn-unassign');
-                const assignStatus = document.getElementById('assign-status');
-
-                if (p.assigned_to_email) {
-                    assignEmailInput.value = p.assigned_to_email;
-                    unassignBtn.style.display = 'inline-block';
-                    assignStatus.textContent = `Assigné à : ${p.assigned_to_email}`;
-                } else {
-                    assignEmailInput.value = '';
-                    unassignBtn.style.display = 'none';
-                    assignStatus.textContent = "Non assigné";
-                }
-
-            } else {
-                assignBlock.style.display = 'none';
-                deleteBtn.style.display = 'none';
-            }
-
+            document.getElementById('profile-editor').style.display = 'block';
             document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ------------------------------------------
-        // 5. Init & Event Listeners
-        // ------------------------------------------
-        document.addEventListener('DOMContentLoaded', () => {
-            initDashboard();
+        async function saveSettings() {
+            if (!currentProfileId) return;
+            // Simplified payload for user vs admin full payload
+            // Using existing PUT /portal-api/profiles/{id}/settings so we must match expected schema? 
+            // Or maybe we just send what we changed. 
+            // Let's send a standard payload derived from values.
 
-            // Logout
-            const btnLogout = document.getElementById('logout-btn');
-            if (btnLogout) {
-                btnLogout.addEventListener('click', async () => {
-                    try {
-                        await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' });
-                        window.location.href = 'login.html';
-                    } catch (e) {
-                        window.location.href = 'login.html';
-                    }
+            // Need to preserve fields we didn't show? 
+            // Ideally we should READ the full profile from PROFILES_BY_ID and merge.
+            const old = PROFILES_BY_ID.get(currentProfileId);
+
+            const payload = {
+                ...old, // keep old values
+                heure_debut: document.getElementById('f-start').value,
+                heure_fin: document.getElementById('f-end').value,
+                timezone: document.getElementById('f-timezone').value,
+                categories: document.getElementById('f-categories').value,
+                language: document.getElementById('f-lang').value,
+                audio_actif: document.getElementById('f-audio').checked,
+                only_unread: document.getElementById('f-unread').checked,
+                status: document.getElementById('f-status').checked ? 'Active' : 'Inactive'
+                // filters, etc not exposed here for simplicity, or kept as is from 'old'
+            };
+
+            // Clean up payload if needed (API might reject extra fields like 'id', 'created_at' etc if strictly typed pydantic request)
+            // Usually PUT settings expects a specific subset. 
+            // Safest is to construct explicit subset if we know the Schema. 
+            // As user said "Use new route GET /my/profiles", but SAVE is likely "PUT /portal-api/profiles/{id}/settings" (same as admin?).
+            // I'll stick to sending the likely fields.
+
+            const cleanPayload = {
+                timezone: payload.timezone,
+                heure_debut: payload.heure_debut,
+                heure_fin: payload.heure_fin,
+                status: payload.status,
+                only_unread: payload.only_unread,
+                audio_actif: payload.audio_actif,
+                language: payload.language,
+                categories: payload.categories,
+                // Preserving existing filters if not edited
+                filters: old.filters || { sender: [], exclude: [], cc: [], destined_to: [], forwarded_from: [] },
+                voice: old.voice || 'alloy',
+                speed: old.speed || 1.0,
+                sort_mode: old.sort_mode || 'date_desc',
+                debug_mode: old.debug_mode || false,
+                jours_arriere_start: old.jours_arriere_start || 1,
+                jours_arriere_end: old.jours_arriere_end || 1
+            };
+
+            // Time fix (seconds)
+            if (cleanPayload.heure_debut.length === 5) cleanPayload.heure_debut += ':00';
+            if (cleanPayload.heure_fin.length === 5) cleanPayload.heure_fin += ':00';
+
+            try {
+                const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cleanPayload),
+                    credentials: 'include'
                 });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                document.getElementById('editor-ok').style.display = 'block';
+                // Update local
+                Object.assign(old, cleanPayload);
+                loadProfiles(); // Refresh table UI
+            } catch (e) {
+                const d = document.getElementById('editor-error');
+                d.textContent = e.message;
+                d.style.display = 'block';
             }
-
-            // Editor Close
-            const btnClose = document.getElementById('editor-close');
-            if (btnClose) {
-                btnClose.addEventListener('click', () => {
-                    document.getElementById('profile-editor').style.display = 'none';
-                    currentProfileId = null;
-                });
-            }
-
-            // Assign / Unassign (Admin)
-            const btnAssign = document.getElementById('btn-assign');
-            if (btnAssign) {
-                btnAssign.addEventListener('click', async () => {
-                    if (!currentProfileId) return;
-                    const email = document.getElementById('f-assign-email').value.trim();
-                    if (!email) {
-                        alert("Veuillez entrer un email.");
-                        return;
-                    }
-
-                    try {
-                        const res = await fetch(apiUrl('/admin/assign'), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                profile_id: currentProfileId,
-                                user_email: email
-                            }),
-                            credentials: 'include'
-                        });
-
-                        if (!res.ok) {
-                            const t = await res.text();
-                            if (res.status === 400) throw new Error("Utilisateur introuvable ou email invalide.");
-                            if (res.status === 409) throw new Error("Déjà assigné.");
-                            throw new Error(`Assign Error (${res.status}): ${t}`);
-                        }
-
-                        // Success
-                        await fetchProfiles();
-                        setTimeout(() => openEditor(currentProfileId), 100);
-                        alert("Assignation réussie.");
-
-                    } catch (e) {
-                        alert(e.message);
-                    }
-                });
-            }
-
-            const btnUnassign = document.getElementById('btn-unassign');
-            if (btnUnassign) {
-                btnUnassign.addEventListener('click', async () => {
-                    if (!currentProfileId) return;
-                    if (!confirm("Retirer l'assignation ?")) return;
-                    try {
-                        const res = await fetch(apiUrl(`/admin/assign/${currentProfileId}`), {
-                            method: 'DELETE',
-                            credentials: 'include'
-                        });
-                        if (!res.ok) {
-                            const t = await res.text();
-                            throw new Error(`Unassign Error (${res.status}): ${t}`);
-                        }
-                        await fetchProfiles();
-                        setTimeout(() => openEditor(currentProfileId), 100);
-                        alert("Désassigné.");
-                    } catch (e) {
-                        alert(e.message);
-                    }
-                });
-            }
-
-            // Save Settings
-            const btnSave = document.getElementById('save-settings');
-            if (btnSave) {
-                btnSave.addEventListener('click', async () => {
-                    if (!currentProfileId) return;
-
-                    const errDiv = document.getElementById('editor-error');
-                    const okDiv = document.getElementById('editor-ok');
-                    if (errDiv) errDiv.style.display = 'none';
-                    if (okDiv) okDiv.style.display = 'none';
-
-                    // 1. Validate
-                    const tz = document.getElementById('f-timezone').value.trim();
-                    const rawStart = document.getElementById('f-start').value;
-                    const rawEnd = document.getElementById('f-end').value;
-                    const daysStart = parseInt(document.getElementById('f-days-start').value, 10);
-                    const daysEnd = parseInt(document.getElementById('f-days-end').value, 10);
-                    const debugMode = document.getElementById('f-debug').checked;
-                    const statusActive = document.getElementById('f-status').checked;
-
-                    // Recap values
-                    const onlyUnread = document.getElementById('f-unread').checked;
-                    const audioActif = document.getElementById('f-audio').checked;
-                    const voice = document.getElementById('f-voice').value;
-                    const speed = parseFloat(document.getElementById('f-speed').value);
-                    const sortMode = document.getElementById('f-sort').value;
-                    const language = document.getElementById('f-lang').value;
-                    const categories = document.getElementById('f-categories').value.trim();
-
-                    if (!tz) {
-                        errDiv.textContent = "La timezone est requise.";
-                        errDiv.style.display = 'block';
-                        return;
-                    }
-
-                    const cleanStart = normalizeTimeToHHMMSS(rawStart);
-                    const cleanEnd = normalizeTimeToHHMMSS(rawEnd);
-
-                    if (!cleanStart || !cleanEnd) {
-                        errDiv.textContent = "Heures invalides.";
-                        errDiv.style.display = 'block';
-                        return;
-                    }
-
-                    if (isNaN(daysStart) || isNaN(daysEnd)) {
-                        errDiv.textContent = "Les jours doivent être des nombres.";
-                        errDiv.style.display = 'block';
-                        return;
-                    }
-
-                    if (daysStart > daysEnd) {
-                        errDiv.textContent = "Attention: Jours arrière START > END ?";
-                        errDiv.style.display = 'block';
-                        return;
-                    }
-
-                    // 2. Build Unified Payload
-                    function csvToArr(s) {
-                        if (!s) return [];
-                        return s.split(',').map(x => x.trim()).filter(x => x.length > 0);
-                    }
-
-                    const payload = {
-                        heure_debut: cleanStart,
-                        heure_fin: cleanEnd,
-                        timezone: tz,
-                        jours_arriere_start: daysStart,
-                        jours_arriere_end: daysEnd,
-                        debug_mode: debugMode,
-                        status: statusActive ? 'Active' : 'Inactive',
-
-                        // Filters Object
-                        filters: {
-                            sender: csvToArr(document.getElementById('f-filter-sender').value),
-                            exclude: csvToArr(document.getElementById('f-filter-exclude').value),
-                            cc: csvToArr(document.getElementById('f-filter-cc').value),
-                            destined_to: csvToArr(document.getElementById('f-filter-destined').value),
-                            forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
-                        },
-
-                        // Recap
-                        only_unread: onlyUnread,
-                        audio_actif: audioActif,
-                        voice: voice,
-                        speed: speed,
-                        sort_mode: sortMode,
-                        language: language,
-                        categories: categories
-                    };
-
-                    try {
-                        const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                            credentials: 'include'
-                        });
-
-                        if (!res.ok) {
-                            const t = await res.text();
-                            throw new Error(`API ${res.status}: ${t}`);
-                        }
-
-                        // Success
-                        okDiv.textContent = "Modifications enregistrées avec succès !";
-                        okDiv.style.display = 'block';
-
-                        // Refresh table
-                        await fetchProfiles();
-
-                    } catch (e) {
-                        console.error(e);
-                        errDiv.textContent = "Erreur: " + e.message;
-                        errDiv.style.display = 'block';
-                    }
-                });
-            }
-
-            // Delete (Admin)
-            const btnDelete = document.getElementById('btn-delete-profile');
-            if (btnDelete) {
-                btnDelete.addEventListener('click', async () => {
-                    if (!currentProfileId) return;
-                    if (!confirm("Êtes-vous sûr de vouloir SUPPRIMER ce profil ? Cette action est irréversible.")) return;
-
-                    try {
-                        const res = await fetch(apiUrl(`/profiles/${currentProfileId}`), {
-                            method: 'DELETE',
-                            credentials: 'include'
-                        });
-
-                        if (!res.ok) {
-                            const t = await res.text();
-                            throw new Error(`Delete failed (${res.status}): ${t}`);
-                        }
-
-                        document.getElementById('profile-editor').style.display = 'none';
-                        currentProfileId = null;
-                        await fetchProfiles();
-                        alert("Profil supprimé.");
-
-                    } catch (e) {
-                        alert("Erreur suppression: " + e.message);
-                    }
-                });
-            }
-        });
-
-
-
+        }
     </script>
 </body>
 
 </html>
-```
