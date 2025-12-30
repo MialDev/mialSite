@@ -234,11 +234,14 @@
   }
 
 
-  // --- NEW ANALYTICS TRACKING ---
-
+  // --- ANALYTICS TRACKING ---
   const CONSENT_KEY = 'mial_consent';
+  const ENDPOINT = '/portal-api/a/collect';
 
-  // A. Shared State
+  // Debug Mode
+  const DEBUG = new URLSearchParams(window.location.search).has('analytics_debug');
+
+  // Helper: UUID v4
   function uuidv4() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -247,11 +250,11 @@
     });
   }
 
+  // State
   const PAGE_ID = uuidv4();
   const PAGE_START = performance.now();
   const PATH = window.location.pathname;
   const REF = document.referrer || null;
-  const ENDPOINT = '/portal-api/a/collect';
 
   let hasConsented = false;
   try {
@@ -259,7 +262,15 @@
     hasConsented = c.analytics === true;
   } catch (e) { }
 
-  // B. Send Event (Custom)
+  // Log helper
+  function log(msg, ...args) {
+    if (DEBUG) console.log(`[Analytics] ${msg}`, ...args);
+  }
+  function logError(msg, ...args) {
+    if (DEBUG) console.error(`[Analytics] ${msg}`, ...args);
+  }
+
+  // Send Event
   function sendEvent(payload) {
     if (!hasConsented) return;
 
@@ -273,27 +284,36 @@
       props: payload.props || null
     };
 
+    log('Sending:', fullPayload);
+
     const blob = new Blob([JSON.stringify(fullPayload)], { type: 'application/json' });
 
-    if (navigator.sendBeacon) {
-      if (navigator.sendBeacon(ENDPOINT, blob)) return;
+    // Beacon attempt
+    if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, blob)) {
+      log('Sent via Beacon');
+      return;
     }
 
+    // Fallback Fetch
     fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fullPayload),
       keepalive: true,
       credentials: 'include'
-    }).catch(() => { });
+    }).then(res => {
+      log('Fetch status:', res.status);
+    }).catch(err => {
+      logError('Fetch error:', err);
+    });
   }
 
-  // C. Pageview
+  // Pageview
   function trackPageview() {
     sendEvent({ event: 'pageview' });
   }
 
-  // D. Page Close
+  // Page Close
   let pagecloseSent = false;
   function trackPageClose() {
     if (pagecloseSent) return;
@@ -302,17 +322,19 @@
     sendEvent({ event: 'pageclose', duration_ms: duration });
   }
 
-  // E. Heartbeat
+  // Heartbeat (15s, Visible Only)
   function initHeartbeat() {
     setInterval(() => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && hasConsented) {
         const duration = Math.round(performance.now() - PAGE_START);
         sendEvent({ event: 'heartbeat', duration_ms: duration });
+      } else {
+        // Optional: log('Heartbeat skipped (hidden or no consent)');
       }
     }, 15000);
   }
 
-  // F. Scroll Matches
+  // Scroll Tracking (25, 50, 75, 100)
   function initScrollTracking() {
     const thresholds = [25, 50, 75, 100];
     const sent = new Set();
@@ -349,32 +371,32 @@
     }, { passive: true });
   }
 
-  // G. Conversions & Clicks delegation
+  // Interaction Tracking (Data Attrs)
   function initInteractionTracking() {
-    document.addEventListener('click', (e) => {
-      const clickEl = e.target.closest('[data-analytics-click]');
-      if (clickEl) {
-        const val = clickEl.getAttribute('data-analytics-click');
-        sendEvent({ event: `click:${val}` });
+    const handle = (e, attr) => {
+      const el = e.target.closest(`[${attr}]`);
+      if (el) {
+        const val = el.getAttribute(attr);
+        const evtName = (attr === 'data-analytics-conversion') ? `conversion:${val}` : `click:${val}`;
+        sendEvent({ event: evtName });
       }
+    };
 
-      const convEl = e.target.closest('[data-analytics-conversion]');
-      if (convEl) {
-        const val = convEl.getAttribute('data-analytics-conversion');
-        sendEvent({ event: `conversion:${val}` });
-      }
+    document.addEventListener('click', (e) => {
+      handle(e, 'data-analytics-click');
+      handle(e, 'data-analytics-conversion');
     });
 
     document.addEventListener('submit', (e) => {
-      const formEl = e.target.closest('[data-analytics-conversion]');
-      if (formEl) {
-        const val = formEl.getAttribute('data-analytics-conversion');
+      const el = e.target.closest('[data-analytics-conversion]');
+      if (el) {
+        const val = el.getAttribute('data-analytics-conversion');
         sendEvent({ event: `conversion:${val}` });
       }
     });
   }
 
-  // COOKIE BANNER (UI Logic)
+  // Cookie Banner
   function initCookieBanner() {
     if (localStorage.getItem(CONSENT_KEY)) return;
 
@@ -408,9 +430,9 @@
   }
 
 
-  // INITIALIZATION
+  // INIT
   document.addEventListener('DOMContentLoaded', () => {
-    // Standard UI
+    // UI
     initMobileNav();
     initBriefAudio();
     initRevealAnimations();
@@ -419,28 +441,24 @@
     initPlanSelection();
     initContactForm();
 
-    // Analytics Init
+    // Analytics
     initCookieBanner();
 
-    // If consented, start tracking immediately
     if (hasConsented) {
       trackPageview();
     }
 
-    // Always init listeners (checks consent internally)
     initHeartbeat();
     initScrollTracking();
     initInteractionTracking();
 
-    // Page Close hooks
+    // Page close
     window.addEventListener('pagehide', trackPageClose);
     window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        trackPageClose();
-      }
+      if (document.visibilityState === 'hidden') trackPageClose();
     });
 
-    // Logout Helper
+    // Logout
     document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
