@@ -153,6 +153,7 @@
                                     <th>Destinataire</th>
                                     <th>Plage horaire</th>
                                     <th>Status</th>
+                                    <th style="min-width:100px; text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="profiles-body">
@@ -170,7 +171,7 @@
             <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                    <h2 style="margin:0;">Éditeur de Profil</h2>
+                    <h2 style="margin:0;" id="editor-main-title">Éditeur de Profil</h2>
                     <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
                 </div>
 
@@ -341,7 +342,7 @@
                     <div
                         style="display:flex; justify-content:flex-end; gap:16px; position:sticky; bottom:20px; background:white; padding:16px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
                         <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
-                        <button type="button" class="btn btn-primary" onclick="saveProfile()"
+                        <button type="button" class="btn btn-primary" id="btn-save" onclick="saveProfile()"
                             style="min-width:200px; font-weight:700;">ENREGISTRER</button>
                     </div>
 
@@ -363,8 +364,10 @@
         function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
 
         let PROFILES_BY_ID = new Map();
+        let currentEditingId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Auth
             try {
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (res.status === 401) window.location.href = 'login.html';
@@ -417,19 +420,42 @@
             viewEditor.style.display = 'none';
             viewList.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Reset state
+            currentEditingId = null;
         };
 
-        window.showEditor = async function () {
+        window.showEditor = async function (isEdit = false) {
             viewList.style.display = 'none';
             viewEditor.style.display = 'block';
             editorMsg.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Prefill Recipient
-            const uEmail = document.getElementById('user-email').textContent;
-            if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
+            // UI Reset
+            if (!isEdit) {
+                currentEditingId = null;
+                document.getElementById('editor-main-title').textContent = "Configurer un nouveau récap";
+                document.getElementById('btn-save').textContent = "CRÉER LE RÉCAP";
 
-            // Load Accounts
+                // Defaults
+                F.schedule.value = "08:00";
+                F.daysStart.value = 1; F.timeStart.value = "00:00";
+                F.daysEnd.value = 0; F.timeEnd.value = "23:59";
+                F.unread.checked = false;
+                F.sort.value = "date_desc";
+                F.filterSender.value = ""; F.excludeSender.value = ""; F.filterCc.value = "";
+                F.audio.checked = true; F.voice.value = "onyx"; F.speed.value = 1.0; F.lang.value = "fr";
+
+                // Prefill Recipient if new
+                const uEmail = document.getElementById('user-email').textContent;
+                if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
+            } else {
+                document.getElementById('editor-main-title').textContent = "Modifier le Profil";
+                document.getElementById('btn-save').textContent = "METTRE À JOUR";
+            }
+
+            // Load Accounts (Always reload to get fresh status)
+            const savedAccountId = F.account.value; // preserve if re-rendering? no, likely replacing.
+
             F.account.innerHTML = '<option value="">Chargement...</option>';
             try {
                 let res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
@@ -445,10 +471,44 @@
                 }
                 F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
 
-                // AUTO SELECT SINGLE
-                if (list.length === 1) F.account.selectedIndex = 0;
+                // AUTO SELECT SINGLE for new profiles
+                if (!isEdit && list.length === 1) F.account.selectedIndex = 0;
 
             } catch (e) { F.account.innerHTML = '<option value="">Erreur</option>'; }
+        };
+
+        window.editProfile = async function (id) {
+            const p = PROFILES_BY_ID.get(id);
+            if (!p) return;
+
+            await showEditor(true); // Open in Edit Mode
+            currentEditingId = id;
+
+            // Populate Fields
+            F.account.value = p.email_account_id;
+            F.recipient.value = p.recap_recipient;
+
+            F.daysStart.value = p.jours_arriere_start || 0;
+            F.daysEnd.value = p.jours_arriere_end || 0;
+            F.timeStart.value = (p.heure_debut || "00:00").substring(0, 5);
+            F.timeEnd.value = (p.heure_fin || "23:59").substring(0, 5);
+            F.schedule.value = (p.schedule_time || "08:00").substring(0, 5);
+
+            F.unread.checked = p.only_unread || false;
+            F.sort.value = p.sort_mode || 'date_desc';
+
+            const toCsv = (arr) => Array.isArray(arr) ? arr.join(', ') : '';
+            if (p.filters) {
+                F.filterSender.value = toCsv(p.filters.sender);
+                F.excludeSender.value = toCsv(p.filters.exclude);
+                F.filterCc.value = toCsv(p.filters.cc);
+            }
+
+            F.audio.checked = p.audio_actif;
+            F.voice.value = p.voice || 'alloy';
+            F.speed.value = p.speed || 1.0;
+            document.getElementById('speed-val').textContent = F.speed.value + 'x';
+            F.lang.value = p.language || 'fr';
         };
 
         window.saveProfile = async function () {
@@ -462,42 +522,35 @@
             const payload = {
                 email_account_id: F.account.value,
                 recap_recipient: F.recipient.value,
-
-                // Période Analyse
                 jours_arriere_start: parseInt(F.daysStart.value) || 0,
                 jours_arriere_end: parseInt(F.daysEnd.value) || 0,
                 heure_debut: fixTime(F.timeStart.value),
                 heure_fin: fixTime(F.timeEnd.value),
-
-                // Planification
                 schedule_time: fixTime(F.schedule.value),
-
-                // Filtres
                 only_unread: F.unread.checked,
                 sort_mode: F.sort.value,
                 filters: {
                     sender: parseCsv(F.filterSender.value),
                     exclude: parseCsv(F.excludeSender.value),
                     cc: parseCsv(F.filterCc.value),
-                    // defaults
                     destined_to: [], forwarded_from: []
                 },
-
-                // Audio
                 audio_actif: F.audio.checked,
                 voice: F.voice.value,
                 speed: parseFloat(F.speed.value),
                 language: F.lang.value,
-
-                // Fixed Meta
                 status: 'Active',
                 timezone: 'Europe/Paris',
                 categories: 'ALL'
             };
 
             try {
-                const res = await fetch(apiUrl('/my/profiles'), {
-                    method: 'POST',
+                const isEdit = !!currentEditingId;
+                const url = isEdit ? `/my/profiles/${currentEditingId}` : '/my/profiles';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const res = await fetch(apiUrl(url), {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                     credentials: 'include'
@@ -505,8 +558,8 @@
 
                 if (!res.ok) throw new Error(await res.text());
 
-                showMsg("Profil enregistré avec succès !", "green");
-                setTimeout(() => { hideEditor(); loadProfiles(); }, 1500);
+                showMsg(isEdit ? "Modifications enregistrées !" : "Profil créé !", "green");
+                setTimeout(() => { hideEditor(); loadProfiles(); }, 1000);
 
             } catch (e) { showMsg("Erreur: " + e.message, "red"); }
         };
@@ -542,9 +595,13 @@
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
                         <td>${p.heure_debut} → ${p.heure_fin}</td>
                         <td>${activeBadge}</td>
+                        <td style="text-align:right;">
+                             <button class="btn btn-ghost btn-small" style="color:var(--primary); font-weight:600; margin-right:8px;" onclick="editProfile('${p.id}')">EDITER</button>
+                             <button class="btn btn-ghost btn-small" style="color:#cbd5e1;" onclick="alert('Delete: To be implemented')">🗑</button>
+                        </td>
                     </tr>`;
                 }).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${e.message}</td></tr>`; }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`; }
         }
 
     </script>
