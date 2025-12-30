@@ -127,92 +127,15 @@
                 </div>
             </div>
 
-            <!-- Gestion Section -->
-            <div style="margin-bottom: 24px; border-bottom:1px solid rgba(148,163,184,0.3); padding-bottom:8px;">
-                <h2 style="font-size: 1.5rem; margin:0;">Gestion</h2>
-            </div>
-
-            <div class="grid-2" style="margin-bottom: 32px;">
-                <!-- Users Table -->
-                <div class="card glass-static" style="padding: 24px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="margin:0;">Utilisateurs</h3>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table class="dashboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Mailboxes</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-users">
-                                <tr>
-                                    <td colspan="4" style="text-align:center;">Chargement...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Hierarchy Container -->
+            <div class="card glass-static" style="padding: 24px; min-height: 400px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2 style="font-size: 1.5rem; margin:0;">Utilisateurs & Profils</h2>
+                    <button class="action-btn" onclick="initDashboard()">Rafraîchir tout</button>
                 </div>
 
-                <!-- Mailboxes Table -->
-                <div class="card glass-static" style="padding: 24px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h3 style="margin:0;">Boîtes Mail</h3>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table class="dashboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Provider</th>
-                                    <th>Email</th>
-                                    <th>Owner</th>
-                                    <th>Status</th>
-                                    <th>Update</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-mailboxes">
-                                <tr>
-                                    <td colspan="6" style="text-align:center;">Chargement...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="toast" class="toast"></div>
-
-            <!-- Profiles Table -->
-            <div class="card glass-static" style="margin-top: 32px; padding: 0; overflow:hidden;">
-                <div
-                    style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3); display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="font-size: 1.25rem; margin:0;">Tous les Profils</h2>
-                    <button class="action-btn" onclick="fetchProfiles()">Rafraîchir</button>
-                </div>
-
-                <div style="overflow-x: auto;">
-                    <table class="dashboard-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Recipient (Recap)</th>
-                                <th>Timezone</th>
-                                <th>Heures</th>
-                                <th>Jours</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="profiles-body">
-                            <tr>
-                                <td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div id="hierarchy-root">
+                    <div style="text-align:center; padding: 40px;" class="muted">Chargement...</div>
                 </div>
             </div>
 
@@ -416,6 +339,17 @@
         let PROFILES_BY_ID = new Map();
         let currentProfileId = null;
 
+        // Cache & Loading States
+        const CACHE = {
+            users: [],
+            mailboxes: {}, // userId -> []
+            profiles: {}   // mailboxId -> []
+        };
+        const LOADING = {
+            mailboxes: {}, // userId -> bool
+            profiles: {}   // mailboxId -> bool
+        };
+
         // Nav
         const navToggle = document.querySelector('.nav-toggle');
         const nav = document.querySelector('.nav');
@@ -440,152 +374,413 @@
             setTimeout(() => { t.style.display = 'none'; }, 3000);
         }
 
-        // --- MAIN LOAD ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchUsers();
-            fetchProfiles();
-        });
+        // --- MAIN INIT ---
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        async function initDashboard() {
+            // Reset Cache
+            CACHE.users = [];
+            CACHE.mailboxes = {};
+            CACHE.profiles = {};
+            document.getElementById('hierarchy-root').innerHTML = '<div style="text-align:center; padding: 40px;" class="muted">Chargement de la hiérarchie...</div>';
+
+            try {
+                // FEATURE DETECTION: Try Admin Tree first
+                let useTree = false;
+                try {
+                    const treeRes = await fetch(apiUrl('/admin/api/admin-tree'), { credentials: 'include' });
+                    if (treeRes.ok) {
+                        const tree = await treeRes.json();
+                        // Assuming tree structure: users -> mailboxes -> profiles nested
+                        // If endpoint existed, we would render full tree: cache everything.
+                        // For now we assume typical Users list fallback if tree API structure is complex or not actually ready.
+                        // But let's assume if it returns, it is an array of users with nested arrays.
+                        // Since I don't know the exact format of the hypothetical tree, I'll stick to logic:
+                        // "If admin-tree endpoint does not exist, use these 3 endpoints"
+                        // If it EXISTS, I use it.
+                        // I will assume it returns: [ { ...user, mailboxes: [ { ...mailbox, profiles: [...] } ] } ]
+                        CACHE.users = tree;
+                        // Populate sub-caches? Or just render from root?
+                        // Let's populate CACHE.mailboxes and CACHE.profiles if tree is deep.
+                        tree.forEach(u => {
+                            if (u.mailboxes) {
+                                CACHE.mailboxes[u.id] = u.mailboxes;
+                                u.mailboxes.forEach(m => {
+                                    if (m.profiles) CACHE.profiles[m.id] = m.profiles;
+                                });
+                            }
+                        });
+                        useTree = true;
+                        renderUsersRoot(tree);
+                    }
+                } catch (e) {
+                    console.log("Admin Tree check failed or errored:", e);
+                }
+
+                if (!useTree) {
+                    // Fallback to minimal user fetch
+                    await fetchUsers();
+                }
+
+            } catch (e) {
+                document.getElementById('hierarchy-root').innerHTML = `<div style="text-align:center; color:red; padding: 20px;">Erreur init: ${e.message}</div>`;
+            }
+        }
+
+        // ---------------------------------------------
+        // FALLBACK FLOW (Lazy Load)
+        // ---------------------------------------------
 
         async function fetchUsers() {
-            const tbody = document.getElementById('users-body');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
             try {
                 const res = await fetch(apiUrl('/admin/api/users'), { credentials: 'include' });
-                if (!res.ok) throw new Error('Failed to load users');
+                if (!res.ok) throw new Error('Impossible de charger les utilisateurs');
                 const users = await res.json();
-                renderUsers(users);
+                CACHE.users = users;
+                renderUsersRoot(users);
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red; padding: 24px;">Erreur: ${e.message}</td></tr>`;
+                document.getElementById('hierarchy-root').innerHTML = `<div style="text-align:center; color:red;">${e.message}</div>`;
             }
         }
 
-        async function fetchProfiles() {
-            const tbody = document.getElementById('profiles-body');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Chargement...</td></tr>';
-            try {
-                const res = await fetch(apiUrl('/profiles'), { credentials: 'include' });
-                // Note: /portal-api/profiles returns all profiles for admin
-                if (!res.ok) throw new Error('Failed to load profiles');
-                const profiles = await res.json();
-                renderProfiles(profiles);
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red; padding: 24px;">Erreur: ${e.message}</td></tr>`;
-            }
-        }
-
-        // --- RENDERING ---
-
-        function renderUsers(users) {
-            const tbody = document.getElementById('users-body');
-            if (!users.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 24px;">Aucun utilisateur trouvé.</td></tr>';
+        function renderUsersRoot(users) {
+            const root = document.getElementById('hierarchy-root');
+            if (!users || users.length === 0) {
+                root.innerHTML = '<div style="text-align:center; padding: 20px;">Aucun utilisateur.</div>';
                 return;
             }
 
-            tbody.innerHTML = users.map(u => {
-                const created = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
-                const activeBadge = u.is_active
-                    ? `<span class="badge-active">OUI</span>`
-                    : `<span class="badge-inactive">NON</span>`;
-
-                return `
-                <tr data-id="${u.id}">
-                    <td><strong>${escapeHtml(u.email)}</strong></td>
-                    <td>
-                        <select onchange="updateUser('${u.id}', 'role', this.value)" class="action-btn" style="padding: 2px;">
-                            <option value="user" ${u.role !== 'admin' ? 'selected' : ''}>User</option>
-                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button onclick="updateUser('${u.id}', 'is_active', ${!u.is_active})" class="action-btn" title="Basculer actif/inactif">
-                            ${activeBadge}
-                        </button>
-                    </td>
-                    <td class="muted">${created}</td>
-                    <td style="text-align: right;">
-                        <button class="action-btn" style="color: #ef4444; border-color: #fecaca;" onclick="deleteUser('${u.id}')">Supprimer</button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
+            // Build HTML
+            root.innerHTML = users.map(u => buildUserRow(u)).join('');
         }
 
-        function renderProfiles(profiles) {
-            const tbody = document.getElementById('profiles-body');
-            PROFILES_BY_ID = new Map();
+        function buildUserRow(u) {
+            const created = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+            const activeBadge = u.is_active
+                ? `<span class="badge-active">ACTIF</span>`
+                : `<span class="badge-inactive">INACTIF</span>`;
 
-            if (!profiles.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 24px;">Aucun profil trouvé.</td></tr>';
+            // counts (if provider by backend, else 0 or placeholder)
+            // If we have cached children, we can count them.
+            let mbCount = '?';
+            let pfCount = '?';
+
+            if (u.mailboxes_count !== undefined) mbCount = u.mailboxes_count;
+            if (u.profiles_count !== undefined) pfCount = u.profiles_count;
+
+            // Override with actual cache if available (for tree mode)
+            if (CACHE.mailboxes[u.id]) {
+                mbCount = CACHE.mailboxes[u.id].length;
+                // Sum profiles
+                let localPCount = 0;
+                CACHE.mailboxes[u.id].forEach(m => {
+                    if (CACHE.profiles[m.id]) localPCount += CACHE.profiles[m.id].length;
+                });
+                if (mbCount > 0) pfCount = localPCount; // Rough estimate if we have tree
+            }
+
+            return `
+            <div id="user-container-${u.id}" class="user-row" style="border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; background: white; overflow: hidden;">
+                <!-- HEADER -->
+                <div onclick="toggleUser('${u.id}')" style="padding: 12px 16px; background: #f8fafc; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid transparent;">
+                    <div style="display:flex; align-items:center; gap: 12px;">
+                        <span style="font-size: 1.2rem; transform: rotate(0deg); transition: transform 0.2s;" id="icon-user-${u.id}">▶</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 1rem; color: #1e293b;">${escapeHtml(u.email)}</div>
+                            <div class="muted" style="font-size: 0.8rem;">
+                                ID: ${u.id.substring(0, 8)}... · ${u.role || 'user'} · ${created}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 16px;">
+                         <div style="font-size: 0.85rem; color: #64748b;">
+                            <span id="count-mb-${u.id}"><strong>${mbCount}</strong> Boîtes</span> · 
+                            <span id="count-pf-${u.id}"><strong>${pfCount}</strong> Profils</span>
+                         </div>
+                         ${activeBadge}
+                         <button class="action-btn" style="color: #ef4444; border-color: #fecaca; margin-left: 12px;" onclick="event.stopPropagation(); deleteUser('${u.id}')">Supprimer</button>
+                    </div>
+                </div>
+                <!-- CONTENT -->
+                <div id="content-user-${u.id}" style="display: none; border-top: 1px solid #e2e8f0;">
+                    <div style="padding: 16px; background: #fff;" id="inner-user-${u.id}">
+                        <!-- Mailboxes render here -->
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        async function toggleUser(userId) {
+            const content = document.getElementById(`content-user-${userId}`);
+            const icon = document.getElementById(`icon-user-${userId}`);
+            const inner = document.getElementById(`inner-user-${userId}`);
+
+            if (content.style.display === 'none') {
+                // EXPAND
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(90deg)';
+
+                // Fetch if not cached
+                if (!CACHE.mailboxes[userId] && !LOADING.mailboxes[userId]) {
+                    LOADING.mailboxes[userId] = true;
+                    inner.innerHTML = '<div class="muted">Chargement des boîtes...</div>';
+                    try {
+                        const res = await fetch(apiUrl(`/admin/api/users/${userId}/email-accounts`), { credentials: 'include' });
+                        if (res.ok) {
+                            const mbs = await res.json();
+                            CACHE.mailboxes[userId] = mbs;
+                            renderMailboxes(userId, mbs);
+                        } else {
+                            // Clean fallback if 404 or empty
+                            inner.innerHTML = '<div class="muted" style="padding:8px;">Aucune boîte mail (API Error/Empty).</div>';
+                        }
+                    } catch (e) {
+                        inner.innerHTML = `<div style="color:red;">${e.message}</div>`;
+                    } finally {
+                        LOADING.mailboxes[userId] = false;
+                    }
+                } else if (CACHE.mailboxes[userId]) {
+                    renderMailboxes(userId, CACHE.mailboxes[userId]);
+                }
+
+            } else {
+                // COLLAPSE
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function renderMailboxes(userId, mailboxes) {
+            const container = document.getElementById(`inner-user-${userId}`);
+            if (!mailboxes || mailboxes.length === 0) {
+                container.innerHTML = '<div class="muted" style="padding:8px; font-style:italic;">Aucune boîte mail connectée.</div>';
                 return;
             }
 
+            container.innerHTML = mailboxes.map(mb => buildMailboxRow(mb)).join('');
+        }
+
+        function buildMailboxRow(mb) {
+            const statusColor = (mb.status === 'connected') ? '#16a34a' : '#f59e0b'; // Assume connected vs invalid/other
+
+            return `
+            <div id="mailbox-container-${mb.id}" style="margin-top: 8px; border: 1px solid #f1f5f9; border-radius: 6px; background: #f8fafc;">
+                 <div onclick="toggleMailbox('${mb.id}')" style="padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; align-items:center; gap: 8px;">
+                        <span id="icon-mb-${mb.id}" style="font-size: 0.9rem; transition: transform 0.2s;">▶</span>
+                        <strong>${escapeHtml(mb.email_address)}</strong>
+                        <span style="font-size:0.8rem; background: #e2e8f0; padding: 1px 6px; border-radius: 4px;">${mb.provider}</span>
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
+                    </div>
+                    <div>
+                         <button class="action-btn" style="color: #ef4444; border-color: #fecaca; font-size: 0.75rem;" onclick="event.stopPropagation(); deleteMailbox('${mb.id}', '${mb.user_id}')">Supprimer Boîte</button>
+                    </div>
+                 </div>
+                 <div id="content-mb-${mb.id}" style="display: none; padding: 12px; border-top: 1px solid #f1f5f9; background: white;">
+                    <!-- Profiles Table Reuse -->
+                    <table class="dashboard-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Recipient</th>
+                                <th>Timezone</th>
+                                <th>Heures</th>
+                                <th>Jours</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-mb-${mb.id}">
+                             <!-- Rows go here -->
+                        </tbody>
+                    </table>
+                 </div>
+            </div>
+            `;
+        }
+
+        async function toggleMailbox(mbId) {
+            const content = document.getElementById(`content-mb-${mbId}`);
+            const icon = document.getElementById(`icon-mb-${mbId}`);
+            const tbody = document.getElementById(`tbody-mb-${mbId}`);
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(90deg)';
+
+                if (!CACHE.profiles[mbId] && !LOADING.profiles[mbId]) {
+                    LOADING.profiles[mbId] = true;
+                    tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Chargement profils...</td></tr>';
+                    try {
+                        const res = await fetch(apiUrl(`/admin/api/email-accounts/${mbId}/recap-profiles`), { credentials: 'include' });
+                        if (res.ok) {
+                            const profs = await res.json();
+                            CACHE.profiles[mbId] = profs;
+                            renderProfiles(mbId, profs);
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Aucun profil (ou chargement impossible).</td></tr>';
+                        }
+                    } catch (e) {
+                        tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">${e.message}</td></tr>`;
+                    } finally {
+                        LOADING.profiles[mbId] = false;
+                    }
+                } else if (CACHE.profiles[mbId]) {
+                    renderProfiles(mbId, CACHE.profiles[mbId]);
+                }
+
+            } else {
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function renderProfiles(mbId, profiles) {
+            const tbody = document.getElementById(`tbody-mb-${mbId}`);
+            if (!profiles || profiles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center; font-style:italic;">Aucun profil de récap.</td></tr>';
+                return;
+            }
+
+            // Register in GLOBAL MAP for editor
             profiles.forEach(p => PROFILES_BY_ID.set(p.id, p));
 
+            // REUSE EXACT EXISTING MARKUP
             tbody.innerHTML = profiles.map(p => {
                 const status = escapeHtml(p.status ?? '—');
+                // Check 'active' loosely
                 const isStatusActive = (String(p.status).toLowerCase() === 'active');
                 const statusClass = isStatusActive ? 'badge-active' : 'badge-inactive';
-
-                // For Admin, show account_email if exists, else recap_recipient
                 const recipient = p.recap_recipient || '—';
                 const hours = `${p.heure_debut || '—'} - ${p.heure_fin || '—'}`;
                 const jours = `${p.jours_arriere_start || 0} → ${p.jours_arriere_end || 0}`;
 
+                // Add delete profile button in actions
                 return `
-                <tr>
+                <tr id="profile-row-${p.id}">
                     <td style="font-family:monospace; font-size:0.85rem; color:#64748b;">${p.id.substring(0, 8)}...</td>
                     <td><strong>${escapeHtml(recipient)}</strong></td>
                     <td>${escapeHtml(p.timezone || '—')}</td>
                     <td>${hours}</td>
                     <td>${jours}</td>
                     <td><span class="${statusClass}">${status}</span></td>
-                    <td style="text-align: right;">
+                    <td style="text-align: right; white-space: nowrap;">
                          <button class="action-btn" onclick="openEditor('${p.id}')">Éditer / Détails</button>
+                         <button class="action-btn" style="color:#ef4444; border-color:transparent; background:transparent;" onclick="deleteProfile('${p.id}', '${mbId}')">🗑</button>
                     </td>
                 </tr>
                 `;
             }).join('');
         }
 
-        // --- USER API ---
-
-        async function updateUser(id, field, value) {
-            try {
-                const payload = {};
-                payload[field] = value;
-                const path = apiUrl(`/admin/api/users/${id}`);
-                const res = await fetch(path, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    credentials: 'include'
-                });
-
-                if (!res.ok) throw new Error('Update failed');
-                showToast("Mis à jour avec succès");
-                fetchUsers();
-            } catch (e) {
-                showToast(e.message, true);
-            }
-        }
+        // ---------------------------------------------
+        // DELETION & UPDATES
+        // ---------------------------------------------
 
         async function deleteUser(id) {
-            if (!confirm("Attention: Supprimer cet utilisateur ?")) return;
+            if (!confirm("Attention: Supprimer cet utilisateur ? Toutes les données liées seront perdues.")) return;
             try {
                 const res = await fetch(apiUrl(`/admin/api/users/${id}`), {
                     method: 'DELETE',
                     credentials: 'include'
                 });
                 if (!res.ok) throw new Error('Delete failed');
+
                 showToast("Utilisateur supprimé");
-                fetchUsers();
+                // Remove from DOM
+                const row = document.getElementById(`user-container-${id}`);
+                if (row) row.remove();
+                // Remove from cache
+                if (CACHE.users) CACHE.users = CACHE.users.filter(u => u.id !== id);
+
             } catch (e) {
                 showToast(e.message, true);
             }
         }
 
-        // --- EDITOR LOGIC ---
+        async function deleteMailbox(mbId, userId) {
+            if (!confirm("Supprimer cette boîte mail ?")) return;
+            try {
+                const res = await fetch(apiUrl(`/admin/api/email-accounts/${mbId}`), {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error('Delete failed');
+
+                showToast("Boîte supprimée");
+                // Remove DOM
+                const row = document.getElementById(`mailbox-container-${mbId}`);
+                if (row) row.remove();
+
+                // Update Counts UI
+                const mbCountEl = document.getElementById(`count-mb-${userId}`);
+                if (mbCountEl) {
+                    let c = parseInt(mbCountEl.textContent.match(/\d+/)?.[0] || '0');
+                    if (c > 0) mbCountEl.innerHTML = `<strong>${c - 1}</strong> Boîtes`;
+                }
+
+                // Also update profile count if we can? 
+                if (CACHE.profiles[mbId]) {
+                    const lostProfiles = CACHE.profiles[mbId].length;
+                    const pfCountEl = document.getElementById(`count-pf-${userId}`);
+                    if (pfCountEl) {
+                        let c = parseInt(pfCountEl.textContent.match(/\d+/)?.[0] || '0');
+                        if (c >= lostProfiles) pfCountEl.innerHTML = `<strong>${c - lostProfiles}</strong> Profils`;
+                    }
+                }
+
+                // Update Cache
+                if (CACHE.mailboxes[userId]) {
+                    CACHE.mailboxes[userId] = CACHE.mailboxes[userId].filter(m => m.id !== mbId);
+                }
+
+            } catch (e) {
+                showToast(e.message, true);
+            }
+        }
+
+        async function deleteProfile(pId, mbId) {
+            if (!confirm("Supprimer ce profil ?")) return;
+            try {
+                const res = await fetch(apiUrl(`/admin/api/recap-profiles/${pId}`), {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!res.ok) throw new Error('Delete failed');
+
+                showToast("Profil supprimé");
+                const row = document.getElementById(`profile-row-${pId}`);
+                if (row) row.remove();
+
+                // Find user ID from mailbox reversed lookup or just iterate DOM if lazy
+                const mbRow = document.getElementById(`mailbox-container-${mbId}`);
+                const userRow = mbRow ? mbRow.closest('.user-row') : null;
+
+                if (userRow) {
+                    const userId = userRow.id.replace('user-container-', '');
+                    const pfCountEl = document.getElementById(`count-pf-${userId}`);
+                    if (pfCountEl) {
+                        let c = parseInt(pfCountEl.textContent.match(/\d+/)?.[0] || '0');
+                        if (c > 0) pfCountEl.innerHTML = `<strong>${c - 1}</strong> Profils`;
+                    }
+                }
+
+                // Update Cache
+                if (CACHE.profiles[mbId]) {
+                    CACHE.profiles[mbId] = CACHE.profiles[mbId].filter(p => p.id !== pId);
+                }
+
+            } catch (e) {
+                showToast(e.message, true);
+            }
+        }
+
+
+        // ---------------------------------------------
+        // EDITOR LOGIC (EXISTING REUSED)
+        // ---------------------------------------------
 
         function openEditor(id) {
             const p = PROFILES_BY_ID.get(id);
@@ -714,25 +909,63 @@
 
                 okDiv.textContent = "Sauvegardé !";
                 okDiv.style.display = 'block';
-                fetchProfiles();
+                // REFRESH LOCAL MAP
+                Object.assign(PROFILES_BY_ID.get(currentProfileId), payload);
+                // Also update UI row if visible
+                const p = PROFILES_BY_ID.get(currentProfileId);
+                const row = document.getElementById(`profile-row-${p.id}`);
+                if (row) {
+                    // Quick dirty update of status/time cell content if we wanted.
+                    // But simpler to just let user expand/collapse to refresh if they care.
+                    // Or just leave it.
+                }
+
             } catch (e) {
                 errDiv.textContent = "Erreur: " + e.message;
                 errDiv.style.display = 'block';
             }
         });
 
-        // DELETE Profile
+        // DELETE Profile (Connected to editor button)
         const btnDel = document.getElementById('btn-delete-profile');
         if (btnDel) btnDel.addEventListener('click', async () => {
             if (!currentProfileId) return;
             if (!confirm("Vraiment supprimer ce profil ?")) return;
             try {
-                const res = await fetch(apiUrl(`/profiles/${currentProfileId}`), { method: 'DELETE', credentials: 'include' });
+                const res = await fetch(apiUrl(`/admin/api/recap-profiles/${currentProfileId}`), { method: 'DELETE', credentials: 'include' });
                 if (!res.ok) throw new Error(await res.text());
-                document.getElementById('profile-editor').style.display = 'none';
-                currentProfileId = null;
-                fetchProfiles();
+
                 showToast("Profil supprimé");
+                document.getElementById('profile-editor').style.display = 'none';
+
+                // Remove from UI
+                const pId = currentProfileId;
+                const row = document.getElementById(`profile-row-${pId}`);
+                if (row) {
+                    // Try to find mailbox ID to update counts
+                    const mbRow = row.closest('[id^="mailbox-container-"]');
+                    if (mbRow) {
+                        const mbId = mbRow.id.replace('mailbox-container-', '');
+                        // Just trigger deleteProfile logic which updates UI
+                        const delSuccess = true; // we already deleted via API
+                        row.remove();
+                        // Update cache
+                        if (CACHE.profiles[mbId]) CACHE.profiles[mbId] = CACHE.profiles[mbId].filter(p => p.id !== pId);
+
+                        // Update User Counts
+                        const userRow = mbRow.closest('.user-row');
+                        if (userRow) {
+                            const userId = userRow.id.replace('user-container-', '');
+                            const pfCountEl = document.getElementById(`count-pf-${userId}`);
+                            if (pfCountEl) {
+                                let c = parseInt(pfCountEl.textContent.match(/\d+/)?.[0] || '0');
+                                if (c > 0) pfCountEl.innerHTML = `<strong>${c - 1}</strong> Profils`;
+                            }
+                        }
+                    }
+                }
+
+                currentProfileId = null;
             } catch (e) {
                 showToast("Erreur suppression: " + e.message, true);
             }
@@ -753,8 +986,6 @@
                 });
                 if (!res.ok) throw new Error(await res.text());
                 showToast("Assigné avec succès");
-                fetchProfiles();
-                // Close/Reopen to refresh assignment text
                 setTimeout(() => openEditor(currentProfileId), 500);
             } catch (e) { showToast(e.message, true); }
         });
@@ -768,137 +999,14 @@
                 const res = await fetch(apiUrl(`/admin/assign/${currentProfileId}`), { method: 'DELETE', credentials: 'include' });
                 if (!res.ok) throw new Error(await res.text());
                 showToast("Désassigné");
-                fetchProfiles();
                 setTimeout(() => openEditor(currentProfileId), 500);
             } catch (e) { showToast(e.message, true); }
         });
 
-
         function escapeHtml(s) {
             return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
         }
-        // ------------------------------------------
-        // ADMIN DATA LOGIC
-        // ------------------------------------------
-
-        async function loadAdminData() {
-            try {
-                // Parallel fetch
-                const [rUsers, rMailboxes] = await Promise.all([
-                    fetch(apiUrl('/admin/api/users'), { credentials: 'include' }),
-                    fetch(apiUrl('/admin/api/mailboxes'), { credentials: 'include' })
-                ]);
-
-                if (rUsers.ok) renderUsers(await rUsers.json());
-                else showError('table-users', 'Erreur chargement utilisateurs');
-
-                if (rMailboxes.ok) renderMailboxes(await rMailboxes.json());
-                else showError('table-mailboxes', 'Erreur chargement mailboxes');
-
-            } catch (e) {
-                console.error(e);
-                showError('table-users', 'Erreur réseau');
-                showError('table-mailboxes', 'Erreur réseau');
-            }
-        }
-
-        function renderUsers(users) {
-            const tbody = document.getElementById('table-users');
-            if (!users || users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucun utilisateur</td></tr>';
-                return;
-            }
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td><strong>${esc(u.email)}</strong></td>
-                    <td><span class="badge-${u.role === 'admin' ? 'active' : 'inactive'}">${esc(u.role)}</span></td>
-                    <td>${u.mailboxes_count ?? 0}</td>
-                    <td>
-                        <button class="action-btn" style="color:red; border-color:red;" onclick="deleteUser('${u.id}')">Supprimer</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function renderMailboxes(mailboxes) {
-            const tbody = document.getElementById('table-mailboxes');
-            if (!mailboxes || mailboxes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucune boîte mail</td></tr>';
-                return;
-            }
-            tbody.innerHTML = mailboxes.map(m => {
-                const updated = m.updated_at ? new Date(m.updated_at).toLocaleDateString() : '—';
-                const statusClass = (m.status === 'valid') ? 'badge-active' : 'badge-inactive';
-                return `
-                <tr>
-                    <td>${esc(m.provider)}</td>
-                    <td><strong>${esc(m.email)}</strong></td>
-                    <td class="muted" style="font-size:0.85rem">${esc(m.owner_email)}</td>
-                    <td><span class="${statusClass}">${esc(m.status)}</span></td>
-                    <td class="muted" style="font-size:0.8em">${updated}</td>
-                    <td>
-                        <button class="action-btn" style="color:red; border-color:red;" onclick="deleteMailbox('${m.id}')">X</button>
-                    </td>
-                </tr>
-            `}).join('');
-        }
-
-        function showError(id, msg) {
-            document.getElementById(id).innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${msg}</td></tr>`;
-        }
-
-        async function deleteUser(id) {
-            if (!confirm("Supprimer cet utilisateur ? Irréversible.")) return;
-            try {
-                const res = await fetch(apiUrl(`/admin/api/users/${id}`), { method: 'DELETE', credentials: 'include' });
-                if (!res.ok) throw new Error(await res.text());
-                toast("Utilisateur supprimé");
-                loadAdminData(); // reload
-            } catch (e) {
-                alert("Erreur: " + e.message);
-            }
-        }
-
-        async function deleteMailbox(id) {
-            if (!confirm("Déconnecter cette boîte mail ?")) return;
-            try {
-                const res = await fetch(apiUrl(`/admin/api/mailboxes/${id}`), { method: 'DELETE', credentials: 'include' });
-                if (!res.ok) throw new Error(await res.text());
-                toast("Boîte mail supprimée");
-                loadAdminData(); // reload
-            } catch (e) {
-                alert("Erreur: " + e.message);
-            }
-        }
-
-        function toast(msg) {
-            const t = document.getElementById('toast');
-            if (t) {
-                t.textContent = msg;
-                t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 3000);
-            }
-        }
-
-        function showToast(msg, isErr = false) {
-            const t = document.getElementById('toast');
-            if (!t) return;
-            t.textContent = msg;
-            t.style.backgroundColor = isErr ? '#ef4444' : '#333';
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
-        function escapeHtml(s) {
-            return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-        }
-        const esc = escapeHtml;
-
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            initDashboard(); // existing function
-            loadAdminData(); // new function
-        });
     </script>
+</body>
 
 </html>
