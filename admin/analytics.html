@@ -28,7 +28,6 @@
             }
         })();
     </script>
-
     <meta name="theme-color" content="#1fb6ff">
     <style>
         .kpi-grid {
@@ -102,7 +101,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Analytics</h1>
-                        <p class="muted">Métriques (7 derniers jours)</p>
+                        <p class="muted">Métriques</p>
                     </div>
                     <a href="/admin/dashboard.html" class="btn btn-ghost btn-small">Retour Admin</a>
                 </div>
@@ -110,9 +109,16 @@
 
             <!-- Content -->
             <div id="analytics-container">
-                <div style="text-align: right; margin-bottom: 16px;">
-                    <a href="/portal-api/admin/api/analytics/export.csv?days=7" target="_blank"
-                        class="btn btn-ghost btn-small" style="font-size:0.85rem">📥 Exporter CSV (7j)</a>
+                <div
+                    style="display:flex; justify-content:flex-end; gap:16px; margin-bottom: 16px; align-items: center;">
+                    <select id="days-selector" class="btn btn-ghost btn-small"
+                        style="background: white; border: 1px solid #e2e8f0; cursor: pointer;">
+                        <option value="7">7 jours</option>
+                        <option value="14">14 jours</option>
+                        <option value="30">30 jours</option>
+                    </select>
+                    <a id="export-btn" href="#" target="_blank" class="btn btn-ghost btn-small"
+                        style="font-size:0.85rem">📥 Exporter CSV</a>
                 </div>
 
                 <!-- KPIs -->
@@ -130,7 +136,7 @@
                         <div class="kpi-value" id="k-pageviews">—</div>
                     </div>
                     <div class="kpi-card">
-                        <h3>Pages / Session</h3>
+                        <h3>Pages / Sess.</h3>
                         <div class="kpi-value" id="k-ppsession">—</div>
                     </div>
                     <div class="kpi-card">
@@ -165,7 +171,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Top Events -->
                     <div class="card glass-static" style="padding: 24px;">
                         <h3 style="margin-top:0; margin-bottom:16px;">Top Événements</h3>
@@ -183,7 +188,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Sources -->
                     <div class="card glass-static" style="padding: 24px;">
                         <h3 style="margin-top:0; margin-bottom:16px;">Top Sources</h3>
@@ -201,7 +205,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Funnel (Simple List) -->
                     <div class="card glass-static" style="padding: 24px;">
                         <h3 style="margin-top:0; margin-bottom:16px;">Entonnoir (Conversions)</h3>
@@ -226,7 +229,6 @@
                 <h3 class="muted">Aucune donnée pour le moment.</h3>
                 <p>Installez le script de tracking et générez du trafic.</p>
             </div>
-
         </div>
     </section>
 
@@ -252,9 +254,16 @@
         });
 
         // Analytics Logic
-        async function loadAnalytics() {
+        const STORAGE_KEY_DAYS = 'analytics_days';
+        const selector = document.getElementById('days-selector');
+        const exportBtn = document.getElementById('export-btn');
+
+        async function loadAnalytics(days) {
             try {
-                const days = 7;
+                // Update Export Link
+                exportBtn.href = `/portal-api/admin/api/analytics/export.csv?days=${days}`;
+                exportBtn.textContent = `📥 Exporter CSV (${days}j)`;
+
                 // 1. Summary
                 const rSummary = await fetch(apiUrl(`/admin/api/analytics/summary?days=${days}`), { credentials: 'include' });
                 const summary = rSummary.ok ? await rSummary.json() : {};
@@ -325,8 +334,7 @@
                     tSources.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--muted)">Vide</td></tr>';
                 }
 
-                // 5. Funnel (Using events "conversion:xxx" logic or if backend sends a funnel object)
-                // Backend "summary" might not include funnel. We try "events/top" again or look for conversion events manually if no dedicated endpoint.
+                // 5. Funnel
                 const funnelEvents = events.filter(e => e.event.startsWith('conversion:'));
                 const tFunnel = document.getElementById('table-funnel');
 
@@ -346,7 +354,18 @@
 
         function esc(s) { return String(s ?? '').replaceAll('<', '&lt;'); }
 
-        document.addEventListener('DOMContentLoaded', loadAnalytics);
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedDays = localStorage.getItem(STORAGE_KEY_DAYS) || '7';
+            selector.value = savedDays;
+            loadAnalytics(savedDays);
+
+            selector.addEventListener('change', (e) => {
+                const val = e.target.value;
+                localStorage.setItem(STORAGE_KEY_DAYS, val);
+                loadAnalytics(val);
+            });
+        });
     </script>
 </body>
 
