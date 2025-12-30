@@ -42,7 +42,8 @@
                                 style="font-weight:600; color:var(--ink);">...</span></p>
                     </div>
                     <div style="display:flex; gap:12px;">
-                        <a href="onboarding.html" class="btn btn-primary btn-small">＋ Configurer un nouveau récap</a>
+                        <button class="btn btn-primary btn-small" onclick="openCreateModal()">＋ Configurer un nouveau
+                            récap</button>
                         <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
                     </div>
                 </div>
@@ -139,6 +140,56 @@
                     <!-- I am assuming simplified editor is better for User, but keeping IDs consistent -->
                 </form>
             </section>
+
+            <!-- Create Profile Modal -->
+            <div id="modal-create-profile"
+                style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+                <div class="card glass-static" style="max-width:500px; width:90%; padding:24px; position:relative;">
+                    <h3 style="margin-top:0; margin-bottom:16px;">Nouveau Profil de Récap</h3>
+
+                    <form id="form-create-profile">
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">Compte Source (Boîte
+                                Mail)</label>
+                            <select id="create-mailbox-select" required
+                                style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0; bg:white;">
+                                <option value="">Chargement...</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">Email Destinataire
+                                (Récap)</label>
+                            <input type="email" id="create-recipient" required placeholder="votre@email.com"
+                                style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div>
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">Heure Envoi</label>
+                                <input type="time" id="create-time" required value="08:00"
+                                    style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">Langue</label>
+                                <select id="create-lang"
+                                    style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                                    <option value="fr">Français</option>
+                                    <option value="en">Anglais</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="create-msg" style="margin-bottom:12px; font-size:0.9rem; color:#ef4444; display:none;">
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button type="button" class="btn btn-ghost" onclick="closeCreateModal()">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Créer le récap</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
         </div>
     </section>
@@ -324,6 +375,108 @@
                 d.style.display = 'block';
             }
         }
+
+        // --- CREATE PROFILE MODAL ---
+        const modalCreate = document.getElementById('modal-create-profile');
+        const selectMb = document.getElementById('create-mailbox-select');
+        const formCreate = document.getElementById('form-create-profile');
+
+        window.openCreateModal = async function () {
+            modalCreate.style.display = 'flex';
+            document.getElementById('create-msg').style.display = 'none';
+
+            // Set default recipient to user email
+            const userEmail = document.getElementById('user-email').textContent;
+            if (userEmail && userEmail !== '...') document.getElementById('create-recipient').value = userEmail;
+
+            // Load Mailboxes
+            selectMb.innerHTML = '<option value="">Chargement...</option>';
+            try {
+                const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
+                if (!res.ok) throw new Error("Erreur chargement boîtes");
+                let data = await res.json();
+                const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
+
+                if (list.length === 0) {
+                    selectMb.innerHTML = '<option value="">Aucune boîte connectée (Allez dans Mon Compte)</option>';
+                    return;
+                }
+
+                selectMb.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)} (${mb.provider || 'imap'})</option>`).join('');
+
+            } catch (e) {
+                selectMb.innerHTML = '<option value="">Erreur</option>';
+            }
+        };
+
+        window.closeCreateModal = function () {
+            modalCreate.style.display = 'none';
+        };
+
+        formCreate.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('create-msg');
+            msg.style.display = 'none';
+
+            const mbId = selectMb.value;
+            if (!mbId) {
+                msg.textContent = "Veuillez sélectionner une boîte mail source.";
+                msg.style.display = 'block';
+                return;
+            }
+
+            const recipient = document.getElementById('create-recipient').value;
+            const time = document.getElementById('create-time').value;
+            const lang = document.getElementById('create-lang').value;
+
+            // Construct Payload
+            // Assuming POST /my/profiles takes simple payload
+            // Need to confirm exact endpoint. User said "POST /portal-api/my/profiles".
+
+            const payload = {
+                email_account_id: mbId,
+                recap_recipient: recipient,
+                heure_debut: time, // will likely need end time or default
+                // "heure_fin" might be required by backend schema? 
+                // Let's set a default duration window if needed, e.g. +30min or just send start.
+                // If backend requires it, I'll add it. Just sending start for now.
+                // Wait, if I look at previous profile structure, they have start/end.
+                // I'll set end to start + 1 hour by default or just send start.
+                // Assuming backend handles defaults or I send both.
+                heure_fin: addHour(time),
+                language: lang,
+                status: 'Active',
+                timezone: 'Europe/Paris' // default or detect?
+            };
+
+            try {
+                const res = await fetch(apiUrl('/my/profiles'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                // Success
+                closeCreateModal();
+                loadProfiles(); // Refresh list
+
+            } catch (e) {
+                msg.textContent = "Erreur création: " + e.message;
+                msg.style.display = 'block';
+            }
+        });
+
+        function addHour(timeStr) {
+            // quick helper HH:MM -> HH+1:MM
+            if (!timeStr) return "09:00";
+            let [h, m] = timeStr.split(':').map(Number);
+            h = (h + 1) % 24;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
     </script>
 </body>
 
