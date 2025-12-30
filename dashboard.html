@@ -9,46 +9,60 @@
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
     <style>
+        /* Modern Form Styling */
         .editor-section {
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
 
         .editor-title {
             margin-top: 0;
-            margin-bottom: 16px;
-            font-size: 1.1rem;
-            color: #334155;
-            font-weight: 600;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-size: 1.15rem;
+            color: #1e293b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .editor-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 2px;
         }
 
         .form-label {
             display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
+            font-weight: 600;
+            margin-bottom: 8px;
             color: #475569;
+            font-size: 0.95rem;
         }
 
         .form-input,
         .form-select,
         .form-textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
             font-size: 0.95rem;
-            transition: border-color 0.2s;
+            background: #f8fafc;
+            transition: all 0.2s;
         }
 
         .form-input:focus,
         .form-select:focus,
         .form-textarea:focus {
+            background: #fff;
             border-color: #1fb6ff;
             outline: none;
             box-shadow: 0 0 0 3px rgba(31, 182, 255, 0.1);
@@ -57,27 +71,31 @@
         .form-helper {
             font-size: 0.85rem;
             color: #94a3b8;
-            margin-top: 4px;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* Time Block Styling */
+        .time-block {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .time-block h4 {
+            margin: 0 0 12px 0;
+            font-size: 0.95rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         /* Range Slider */
         input[type=range] {
             width: 100%;
             cursor: pointer;
-        }
-
-        details>summary {
-            list-style: none;
-            /* remove triangle */
-            outline: none;
-        }
-
-        details>summary::-webkit-details-marker {
-            display: none;
-        }
-
-        details[open] summary {
-            margin-bottom: 16px;
+            accent-color: var(--primary);
         }
     </style>
 </head>
@@ -131,11 +149,10 @@
                         <table class="dashboard-table">
                             <thead>
                                 <tr>
-                                    <th>Source (Boîte)</th>
+                                    <th>Source</th>
                                     <th>Destinataire</th>
-                                    <th>Heures</th>
+                                    <th>Plage horaire</th>
                                     <th>Status</th>
-                                    <th style="text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="profiles-body">
@@ -149,116 +166,137 @@
                 </div>
             </div>
 
-            <!-- VIEW EDITOR (Advanced) -->
-            <div id="view-editor" style="display:none;">
+            <!-- VIEW EDITOR (Exhaustive) -->
+            <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                    <h2 style="margin:0;">Configurer un Récapitulatif</h2>
-                    <button class="btn btn-ghost btn-small" onclick="hideEditor()">Fermer sans sauver</button>
+                    <h2 style="margin:0;">Éditeur de Profil</h2>
+                    <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
                 </div>
 
                 <form id="form-editor">
 
-                    <!-- BLOC 1: Source & Destination -->
+                    <!-- SECTION 1: Source & Cible -->
                     <div class="editor-section">
-                        <h3 class="editor-title">1. Source & Destination</h3>
+                        <h3 class="editor-title">1. Source & Cible</h3>
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div>
                                 <label class="form-label">Compte à analyser</label>
                                 <select id="f-account" class="form-select" required>
                                     <option value="">Chargement...</option>
                                 </select>
-                                <div class="form-helper">La boîte mail dont les emails seront résumés.</div>
+                                <div class="form-helper">La boîte mail à scanner.</div>
                             </div>
                             <div>
                                 <label class="form-label">Destinataire du récap</label>
                                 <input type="email" id="f-recipient" class="form-input" required
-                                    placeholder="votre@email.com">
-                                <div class="form-helper">L'adresse qui recevra l'email de synthèse.</div>
+                                    placeholder="me@example.com">
+                                <div class="form-helper">L'adresse de réception du résumé.</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BLOC 2: Planification -->
+                    <!-- SECTION 2: Définition Plage Temps -->
                     <div class="editor-section">
-                        <h3 class="editor-title">2. Planification & Période</h3>
+                        <h3 class="editor-title">2. Période d'Analyse (Filtre Temporel)</h3>
+                        <p class="muted" style="margin-bottom:20px;">Définez précisément quels emails sont inclus dans
+                            le résumé quotidien.</p>
+
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div>
-                                <label class="form-label">Heure d'envoi du récap</label>
-                                <input type="time" id="f-schedule" class="form-input" required value="08:00">
-                                <div class="form-helper">Quand souhaitez-vous recevoir votre mémo ?</div>
-                            </div>
-                            <div>
-                                <label class="form-label">Historique d'analyse</label>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="white-space:nowrap;">Analyser</span>
-                                    <input type="number" id="f-history" class="form-input" value="1" min="1" max="7"
-                                        style="width:80px;">
-                                    <span style="white-space:nowrap;">jours en arrière</span>
+                            <!-- DEBUT -->
+                            <div class="time-block">
+                                <h4>DÉBUT DE L'ANALYSE</h4>
+                                <div style="margin-bottom:12px;">
+                                    <label class="form-label">Jours en arrière</label>
+                                    <input type="number" id="f-days-start" class="form-input" value="1" min="0"
+                                        max="30">
+                                    <div class="form-helper">Ex: 1 = Commencer aux emails d'Hier.</div>
+                                </div>
+                                <div>
+                                    <label class="form-label">À partir de l'heure</label>
+                                    <input type="time" id="f-time-start" class="form-input" value="00:00">
                                 </div>
                             </div>
-                        </div>
-                        <div style="margin-top:16px;">
-                            <label class="form-label">Plage horaire des emails analysés (Quotidien)</label>
-                            <div style="display:flex; align-items:center; gap:12px; max-width:500px;">
-                                <span>De</span>
-                                <input type="time" id="f-start" class="form-input" required value="00:00">
-                                <span>à</span>
-                                <input type="time" id="f-end" class="form-input" required value="23:59">
+
+                            <!-- FIN -->
+                            <div class="time-block">
+                                <h4>FIN DE L'ANALYSE</h4>
+                                <div style="margin-bottom:12px;">
+                                    <label class="form-label">Jours en arrière</label>
+                                    <input type="number" id="f-days-end" class="form-input" value="0" min="0" max="30">
+                                    <div class="form-helper">Ex: 0 = Jusqu'à Aujourd'hui.</div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Jusqu'à l'heure</label>
+                                    <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BLOC 3: Filtres Intelligents -->
-                    <details class="editor-section" style="cursor:pointer;">
-                        <summary style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:600; font-size:1.1rem; color:#334155;">3. Filtres Intelligents
-                                (Avancé)</span>
-                            <span style="color:var(--primary); font-size:0.9rem;">Afficher / Masquer</span>
-                        </summary>
+                    <!-- SECTION 3: Planification Envoi -->
+                    <div class="editor-section">
+                        <h3 class="editor-title">3. Planification de l'Envoi</h3>
+                        <div style="max-width:300px;">
+                            <label class="form-label">Heure d'envoi du mail</label>
+                            <input type="time" id="f-schedule" class="form-input" required value="08:00">
+                            <div class="form-helper">L'heure à laquelle l'IA génère et envoie le rapport.</div>
+                        </div>
+                    </div>
 
-                        <div style="margin-top:24px;">
-                            <div style="display:flex; gap:24px; margin-bottom:24px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <input type="checkbox" id="f-unread" style="width:18px; height:18px;">
-                                    <label for="f-unread" style="cursor:pointer; font-weight:500;">Seulement les emails
-                                        non-lus</label>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <label style="font-weight:500;">Tri :</label>
-                                    <select id="f-sort" class="form-select" style="width:auto;">
-                                        <option value="date_desc">Chronologique (Récents)</option>
-                                        <option value="priority">Priorité IA</option>
-                                    </select>
-                                </div>
+                    <!-- SECTION 4: Filtres Avancés -->
+                    <div class="editor-section">
+                        <h3 class="editor-title">4. Filtres Avancés</h3>
+
+                        <div class="grid-2"
+                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+                            <div>
+                                <label class="form-label">Tri des emails</label>
+                                <select id="f-sort" class="form-select">
+                                    <option value="date_desc">CHRONOLOGIQUE (Récents d'abord)</option>
+                                    <option value="priority">PRIORITÉ (IA décide)</option>
+                                    <option value="category">CATÉGORIE (Par sujet)</option>
+                                </select>
                             </div>
-
-                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                                <div>
-                                    <label class="form-label">Expéditeurs Autorisés (Whitelist)</label>
-                                    <textarea id="f-allow" class="form-textarea" rows="3"
-                                        placeholder="client@vip.com, boss@company.com..."></textarea>
-                                    <div class="form-helper">Séparez par des virgules. Si vide, tout est analysé.</div>
-                                </div>
-                                <div>
-                                    <label class="form-label">Expéditeurs Exclus (Blacklist)</label>
-                                    <textarea id="f-exclude" class="form-textarea" rows="3"
-                                        placeholder="newsletter@pub.com, no-reply@..."></textarea>
-                                    <div class="form-helper">Emails à ignorer totalement.</div>
-                                </div>
+                            <div style="display:flex; align-items:center; gap:12px; padding-top:24px;">
+                                <input type="checkbox" id="f-unread" style="width:20px; height:20px;">
+                                <label for="f-unread" style="font-weight:600; cursor:pointer;">Ne traiter que les emails
+                                    non-lus</label>
                             </div>
                         </div>
-                    </details>
 
-                    <!-- BLOC 4: Audio & IA -->
+                        <div style="margin-bottom:20px;">
+                            <label class="form-label">Expéditeurs Whitelist (FROM)</label>
+                            <textarea id="f-filtre-sender" class="form-textarea" rows="2"
+                                placeholder="Ex: boss@company.com, @important-client.com"></textarea>
+                            <div class="form-helper">Seuls ces expéditeurs/domaines seront analysés si rempli (Vide =
+                                Tous).</div>
+                        </div>
+
+                        <div style="margin-bottom:20px;">
+                            <label class="form-label">Expéditeurs Exclus (Blacklist)</label>
+                            <textarea id="f-exclude-sender" class="form-textarea" rows="2"
+                                placeholder="Ex: newsletter@, notification@slack.com"></textarea>
+                            <div class="form-helper">Ces emails seront systématiquement ignorés.</div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Seulement si je suis en Copie (CC)</label>
+                            <textarea id="f-filtre-cc" class="form-textarea" rows="2"
+                                placeholder="Ex: mon-alias@company.com"></textarea>
+                            <div class="form-helper">Filtre strict: l'email doit vous avoir en CC.</div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 5: IA & Audio -->
                     <div class="editor-section">
-                        <h3 class="editor-title">4. Audio & IA</h3>
+                        <h3 class="editor-title">5. IA & Audio</h3>
 
                         <div
                             style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
                             <div>
-                                <div style="font-weight:600; font-size:1.05rem;">Générer version Audio (Podcast)</div>
-                                <div class="muted">Recevez un fichier audio MP3 de votre résumé.</div>
+                                <div style="font-weight:600; font-size:1.05rem;">Générer version Audio</div>
+                                <div class="muted">Recevez un fichier audio MP3 du résumé.</div>
                             </div>
                             <label class="toggle">
                                 <input id="f-audio" type="checkbox" checked />
@@ -268,12 +306,12 @@
 
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div>
-                                <label class="form-label">Voix IA</label>
+                                <label class="form-label">Voix</label>
                                 <select id="f-voice" class="form-select">
-                                    <option value="alloy">Alloy (Neutre & Moderne)</option>
-                                    <option value="echo">Echo (Masculin Profond)</option>
-                                    <option value="fable">Fable (Anglais / British)</option>
-                                    <option value="onyx">Onyx (Homme Sérieux)</option>
+                                    <option value="alloy">Alloy (Neutre)</option>
+                                    <option value="echo">Echo (Masculin)</option>
+                                    <option value="fable">Fable (Anglais)</option>
+                                    <option value="onyx">Onyx (Homme Profond)</option>
                                     <option value="nova">Nova (Femme Dynamique)</option>
                                     <option value="shimmer">Shimmer (Femme Claire)</option>
                                 </select>
@@ -286,9 +324,9 @@
                             </div>
                         </div>
 
-                        <div style="margin-top:16px; width:50%;">
-                            <label class="form-label">Langue du résumé</label>
-                            <select id="f-lang" class="form-select">
+                        <div style="margin-top:20px;">
+                            <label class="form-label">Langue de sortie</label>
+                            <select id="f-lang" class="form-select" style="max-width:200px;">
                                 <option value="fr">Français</option>
                                 <option value="en">Anglais</option>
                                 <option value="es">Espagnol</option>
@@ -297,13 +335,14 @@
                     </div>
 
                     <div id="editor-msg"
-                        style="margin-bottom:16px; font-weight:600; padding:12px; border-radius:8px; display:none;">
+                        style="margin-bottom:24px; font-weight:600; padding:16px; border-radius:8px; display:none;">
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:16px;">
+                    <div
+                        style="display:flex; justify-content:flex-end; gap:16px; position:sticky; bottom:20px; background:white; padding:16px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
                         <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
                         <button type="button" class="btn btn-primary" onclick="saveProfile()"
-                            style="min-width:180px;">Enregistrer le récap</button>
+                            style="min-width:200px; font-weight:700;">ENREGISTRER</button>
                     </div>
 
                 </form>
@@ -311,9 +350,6 @@
 
         </div>
     </section>
-
-    <!-- Legacy Editor (Hidden, for viewing/editing old profiles if needed, can serve as debug) -->
-    <div id="legacy-editor-container" style="display:none;"></div>
 
     <footer class="footer">
         <div class="container center">
@@ -329,7 +365,6 @@
         let PROFILES_BY_ID = new Map();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Auth & List
             try {
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (res.status === 401) window.location.href = 'login.html';
@@ -346,23 +381,32 @@
             });
         });
 
-        // --- VIEW MANAGEMENT ---
         const viewList = document.getElementById('view-list');
         const viewEditor = document.getElementById('view-editor');
         const editorMsg = document.getElementById('editor-msg');
 
-        // Fields
+        // Fields Map
         const F = {
             account: document.getElementById('f-account'),
             recipient: document.getElementById('f-recipient'),
+
+            // Time Range
+            daysStart: document.getElementById('f-days-start'),
+            timeStart: document.getElementById('f-time-start'),
+            daysEnd: document.getElementById('f-days-end'),
+            timeEnd: document.getElementById('f-time-end'),
+
             schedule: document.getElementById('f-schedule'),
-            history: document.getElementById('f-history'),
-            start: document.getElementById('f-start'),
-            end: document.getElementById('f-end'),
+
+            // Filters
             unread: document.getElementById('f-unread'),
             sort: document.getElementById('f-sort'),
-            allow: document.getElementById('f-allow'),
-            exclude: document.getElementById('f-exclude'),
+
+            filterSender: document.getElementById('f-filtre-sender'),
+            excludeSender: document.getElementById('f-exclude-sender'),
+            filterCc: document.getElementById('f-filtre-cc'),
+
+            // Audio
             audio: document.getElementById('f-audio'),
             voice: document.getElementById('f-voice'),
             speed: document.getElementById('f-speed'),
@@ -372,36 +416,23 @@
         window.hideEditor = function () {
             viewEditor.style.display = 'none';
             viewList.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.showEditor = async function () {
             viewList.style.display = 'none';
             viewEditor.style.display = 'block';
             editorMsg.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Defaults
-            const userEmail = document.getElementById('user-email').textContent;
-            if (userEmail && userEmail !== '...') F.recipient.value = userEmail;
-
-            // Reset Fields
-            F.schedule.value = "08:00";
-            F.start.value = "00:00";
-            F.end.value = "23:59";
-            F.history.value = 1;
-            F.unread.checked = false;
-            F.sort.value = "date_desc";
-            F.allow.value = "";
-            F.exclude.value = "";
-            F.audio.checked = true;
-            F.voice.value = "onyx";
-            F.speed.value = 1.0; document.getElementById('speed-val').textContent = "1.0x";
-            F.lang.value = "fr";
+            // Prefill Recipient
+            const uEmail = document.getElementById('user-email').textContent;
+            if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
 
             // Load Accounts
             F.account.innerHTML = '<option value="">Chargement...</option>';
             try {
                 let res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
-                // Fallback
                 if (res.status === 404) res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
 
                 if (!res.ok) throw new Error("Erreur");
@@ -414,40 +445,43 @@
                 }
                 F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
 
-                // Auto-select if single
+                // AUTO SELECT SINGLE
                 if (list.length === 1) F.account.selectedIndex = 0;
 
-            } catch (e) { F.account.innerHTML = '<option value="">Erreur chargement</option>'; }
+            } catch (e) { F.account.innerHTML = '<option value="">Erreur</option>'; }
         };
 
-        // --- SAVE ---
         window.saveProfile = async function () {
             editorMsg.style.display = 'none';
             if (!F.account.value) return showMsg("Sélectionnez une boîte mail.", "red");
             if (!F.recipient.value) return showMsg("Email destinataire requis.", "red");
 
-            // Formatting Helpers
             const parseCsv = (val) => val.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
             const fixTime = (t) => (t && t.length === 5) ? t + ':00' : t;
 
             const payload = {
                 email_account_id: F.account.value,
                 recap_recipient: F.recipient.value,
-                schedule_time: fixTime(F.schedule.value),
-                heure_debut: fixTime(F.start.value),
-                heure_fin: fixTime(F.end.value),
 
-                // History / Filters
-                jours_arriere_start: parseInt(F.history.value) || 1,
-                jours_arriere_end: parseInt(F.history.value) || 1,
+                // Période Analyse
+                jours_arriere_start: parseInt(F.daysStart.value) || 0,
+                jours_arriere_end: parseInt(F.daysEnd.value) || 0,
+                heure_debut: fixTime(F.timeStart.value),
+                heure_fin: fixTime(F.timeEnd.value),
+
+                // Planification
+                schedule_time: fixTime(F.schedule.value),
+
+                // Filtres
                 only_unread: F.unread.checked,
-                filters: {
-                    sender: parseCsv(F.allow.value),
-                    exclude: parseCsv(F.exclude.value),
-                    // defaults
-                    cc: [], destined_to: [], forwarded_from: []
-                },
                 sort_mode: F.sort.value,
+                filters: {
+                    sender: parseCsv(F.filterSender.value),
+                    exclude: parseCsv(F.excludeSender.value),
+                    cc: parseCsv(F.filterCc.value),
+                    // defaults
+                    destined_to: [], forwarded_from: []
+                },
 
                 // Audio
                 audio_actif: F.audio.checked,
@@ -455,7 +489,7 @@
                 speed: parseFloat(F.speed.value),
                 language: F.lang.value,
 
-                // Meta
+                // Fixed Meta
                 status: 'Active',
                 timezone: 'Europe/Paris',
                 categories: 'ALL'
@@ -471,8 +505,8 @@
 
                 if (!res.ok) throw new Error(await res.text());
 
-                showMsg("Profil créé avec succès !", "green");
-                setTimeout(() => { hideEditor(); loadProfiles(); }, 1000);
+                showMsg("Profil enregistré avec succès !", "green");
+                setTimeout(() => { hideEditor(); loadProfiles(); }, 1500);
 
             } catch (e) { showMsg("Erreur: " + e.message, "red"); }
         };
@@ -485,12 +519,11 @@
             editorMsg.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- LIST VIEW ---
         async function loadProfiles() {
             const tbody = document.getElementById('profiles-body');
             try {
                 const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
-                if (!res.ok) throw new Error("Erreur chargement profils");
+                if (!res.ok) throw new Error("Erreur chargement");
                 const profiles = await res.json();
                 PROFILES_BY_ID.clear();
 
@@ -503,17 +536,15 @@
                     const activeBadge = (String(p.status).toLowerCase() === 'active') ?
                         `<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>` :
                         `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
+
                     return `<tr>
                         <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
-                        <td>${escapeHtml(p.heure_debut)} → ${escapeHtml(p.heure_fin)}</td>
+                        <td>${p.heure_debut} → ${p.heure_fin}</td>
                         <td>${activeBadge}</td>
-                        <td style="text-align:right;">
-                           <button class="btn btn-ghost btn-small" onclick="alert('Modifier: À venir dans la V2')">Modifier</button>
-                        </td>
                     </tr>`;
                 }).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`; }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">${e.message}</td></tr>`; }
         }
 
     </script>
