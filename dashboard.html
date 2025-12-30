@@ -42,153 +42,184 @@
                                 style="font-weight:600; color:var(--ink);">...</span></p>
                     </div>
                     <div style="display:flex; gap:12px;">
-                        <button class="btn btn-primary btn-small" onclick="openCreateModal()">＋ Configurer un nouveau
+                        <button class="btn btn-primary btn-small" onclick="showEditor()">＋ Configurer un nouveau
                             récap</button>
                         <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Profiles List -->
-            <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
-                <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
-                    <h2 style="font-size: 1.25rem; margin:0;">Vos Profils de Récap</h2>
+            <!-- VIEW LIST -->
+            <div id="view-list">
+                <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
+                    <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
+                        <h2 style="font-size: 1.25rem; margin:0;">Vos Profils de Récap</h2>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Source (Boîte)</th>
+                                    <th>Destinataire</th>
+                                    <th>Heures</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="profiles-body">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding: 40px;" class="muted">
+                                        Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div style="overflow-x: auto;">
-                    <table class="dashboard-table">
-                        <thead>
-                            <tr>
-                                <th>Source (Boîte)</th>
-                                <th>Destinataire</th>
-                                <th>Heures</th>
-                                <th>Status</th>
-                                <th style="text-align:right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="profiles-body">
-                            <tr>
-                                <td colspan="5" style="text-align:center; padding: 40px;" class="muted">Chargement...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Old Edit Section (Hidden by default, used for existing profiles) -->
+                <!-- Ideally we'd merge this, but for now let's keep it functionally safe as legacy editor,
+                     or we hide it if user clicks "create". -->
+                <section id="profile-editor" class="card glass-static" style="margin-top:24px; display:none;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
+                        <div>
+                            <h3 style="margin:0;">Modifier Profil (Legacy)</h3>
+                            <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
+                        </div>
+                        <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+                    </div>
+                    <div id="editor-ok" style="display:none; margin-bottom:12px; color:#16a34a;">Sauvegardé !</div>
+                    <div id="editor-error" style="display:none; margin-bottom:12px; color:#ef4444;"></div>
+                    <form id="form-settings-legacy" class="form">
+                        <!-- Same fields as before ... -->
+                        <div class="grid-2"
+                            style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <label>Heure début <input id="legacy-start" type="time" step="1" /></label>
+                            <label>Heure fin <input id="legacy-end" type="time" step="1" /></label>
+                        </div>
+                        <label style="margin-bottom:16px; display:block;">Timezone <input id="legacy-timezone"
+                                type="text" /></label>
+                        <button type="button" class="btn btn-primary" id="save-settings-legacy">Enregistrer</button>
+                    </form>
+                </section>
             </div>
 
-            <!-- Profile Editor (Hidden) -->
-            <section id="profile-editor" class="card glass-static" style="margin-top:24px; display:none;">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
-                    <div>
-                        <h3 style="margin:0;">Modifier Profil</h3>
-                        <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
-                    </div>
-                    <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+            <!-- VIEW EDITOR (CREATION) -->
+            <div id="view-editor" class="card glass-static" style="display:none; padding:24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                    <h2 style="margin:0;">Configurer un Récapitulatif</h2>
+                    <button class="btn btn-ghost btn-small" onclick="hideEditor()">Fermer</button>
                 </div>
 
-                <div id="editor-ok" style="display:none; margin-bottom:12px; color:#16a34a;">Sauvegardé !</div>
-                <div id="editor-error" style="display:none; margin-bottom:12px; color:#ef4444;"></div>
-
-                <form id="form-settings" class="form">
-                    <!-- Standard Recapt Fields -->
+                <form id="form-editor" class="form">
+                    <!-- 1. Compte & Destinataire -->
                     <div class="grid-2"
-                        style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                        <label>Heure début <input id="f-start" type="time" step="1" /></label>
-                        <label>Heure fin <input id="f-end" type="time" step="1" /></label>
-                    </div>
-
-                    <label style="margin-bottom:16px; display:block;">Timezone
-                        <input id="f-timezone" type="text" placeholder="Europe/Brussels" />
-                    </label>
-
-                    <div
-                        style="padding:16px; background:rgba(255,255,255,0.5); border-radius:8px; border:1px solid #e2e8f0; margin-bottom:16px;">
-                        <h4 style="margin-top:0;">Filtres & IA</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <label>Catégories (Focus) <input id="f-categories" type="text"
-                                    placeholder="ex: ACTION,MEETING" /></label>
-                            <label>Langue <select id="f-lang">
-                                    <option value="fr">Français</option>
-                                    <option value="en">Anglais</option>
-                                </select></label>
-                        </div>
-                        <div style="margin-top:12px; display:flex; gap:24px;">
-                            <label style="display:flex; align-items:center; gap:8px;">
-                                <input id="f-audio" type="checkbox" /> Audio Podcast
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px;">
-                                <input id="f-unread" type="checkbox" /> Seulement non-lus
-                            </label>
-                        </div>
-                    </div>
-
-                    <div
-                        style="padding:16px; background:rgba(255,255,255,0.5); border-radius:8px; border:1px solid #e2e8f0; margin-bottom:16px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <strong>Status Actif</strong>
-                            <label class="toggle">
-                                <input id="f-status" type="checkbox" />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="button" class="btn btn-primary" id="save-settings">Enregistrer les
-                        modifications</button>
-                    <!-- HIDDEN FIELDS REQUIRED FOR EDITOR LOGIC PRESERVATION IF NEEDED, OR SIMPLIFIED -->
-                    <!-- I am assuming simplified editor is better for User, but keeping IDs consistent -->
-                </form>
-            </section>
-
-            <!-- Create Profile Modal -->
-            <div id="modal-create-profile"
-                style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
-                <div class="card glass-static" style="max-width:500px; width:90%; padding:24px; position:relative;">
-                    <h3 style="margin-top:0; margin-bottom:16px;">Nouveau Profil de Récap</h3>
-
-                    <form id="form-create-profile">
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">Compte Source (Boîte
-                                Mail)</label>
-                            <select id="create-mailbox-select" required
-                                style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0; bg:white;">
+                        style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+                        <div>
+                            <label class="form-label" style="font-weight:600; margin-bottom:8px; display:block;">Compte
+                                Source</label>
+                            <select id="f-account" required
+                                style="width:100%; padding:10px; border-radius:8px; border:1px solid #e2e8f0; background:white;">
                                 <option value="">Chargement...</option>
+                            </select>
+                            <p class="muted" style="font-size:0.85rem; margin-top:4px;">La boîte mail connectée qui sera
+                                analysée.</p>
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-weight:600; margin-bottom:8px; display:block;">Email
+                                qui reçoit le récap</label>
+                            <input type="email" id="f-recipient" required placeholder="votre@email.com"
+                                style="width:100%; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <p class="muted" style="font-size:0.85rem; margin-top:4px;">Où envoyer le résumé ?</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Horaires -->
+                    <div
+                        style="background:rgba(248,250,252,0.6); padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:24px;">
+                        <h4 style="margin-top:0; margin-bottom:16px; color:#334155;">Planification & Analyse</h4>
+
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div>
+                                <label style="font-weight:600; display:block; margin-bottom:8px;">Heure d'envoi du
+                                    récap</label>
+                                <input type="time" id="f-schedule" required value="08:00"
+                                    style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                            </div>
+                            <div>
+                                <label style="font-weight:600; display:block; margin-bottom:8px;">Plage analysée (Emails
+                                    reçus)</label>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="muted">De</span>
+                                    <input type="time" id="f-start" required value="08:00"
+                                        style="flex:1; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                                    <span class="muted">à</span>
+                                    <input type="time" id="f-end" required value="18:00"
+                                        style="flex:1; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Audio & Options -->
+                    <div class="grid-2"
+                        style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+                        <!-- Audio -->
+                        <div
+                            style="background:rgba(248,250,252,0.6); padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <label style="font-weight:600; cursor:pointer;" for="f-audio">Audio Actif
+                                    (Podcast)</label>
+                                <label class="toggle">
+                                    <input id="f-audio" type="checkbox" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <label style="display:block; margin-bottom:4px; font-size:0.9rem;">Voix IA</label>
+                            <select id="f-voice"
+                                style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                                <option value="alloy">Alloy (Neutre)</option>
+                                <option value="echo">Echo (Masculin)</option>
+                                <option value="fable">Fable (Anglais)</option>
+                                <option value="onyx">Onyx (Profond)</option>
+                                <option value="nova">Nova (Féminin)</option>
+                                <option value="shimmer">Shimmer (Clair)</option>
                             </select>
                         </div>
 
-                        <div style="margin-bottom:16px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">Email Destinataire
-                                (Récap)</label>
-                            <input type="email" id="create-recipient" required placeholder="votre@email.com"
-                                style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                            <div>
-                                <label style="display:block; margin-bottom:4px; font-weight:500;">Heure Envoi</label>
-                                <input type="time" id="create-time" required value="08:00"
-                                    style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                        <!-- Options -->
+                        <div
+                            style="background:rgba(248,250,252,0.6); padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <h4 style="margin-top:0; margin-bottom:12px; color:#334155;">Options</h4>
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <label style="font-weight:600; cursor:pointer;" for="f-unread">Seulement non-lus</label>
+                                <label class="toggle">
+                                    <input id="f-unread" type="checkbox" />
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
-                            <div>
-                                <label style="display:block; margin-bottom:4px; font-weight:500;">Langue</label>
-                                <select id="create-lang"
-                                    style="width:100%; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
-                                    <option value="fr">Français</option>
-                                    <option value="en">Anglais</option>
-                                </select>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-weight:600; cursor:pointer;" for="f-status">Profil Actif</label>
+                                <label class="toggle">
+                                    <input id="f-status" type="checkbox" checked />
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
+                    </div>
 
-                        <div id="create-msg" style="margin-bottom:12px; font-size:0.9rem; color:#ef4444; display:none;">
-                        </div>
+                    <div id="editor-msg" style="margin-bottom:16px; font-weight:500; display:none;"></div>
 
-                        <div style="display:flex; justify-content:flex-end; gap:8px;">
-                            <button type="button" class="btn btn-ghost" onclick="closeCreateModal()">Annuler</button>
-                            <button type="submit" class="btn btn-primary">Créer le récap</button>
-                        </div>
-                    </form>
-                </div>
+                    <div
+                        style="display:flex; justify-content:flex-end; gap:12px; padding-top:16px; border-top:1px solid #eee;">
+                        <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="saveProfile()">Enregistrer le
+                            récap</button>
+                    </div>
+                </form>
             </div>
 
         </div>
@@ -206,248 +237,124 @@
         function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
 
         let PROFILES_BY_ID = new Map();
-        let currentProfileId = null;
+        let currentProfileId = null; // for legacy edit
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Auth
+            // 1. Auth & List
             try {
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (res.status === 401) window.location.href = 'login.html';
                 const user = await res.json();
-
-                // Redirect Admin
                 if (user.role === 'admin' || user.is_admin) window.location.replace('/admin/dashboard.html');
-
                 document.getElementById('user-email').textContent = user.email;
             } catch (e) { window.location.href = 'login.html'; }
 
-            // 2. Fetch Profiles
             loadProfiles();
 
-            // 3. Logout
             document.getElementById('logout-btn').addEventListener('click', async () => {
                 await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }).catch(e => { });
                 window.location.href = 'login.html';
             });
 
-            // 4. Editor Close
+            // Legacy Edit listeners...
             document.getElementById('editor-close').addEventListener('click', () => {
                 document.getElementById('profile-editor').style.display = 'none';
             });
-
-            // 5. Save
-            document.getElementById('save-settings').addEventListener('click', saveSettings);
+            document.getElementById('save-settings-legacy').addEventListener('click', saveLegacy);
         });
 
+        // --- LIST VIEW ---
         async function loadProfiles() {
             const tbody = document.getElementById('profiles-body');
             try {
-                // NEW ROUTE
                 const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
                 if (!res.ok) throw new Error("Erreur chargement profils");
-
                 const profiles = await res.json();
                 PROFILES_BY_ID.clear();
-
                 if (!profiles || profiles.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px;">Aucun profil configuré. <a href="onboarding.html">Créer un nouveau récap</a></td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px;">Aucun profil configuré.</td></tr>`;
                     return;
                 }
-
                 tbody.innerHTML = profiles.map(p => {
                     PROFILES_BY_ID.set(p.id, p);
-
-                    const activeBadge = (String(p.status).toLowerCase() === 'active')
-                        ? `<span class="badge-active" style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>`
-                        : `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
-
-                    return `
-                    <tr>
+                    const activeBadge = (String(p.status).toLowerCase() === 'active') ?
+                        `<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>` :
+                        `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
+                    return `<tr>
                         <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
                         <td>${escapeHtml(p.heure_debut)} - ${escapeHtml(p.heure_fin)}</td>
                         <td>${activeBadge}</td>
-                        <td style="text-align:right;">
-                            <button class="btn btn-ghost btn-small" onclick="openEditor('${p.id}')">Modifier</button>
-                        </td>
-                    </tr>
-                    `;
+                        <td style="text-align:right;"><button class="btn btn-ghost btn-small" onclick="openLegacyEditor('${p.id}')">Modifier</button></td>
+                    </tr>`;
                 }).join('');
-
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`;
-            }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`; }
         }
 
-        function openEditor(id) {
-            const p = PROFILES_BY_ID.get(id);
-            if (!p) return;
-            currentProfileId = id;
-            document.getElementById('edit-profile-id').textContent = id.substring(0, 8) + '...';
-            document.getElementById('editor-ok').style.display = 'none';
-            document.getElementById('editor-error').style.display = 'none';
+        // --- NEW EDITOR LOGIC ---
+        const viewList = document.getElementById('view-list');
+        const viewEditor = document.getElementById('view-editor');
+        const editorMsg = document.getElementById('editor-msg');
 
-            // Fill basics
-            document.getElementById('f-start').value = p.heure_debut || '';
-            document.getElementById('f-end').value = p.heure_fin || '';
-            document.getElementById('f-timezone').value = p.timezone || '';
-            document.getElementById('f-categories').value = p.categories || '';
-            document.getElementById('f-lang').value = p.language || 'fr';
+        window.showEditor = async function () {
+            viewList.style.display = 'none';
+            viewEditor.style.display = 'block';
+            editorMsg.style.display = 'none';
 
-            document.getElementById('f-audio').checked = (p.audio_actif === true);
-            document.getElementById('f-unread').checked = (p.only_unread === true);
-            document.getElementById('f-status').checked = (String(p.status || '').toLowerCase() === 'active');
+            // Prefill recipient
+            const uEmail = document.getElementById('user-email').textContent;
+            if (uEmail && uEmail !== '...') document.getElementById('f-recipient').value = uEmail;
 
-            document.getElementById('profile-editor').style.display = 'block';
-            document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function saveSettings() {
-            if (!currentProfileId) return;
-            // Simplified payload for user vs admin full payload
-            // Using existing PUT /portal-api/profiles/{id}/settings so we must match expected schema? 
-            // Or maybe we just send what we changed. 
-            // Let's send a standard payload derived from values.
-
-            // Need to preserve fields we didn't show? 
-            // Ideally we should READ the full profile from PROFILES_BY_ID and merge.
-            const old = PROFILES_BY_ID.get(currentProfileId);
-
-            const payload = {
-                ...old, // keep old values
-                heure_debut: document.getElementById('f-start').value,
-                heure_fin: document.getElementById('f-end').value,
-                timezone: document.getElementById('f-timezone').value,
-                categories: document.getElementById('f-categories').value,
-                language: document.getElementById('f-lang').value,
-                audio_actif: document.getElementById('f-audio').checked,
-                only_unread: document.getElementById('f-unread').checked,
-                status: document.getElementById('f-status').checked ? 'Active' : 'Inactive'
-                // filters, etc not exposed here for simplicity, or kept as is from 'old'
-            };
-
-            // Clean up payload if needed (API might reject extra fields like 'id', 'created_at' etc if strictly typed pydantic request)
-            // Usually PUT settings expects a specific subset. 
-            // Safest is to construct explicit subset if we know the Schema. 
-            // As user said "Use new route GET /my/profiles", but SAVE is likely "PUT /portal-api/profiles/{id}/settings" (same as admin?).
-            // I'll stick to sending the likely fields.
-
-            const cleanPayload = {
-                timezone: payload.timezone,
-                heure_debut: payload.heure_debut,
-                heure_fin: payload.heure_fin,
-                status: payload.status,
-                only_unread: payload.only_unread,
-                audio_actif: payload.audio_actif,
-                language: payload.language,
-                categories: payload.categories,
-                // Preserving existing filters if not edited
-                filters: old.filters || { sender: [], exclude: [], cc: [], destined_to: [], forwarded_from: [] },
-                voice: old.voice || 'alloy',
-                speed: old.speed || 1.0,
-                sort_mode: old.sort_mode || 'date_desc',
-                debug_mode: old.debug_mode || false,
-                jours_arriere_start: old.jours_arriere_start || 1,
-                jours_arriere_end: old.jours_arriere_end || 1
-            };
-
-            // Time fix (seconds)
-            if (cleanPayload.heure_debut.length === 5) cleanPayload.heure_debut += ':00';
-            if (cleanPayload.heure_fin.length === 5) cleanPayload.heure_fin += ':00';
-
+            // Load Accounts
+            const fAccount = document.getElementById('f-account');
+            fAccount.innerHTML = '<option value="">Chargement...</option>';
             try {
-                const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(cleanPayload),
-                    credentials: 'include'
-                });
+                let res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
+                // Fallback handling if route differs
+                if (res.status === 404) res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
 
-                if (!res.ok) throw new Error(await res.text());
-
-                document.getElementById('editor-ok').style.display = 'block';
-                // Update local
-                Object.assign(old, cleanPayload);
-                loadProfiles(); // Refresh table UI
-            } catch (e) {
-                const d = document.getElementById('editor-error');
-                d.textContent = e.message;
-                d.style.display = 'block';
-            }
-        }
-
-        // --- CREATE PROFILE MODAL ---
-        const modalCreate = document.getElementById('modal-create-profile');
-        const selectMb = document.getElementById('create-mailbox-select');
-        const formCreate = document.getElementById('form-create-profile');
-
-        window.openCreateModal = async function () {
-            modalCreate.style.display = 'flex';
-            document.getElementById('create-msg').style.display = 'none';
-
-            // Set default recipient to user email
-            const userEmail = document.getElementById('user-email').textContent;
-            if (userEmail && userEmail !== '...') document.getElementById('create-recipient').value = userEmail;
-
-            // Load Mailboxes
-            selectMb.innerHTML = '<option value="">Chargement...</option>';
-            try {
-                const res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
-                if (!res.ok) throw new Error("Erreur chargement boîtes");
+                if (!res.ok) throw new Error("Erreur");
                 let data = await res.json();
                 const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
 
                 if (list.length === 0) {
-                    selectMb.innerHTML = '<option value="">Aucune boîte connectée (Allez dans Mon Compte)</option>';
+                    fAccount.innerHTML = '<option value="">Aucune boîte connectée</option>';
                     return;
                 }
-
-                selectMb.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)} (${mb.provider || 'imap'})</option>`).join('');
-
-            } catch (e) {
-                selectMb.innerHTML = '<option value="">Erreur</option>';
-            }
+                fAccount.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
+            } catch (e) { fAccount.innerHTML = '<option value="">Erreur chargement</option>'; }
         };
 
-        window.closeCreateModal = function () {
-            modalCreate.style.display = 'none';
+        window.hideEditor = function () {
+            viewEditor.style.display = 'none';
+            viewList.style.display = 'block';
         };
 
-        formCreate.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const msg = document.getElementById('create-msg');
-            msg.style.display = 'none';
+        window.saveProfile = async function () {
+            editorMsg.style.display = 'none';
+            const fAccount = document.getElementById('f-account').value;
+            const fRecipient = document.getElementById('f-recipient').value;
 
-            const mbId = selectMb.value;
-            if (!mbId) {
-                msg.textContent = "Veuillez sélectionner une boîte mail source.";
-                msg.style.display = 'block';
-                return;
-            }
-
-            const recipient = document.getElementById('create-recipient').value;
-            const time = document.getElementById('create-time').value;
-            const lang = document.getElementById('create-lang').value;
-
-            // Construct Payload
-            // Assuming POST /my/profiles takes simple payload
-            // Need to confirm exact endpoint. User said "POST /portal-api/my/profiles".
+            if (!fAccount) { showMsg("Sélectionnez une boîte mail.", "red"); return; }
+            if (!fRecipient) { showMsg("Email destinataire requis.", "red"); return; }
 
             const payload = {
-                email_account_id: mbId,
-                recap_recipient: recipient,
-                heure_debut: time, // will likely need end time or default
-                // "heure_fin" might be required by backend schema? 
-                // Let's set a default duration window if needed, e.g. +30min or just send start.
-                // If backend requires it, I'll add it. Just sending start for now.
-                // Wait, if I look at previous profile structure, they have start/end.
-                // I'll set end to start + 1 hour by default or just send start.
-                // Assuming backend handles defaults or I send both.
-                heure_fin: addHour(time),
-                language: lang,
-                status: 'Active',
-                timezone: 'Europe/Paris' // default or detect?
+                email_account_id: fAccount,
+                recap_recipient: fRecipient,
+                schedule_time: document.getElementById('f-schedule').value,
+                heure_debut: document.getElementById('f-start').value,
+                heure_fin: document.getElementById('f-end').value,
+                audio_active: document.getElementById('f-audio').checked,
+                voice: document.getElementById('f-voice').value,
+                only_unread: document.getElementById('f-unread').checked,
+                status: document.getElementById('f-status').checked ? 'Active' : 'Inactive',
+                timezone: 'Europe/Paris' // Default
             };
+
+            // Time format fix
+            ['schedule_time', 'heure_debut', 'heure_fin'].forEach(k => {
+                if (payload[k] && payload[k].length === 5) payload[k] += ':00';
+            });
 
             try {
                 const res = await fetch(apiUrl('/my/profiles'), {
@@ -456,25 +363,56 @@
                     body: JSON.stringify(payload),
                     credentials: 'include'
                 });
-
                 if (!res.ok) throw new Error(await res.text());
 
-                // Success
-                closeCreateModal();
-                loadProfiles(); // Refresh list
+                showMsg("Profil créé avec succès !", "green");
+                setTimeout(() => { hideEditor(); loadProfiles(); }, 1000);
+            } catch (e) { showMsg("Erreur: " + e.message, "red"); }
+        };
 
-            } catch (e) {
-                msg.textContent = "Erreur création: " + e.message;
-                msg.style.display = 'block';
-            }
-        });
+        function showMsg(txt, col) {
+            editorMsg.textContent = txt;
+            editorMsg.style.color = (col === 'red' ? '#ef4444' : '#16a34a');
+            editorMsg.style.display = 'block';
+        }
 
-        function addHour(timeStr) {
-            // quick helper HH:MM -> HH+1:MM
-            if (!timeStr) return "09:00";
-            let [h, m] = timeStr.split(':').map(Number);
-            h = (h + 1) % 24;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        // --- LEGACY EDIT (Minimal) ---
+        window.openLegacyEditor = function (id) {
+            const p = PROFILES_BY_ID.get(id);
+            if (!p) return;
+            currentProfileId = id;
+            document.getElementById('profile-editor').style.display = 'block';
+            document.getElementById('legacy-start').value = p.heure_debut || '';
+            document.getElementById('legacy-end').value = p.heure_fin || '';
+            document.getElementById('legacy-timezone').value = p.timezone || '';
+            document.getElementById('profile-editor').scrollIntoView();
+        };
+
+        async function saveLegacy() {
+            if (!currentProfileId) return;
+            const p = PROFILES_BY_ID.get(currentProfileId);
+            const payload = {
+                ...p, // dirty merge
+                heure_debut: document.getElementById('legacy-start').value,
+                heure_fin: document.getElementById('legacy-end').value,
+                timezone: document.getElementById('legacy-timezone').value
+            };
+            // Time format fix
+            ['heure_debut', 'heure_fin'].forEach(k => {
+                if (payload[k] && payload[k].length === 5) payload[k] += ':00';
+            });
+
+            try {
+                const res = await fetch(apiUrl(`/profiles/${currentProfileId}/settings`), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                document.getElementById('editor-ok').style.display = 'block';
+                loadProfiles();
+            } catch (e) { alert(e.message); }
         }
 
     </script>
