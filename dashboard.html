@@ -9,19 +9,200 @@
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
     <style>
-        /* --- UI COMPONENTS --- */
-        /* Modern Form Styling */
+        /* --- UI SYSTEM --- */
+        .editor-title {
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .editor-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 20px;
+            background: var(--blue);
+            border-radius: 4px;
+        }
+
+        /* BLOCS SÉPARÉS (Cards) */
         .editor-section {
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
-            /* Plus arrondi */
             padding: 24px;
             margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            /* Ombre plus douce */
         }
 
+        /* CHIPS OUTLOOK (Saisie Emails) */
+        .chip-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            min-height: 46px;
+            transition: all 0.2s;
+        }
+
+        .chip-container:focus-within {
+            background: #fff;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e0f2fe;
+            color: #0284c7;
+            /* Style Outlook (Bleu clair) */
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .chip .remove {
+            cursor: pointer;
+            opacity: 0.6;
+            font-size: 1.1em;
+            line-height: 1;
+        }
+
+        .chip .remove:hover {
+            opacity: 1;
+            color: #ef4444;
+        }
+
+        .chip-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            font-size: 0.95rem;
+            min-width: 120px;
+        }
+
+        /* TOGGLE IOS (Vert) */
+        .toggle-wrapper {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            border-radius: 34px;
+            transition: .3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-input:checked+.toggle-slider {
+            background-color: #22c55e;
+        }
+
+        .toggle-input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* CATEGORIES PILLS */
+        .cat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            cursor: grab;
+            transition: transform 0.1s;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .cat-pill:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .cat-pill .remove {
+            cursor: pointer;
+            opacity: 0.8;
+            margin-left: 6px;
+        }
+
+        .cat-pill.meeting {
+            background: #a855f7;
+        }
+
+        .cat-pill.action {
+            background: #f97316;
+        }
+
+        .cat-pill.info {
+            background: #3b82f6;
+        }
+
+        .cat-pill.pub {
+            background: #10b981;
+        }
+
+        /* Nouvelle */
+
+        .add-cat-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px dashed #cbd5e1;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-cat-btn:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+            background: #f0f9ff;
+        }
+
+        /* OTHER UTILS */
         .form-label {
             display: block;
             font-weight: 600;
@@ -51,7 +232,6 @@
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
-        /* Time Block Styling */
         .time-block {
             background: #f1f5f9;
             padding: 20px;
@@ -68,20 +248,17 @@
             font-weight: 700;
         }
 
-        /* Range Slider */
         input[type=range] {
             width: 100%;
             cursor: pointer;
             accent-color: var(--blue);
         }
 
-        /* --- DASHBOARD TABLE REWORK --- */
+        /* DASHBOARD TABLE */
         .dashboard-table {
             width: 100%;
             border-collapse: separate;
-            /* Nécessaire pour le border-radius sur les tr */
             border-spacing: 0 8px;
-            /* Espace entre les lignes */
             white-space: nowrap;
         }
 
@@ -110,7 +287,6 @@
 
         .dashboard-table td {
             padding: 20px 24px;
-            /* Plus d'espace vertical */
             vertical-align: middle;
         }
 
@@ -124,8 +300,7 @@
             border-bottom-right-radius: 16px;
         }
 
-
-        /* --- STATUS PILL --- */
+        /* STATUS PILL */
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -139,7 +314,6 @@
             border: 1px solid transparent;
         }
 
-        /* Status Active (Vert) */
         .status-pill.active {
             background: #dcfce7;
             color: #166534;
@@ -155,7 +329,6 @@
             border-radius: 50%;
         }
 
-        /* Status Inactive (Gris) */
         .status-pill.inactive {
             background: #f1f5f9;
             color: #64748b;
@@ -181,8 +354,7 @@
             cursor: wait;
         }
 
-
-        /* --- ACTION ICONS & TOOLTIPS --- */
+        /* ACTION ICONS & TOOLTIPS */
         .btn-icon {
             width: 36px;
             height: 36px;
@@ -195,7 +367,6 @@
             color: #64748b;
             transition: all 0.2s;
             position: relative;
-            /* Pour le tooltip */
         }
 
         .btn-icon:hover {
@@ -208,7 +379,6 @@
             color: #ef4444;
         }
 
-        /* Tooltip CSS simple */
         .btn-icon[data-tooltip]:hover::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -233,196 +403,7 @@
             }
         }
 
-
-        /* --- TOGGLE SWITCH (Réutilisation du style existant) --- */
-        /* S'assure que le style.css global est bien chargé pour la classe .toggle */
-
-
-        /* --- EMAIL CHIP INPUT (Outlook Style) --- */
-        .chip-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            background: #f8fafc;
-            min-height: 48px;
-            align-items: center;
-        }
-
-        .chip-container:focus-within {
-            background: #fff;
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #e2e8f0;
-            color: #334155;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .chip-remove {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1rem;
-            line-height: 1;
-            color: #64748b;
-        }
-
-        .chip-remove:hover {
-            color: #ef4444;
-        }
-
-        .chip-input {
-            flex: 1;
-            border: none;
-            outline: none;
-            background: transparent;
-            padding: 4px;
-            font-size: 0.95rem;
-            min-width: 120px;
-        }
-
-        /* Cache le vrai textarea */
-        .hidden-textarea {
-            display: none;
-        }
-
-        /* --- LIQUID TOGGLE (Style Switcher mais pour Checkbox) --- */
-        .glass-toggle-wrapper {
-            position: relative;
-            display: inline-block;
-            width: 56px;
-            height: 32px;
-        }
-
-        .glass-toggle-input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .glass-toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(203, 213, 225, 0.5);
-            /* Gris inactif glass */
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 99px;
-            transition: .4s;
-            backdrop-filter: blur(4px);
-        }
-
-        .glass-toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 24px;
-            width: 24px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            /* Rebond */
-        }
-
-        .glass-toggle-input:checked+.glass-toggle-slider {
-            background-color: #22c55e;
-            /* Vert Actif */
-            border-color: #4ade80;
-        }
-
-        .glass-toggle-input:checked+.glass-toggle-slider:before {
-            transform: translateX(24px);
-        }
-
-        /* --- CATEGORY CHIPS (Pillules Colorées) --- */
-        .category-manager {
-            margin-top: 16px;
-            padding: 16px;
-            background: rgba(248, 250, 252, 0.5);
-            border-radius: 12px;
-            border: 1px dashed #cbd5e1;
-        }
-
-        .cat-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: white;
-            cursor: default;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-
-        .cat-chip:hover {
-            transform: scale(1.05);
-        }
-
-        .cat-chip .remove {
-            cursor: pointer;
-            opacity: 0.7;
-        }
-
-        .cat-chip .remove:hover {
-            opacity: 1;
-        }
-
-        /* Couleurs Catégories */
-        .cat-meeting {
-            background: linear-gradient(135deg, #a855f7, #d946ef);
-        }
-
-        /* Violet */
-        .cat-action {
-            background: linear-gradient(135deg, #ef4444, #f97316);
-        }
-
-        /* Rouge/Orange */
-        .cat-info {
-            background: linear-gradient(135deg, #3b82f6, #0ea5e9);
-        }
-
-        /* Bleu */
-        .cat-custom {
-            background: linear-gradient(135deg, #10b981, #14b8a6);
-        }
-
-        /* Vert */
-
-        .add-cat-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.85rem;
-            color: var(--blue);
-            font-weight: 600;
-            cursor: pointer;
-            padding: 6px 12px;
-            border: 1px dashed var(--blue);
-            border-radius: 99px;
-            background: rgba(56, 189, 248, 0.1);
-            margin-top: 12px;
-        }
-
-        /* --- TOOLTIP HELPER (?) --- */
+        /* TOOLTIP HELPER (?) */
         .icon-help {
             display: inline-flex;
             align-items: center;
@@ -440,7 +421,7 @@
         }
 
         .icon-help:hover::after {
-            content: attr(data-tooltip);
+            content: attr(title);
             position: absolute;
             bottom: 100%;
             left: 50%;
@@ -458,53 +439,7 @@
             font-weight: normal;
         }
 
-        /* --- CATEGORIES PILLS (Light Style) --- */
-        .cat-pill {
-            display: inline-flex;
-            padding: 6px 16px;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: grab;
-            border: 1px solid transparent;
-            margin-right: 8px;
-            margin-bottom: 8px;
-            transition: transform 0.2s;
-        }
-
-        .cat-pill:active {
-            cursor: grabbing;
-            transform: scale(0.95);
-        }
-
-        /* Couleurs Spécifiques (Fond clair, Texte coloré) */
-        .cat-pill.meeting {
-            background: #f3e8ff;
-            color: #9333ea;
-            border-color: #d8b4fe;
-        }
-
-        .cat-pill.action {
-            background: #ffedd5;
-            color: #ea580c;
-            border-color: #fdba74;
-        }
-
-        .cat-pill.info {
-            background: #e0f2fe;
-            color: #0284c7;
-            border-color: #7dd3fc;
-        }
-
-        .cat-pill.pub {
-            background: #dcfce7;
-            color: #166534;
-            border-color: #86efac;
-        }
-
-        /* Nouvelle cat */
-
-        /* Modal Account Buttons */
+        /* ACCOUNT MODAL */
         .account-select-btn {
             width: 100%;
             padding: 12px;
@@ -604,159 +539,145 @@
 
                 <form id="form-editor">
                     <input type="hidden" id="f-account">
+
                     <div class="editor-section">
-                        <h3 class="editor-title">1. Configuration Principale</h3>
+                        <h3 class="editor-title">1. Informations</h3>
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div>
+                                <label class="form-label">Destinataire</label>
+                                <input type="email" id="f-recipient" class="form-input" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Heure d'envoi</label>
+                                <input type="time" id="f-schedule" class="form-input" value="08:00" required>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div>
-                                    <label class="form-label">Destinataire du récap</label>
-                                    <input type="email" id="f-recipient" class="form-input" required>
+                    <div class="editor-section">
+                        <h3 class="editor-title">2. Période Analysée</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div class="time-block">
+                                <h4>DÉBUT</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1"><label class="form-label" style="font-size:0.8rem">Jours
+                                            arrière</label><input type="number" id="f-days-start" class="form-input"
+                                            value="1"></div>
+                                    <div style="flex:1"><label class="form-label"
+                                            style="font-size:0.8rem">Heure</label><input type="time" id="f-time-start"
+                                            class="form-input" value="00:00"></div>
                                 </div>
-
-                                <div>
-                                    <label class="form-label">Heure d'envoi du mail</label>
-                                    <input type="time" id="f-schedule" class="form-input" required>
+                            </div>
+                            <div class="time-block">
+                                <h4>FIN</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1"><label class="form-label" style="font-size:0.8rem">Jours
+                                            arrière</label><input type="number" id="f-days-end" class="form-input"
+                                            value="0"></div>
+                                    <div style="flex:1"><label class="form-label"
+                                            style="font-size:0.8rem">Heure</label><input type="time" id="f-time-end"
+                                            class="form-input" value="23:59"></div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="editor-section">
-                            <h3 class="editor-title">2. Période d'Analyse</h3>
-                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                                <div class="time-block">
-                                    <h4>DÉBUT</h4>
-                                    <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
-                                            id="f-days-start" class="form-input" value="1"></div>
-                                    <div><label>Heure</label><input type="time" id="f-time-start" class="form-input"
-                                            value="00:00"></div>
+                    <div class="editor-section">
+                        <h3 class="editor-title">3. Filtres & Tri</h3>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <label class="form-label" style="margin:0;">Mode de Tri</label>
+                            <select id="f-sort" class="form-select" style="width:200px;" onchange="toggleCategoryUI()">
+                                <option value="date_desc">Chronologique</option>
+                                <option value="priority">Priorité IA</option>
+                                <option value="category">Par Catégorie</option>
+                            </select>
+                        </div>
+
+                        <div id="ui-categories" style="display:none; margin-bottom:24px;">
+                            <label class="form-label">Catégories actives (Drag & Drop)</label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div id="chips-categories" style="display:flex; flex-wrap:wrap;">
                                 </div>
-                                <div class="time-block">
-                                    <h4>FIN</h4>
-                                    <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
-                                            id="f-days-end" class="form-input" value="0"></div>
-                                    <div><label>Heure</label><input type="time" id="f-time-end" class="form-input"
-                                            value="23:59"></div>
-                                </div>
+                                <div class="add-cat-btn" title="Ajouter une catégorie"
+                                    onclick="alert('Bientôt disponible')">+</div>
                             </div>
                         </div>
 
-                        <div class="editor-section">
-                            <h3 class="editor-title">3. Filtres & IA</h3>
-
-                            <div
-                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding:12px; background:#f8fafc; border-radius:10px;">
-                                <div>
-                                    <div style="font-weight:600;">Ignorer les emails lus</div>
-                                    <div class="muted" style="font-size:0.85rem;">Seuls les non-lus seront résumés.
-                                    </div>
-                                </div>
-                                <label class="glass-toggle-wrapper">
-                                    <input type="checkbox" id="f-unread" class="glass-toggle-input">
-                                    <span class="glass-toggle-slider"></span>
-                                </label>
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
+                                    title="Seuls ces emails seront traités">?</span></label>
+                            <div class="chip-container" id="container-sender">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
                             </div>
+                            <textarea id="f-filtre-sender" style="display:none;"></textarea>
+                        </div>
 
-                            <div style="margin-bottom:20px;">
-                                <label class="form-label">Mode de Tri / Catégorisation</label>
-                                <select id="f-sort" class="form-select" onchange="toggleCategoryUI()">
-                                    <option value="date_desc">Chronologique (Classique)</option>
-                                    <option value="priority">Priorité IA (Urgent d'abord)</option>
-                                    <option value="category">Par Catégorie (Sujet)</option>
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
+                                    title="Toujours ignorer ces emails">?</span></label>
+                            <div class="chip-container" id="container-exclude">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                            </div>
+                            <textarea id="f-exclude-sender" style="display:none;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
+                                    title="Filtre strict sur CC">?</span></label>
+                            <div class="chip-container" id="container-cc">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                            </div>
+                            <textarea id="f-filtre-cc" style="display:none;"></textarea>
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #f1f5f9;">
+                            <span class="form-label" style="margin:0;">Ignorer les emails lus</span>
+                            <label class="toggle-wrapper">
+                                <input type="checkbox" id="f-unread" class="toggle-input">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3 class="editor-title">4. Audio & IA</h3>
+                        <div class="grid-2"
+                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:center;">
+                            <div>
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <span class="form-label" style="margin:0;">Générer Audio</span>
+                                    <label class="toggle-wrapper">
+                                        <input type="checkbox" id="f-audio" class="toggle-input" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <select id="f-voice" class="form-select">
+                                    <option value="alloy">Alloy</option>
+                                    <option value="echo">Echo</option>
+                                    <option value="fable">Fable</option>
+                                    <option value="onyx">Onyx</option>
+                                    <option value="nova">Nova</option>
+                                    <option value="shimmer">Shimmer</option>
                                 </select>
                             </div>
-
-                            <div id="ui-categories" class="category-manager" style="display:none;">
-                                <label class="form-label" style="margin-bottom:12px;">Catégories actives (Ordre de
-                                    priorité)</label>
-                                <div class="category-sort-area" id="chips-categories">
-                                    <!-- JS rendered -->
-                                </div>
-                            </div>
-
-                            <div class="grid-2"
-                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px;">
-                                <div>
-                                    <label class="form-label">
-                                        Whitelist (De qui ?)
-                                        <span class="icon-help"
-                                            data-tooltip="Si rempli, SEULS ces emails seront traités. Vide = Tout le monde.">?</span>
-                                    </label>
-                                    <div class="chip-container" id="container-sender">
-                                        <input type="text" class="chip-input" placeholder="Ajouter...">
-                                    </div>
-                                    <textarea id="f-filtre-sender" class="hidden-textarea"></textarea>
-                                </div>
-                                <div>
-                                    <label class="form-label">
-                                        Blacklist (Exclure)
-                                        <span class="icon-help"
-                                            data-tooltip="Ces emails seront totalement ignorés par l'IA.">?</span>
-                                    </label>
-                                    <div class="chip-container" id="container-exclude">
-                                        <input type="text" class="chip-input" placeholder="Ajouter...">
-                                    </div>
-                                    <textarea id="f-exclude-sender" class="hidden-textarea"></textarea>
-                                </div>
-                            </div>
-                            <div style="margin-top:24px;">
-                                <label class="form-label">
-                                    Seulement en Copie (CC)
-                                    <span class="icon-help"
-                                        data-tooltip="Ne garde l'email que si votre adresse est en Copie (CC).">?</span>
-                                </label>
-                                <div class="chip-container" id="container-cc">
-                                    <input type="text" class="chip-input" placeholder="Ajouter...">
-                                </div>
-                                <textarea id="f-filtre-cc" class="hidden-textarea"></textarea>
+                            <div>
+                                <label class="form-label">Vitesse : <span id="speed-val"
+                                        style="color:var(--blue)">1.0x</span></label>
+                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="editor-section">
-                            <h3 class="editor-title">4. Audio & Synthèse</h3>
-                            <div class="grid-2"
-                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-                                <div>
-                                    <div
-                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                        <span style="font-weight:600;">Générer Podcast Audio</span>
-                                        <label class="glass-toggle-wrapper">
-                                            <input type="checkbox" id="f-audio" class="glass-toggle-input" checked>
-                                            <span class="glass-toggle-slider"></span>
-                                        </label>
-                                    </div>
-                                    <label class="form-label">Voix IA</label>
-                                    <select id="f-voice" class="form-select">
-                                        <option value="alloy">Alloy (Neutre/Clair)</option>
-                                        <option value="echo">Echo (Mature)</option>
-                                        <option value="fable">Fable (Expressif)</option>
-                                        <option value="onyx">Onyx (Homme Profond)</option>
-                                        <option value="nova">Nova (Femme Dynamique)</option>
-                                        <option value="shimmer">Shimmer (Clair/Positif)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Vitesse : <span id="speed-val"
-                                            style="color:var(--blue)">1.0x</span></label>
-                                    <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                                        oninput="document.getElementById('speed-val').textContent = this.value + 'x'"
-                                        style="margin-bottom:16px;">
-
-                                    <label class="form-label">Langue du résumé</label>
-                                    <select id="f-lang" class="form-select">
-                                        <option value="fr">Français</option>
-                                        <option value="en">Anglais</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; justify-content:flex-end; gap:16px; margin-top:20px;">
-                            <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
-                            <button type="button" class="btn btn-primary" id="btn-save"
-                                onclick="saveProfile()">ENREGISTRER</button>
-                        </div>
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                        <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="btn-save"
+                            onclick="saveProfile()">ENREGISTRER</button>
+                    </div>
                 </form>
             </div>
 
@@ -799,8 +720,8 @@
                 emails.forEach(email => {
                     const chip = document.createElement('div');
                     chip.className = 'chip';
-                    chip.innerHTML = `<span>${escapeHtml(email)}</span><span class="chip-remove">×</span>`;
-                    chip.querySelector('.chip-remove').addEventListener('click', () => {
+                    chip.innerHTML = `<span>${escapeHtml(email)}</span><span class="remove">×</span>`;
+                    chip.querySelector('.remove').addEventListener('click', () => {
                         emails = emails.filter(e => e !== email);
                         update();
                     });
@@ -974,10 +895,11 @@
             closeAccountModal();
             showEditor(false); // Mode création
 
-            // Remplissage automatique
-            const idToUse = mailbox.email_account_id || mailbox.id;
-            document.getElementById('f-account').value = idToUse;
-            document.getElementById('f-recipient').value = mailbox.email; // Destinataire par défaut = Source
+            // CRUCIAL : Remplir l'ID du compte pour le backend
+            document.getElementById('f-account').value = mailbox.email_account_id || mailbox.id;
+
+            // Auto-fill Destinataire
+            document.getElementById('f-recipient').value = mailbox.email || "";
 
             // Titres
             document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
@@ -1057,6 +979,9 @@
             await showEditor(true);
             currentEditingId = id;
 
+            // Remplissage ID Compte (Caché mais vital)
+            document.getElementById('f-account').value = p.email_account_id;
+
             // Titres
             document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
             document.getElementById('btn-save').textContent = "METTRE À JOUR";
@@ -1065,9 +990,7 @@
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
             const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
-            // 1. Account & Recipient
-            // IMPORTANT : Le champ 'f-account' est un input hidden maintenant
-            if (p.email_account_id) document.getElementById('f-account').value = p.email_account_id;
+            // 1. Account (Already filled) & Recipient
             F.recipient.value = get(p.recap_recipient, '');
 
             // 2. Time Range
