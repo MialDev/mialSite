@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Audio & Podcast — mial</title>
+
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
+
+    <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#1fb6ff">
+
+    <style>
+        .audio-section {
+            padding-top: 140px;
+        }
+
+        .audio-intro {
+            max-width: 1000px;
+            margin: 0 auto 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .audio-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .audio-feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .audio-card {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .audio-card h3 {
+            font-size: 1.5rem;
+            color: var(--ink);
+        }
+
+        .audio-demo-player {
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .play-btn-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #fb7185;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+        }
+
+        .play-btn-circle:hover {
+            transform: scale(1.05);
+        }
+
+        .check-list,
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 16px;
+        }
+
+        .check-list li,
+        .checklist li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .check-list li::before,
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #fb7185;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="site-header" class="nav">
+        <div class="container nav-inner">
+            <a href="accueil.html" class="brand">
+                <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                    height="88">
+            </a>
+
+            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                <span class="nav-toggle-bar"></span>
+            </button>
+
+            <nav class="nav-links">
+                <a href="audio.html"><img src="assets/logos/instant.png" alt="mial Instant"
+                        style="height: 28px; vertical-align: middle;"></a>
+                <a href="crm.html"><img src="assets/logos/flow.png" alt="mial Flow"
+                        style="height: 28px; vertical-align: middle;"></a>
+                <a href="team.html">Équipe</a>
+                <a href="login.html">Connexion</a>
+                <a href="mailto:contact@mial.be" class="btn btn-primary mobile-cta">Demander une démo</a>
+            </nav>
+            <a href="mailto:contact@mial.be" class="btn btn-primary desktop-cta">Demander une démo</a>
+        </div>
+    </header>
+
+    <section class="section audio-section">
+        <div class="container">
+            <div class="audio-intro glass-static">
+                <h1>
+                    Transformez votre inbox en
+                    <span
+                        style="background: linear-gradient(45deg, #fb7185, #f43f5e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Podcast</span>
+                </h1>
+                <p class="lead">
+                    Chaque matin, mial analyse vos <strong>emails non lus et non traités de la veille</strong> pour vous
+                    préparer un résumé écrit et audio actionnable.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- User Snippet (Inserted 'Tel Quel' with branding adjustments) -->
+    <section id="home" class="section section-brief" style="padding-top: 0;">
+        <div class="container brief-layout">
+            <div class="brief-visual">
+                <!-- Reusing the exact visual from the Brief section -->
+                <div class="brief-card glass-jelly card-hover">
+                    <div class="brief-pill">Résumé du matin · 07h45</div>
+                    <div class="brief-email-list">
+                        <div class="brief-email">
+                            <span class="badge badge-client">Client</span>
+                            <div class="brief-email-text">
+                                <strong>Chantier Rue des Lilas</strong>
+                                <span>3 nouveaux messages, 1 date à confirmer</span>
+                            </div>
+                        </div>
+                        <div class="brief-email">
+                            <span class="badge badge-sav">SAV</span>
+                            <div class="brief-email-text">
+                                <strong>Suivi SAV fenêtres alu</strong>
+                                <span>Dernière réponse client à vérifier</span>
+                            </div>
+                        </div>
+                        <div class="brief-email">
+                            <span class="badge badge-fournisseur">Fournisseur</span>
+                            <div class="brief-email-text">
+                                <strong>Commande profilés & grue</strong>
+                                <span>Confirmation de livraison manquante</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="brief-audio">
+                        <div class="audio-badge" id="brief-audio-button" style="background:#fb7185;">
+                            <span class="audio-icon" id="brief-audio-icon" style="color:#fb7185;">▶</span>
+                            <div class="audio-text">
+                                <strong>Lecture du brief</strong>
+                                <span>2 min · résumé de vos emails</span>
+                            </div>
+                        </div>
+                        <p class="audio-caption">
+                            “Aujourd’hui : 5 chantiers à confirmer, 2 SAV prioritaires et 1 fournisseur en attente.”
+                        </p>
+                        <audio id="brief-audio" src="assets/audio/demo-brief.mp3"></audio>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brief-copy glass-static">
+                <h1>Commencez la journée avec un résumé, pas une boîte mail</h1>
+                <p>
+                    Chaque matin, mial prépare pour vous un <strong>résumé des emails importants</strong>
+                    et vous envoie un <strong>message vocal</strong> que vous pouvez écouter en voiture,
+                    en marchant ou pendant le café.
+                </p>
+                <ul class="brief-list">
+                    <li>Résumé des nouveaux emails filtrés selon vos règles (clients, urgences, projets…)</li>
+                    <li>Regroupement par client ou par dossier pour savoir <strong>qui attendre / qui relancer</strong>
+                    </li>
+                    <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook
+                    </li>
+                </ul>
+                <div class="brief-note">
+                    Vous choisissez l’heure, le canal, et ce que le résumé doit couvrir. mial instant s’adapte à votre
+                    manière
+                    de
+                    travailler.
+                </div>
+                <div class="cta-row" style="margin-top: 2rem;">
+                    <a href="mailto:contact@mial.be" class="btn btn-primary" data-track="cta_demo_mid"
+                        style="background:#fb7185; border-color:#fb7185;">Demander une démo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+
+            <div class="audio-feature-grid">
+                <!-- "Le Résumé Matinal" removed -->
+
+                <article class="audio-card glass-jelly reveal-fx">
+                    <h3>⚙️ Pilotage Intuitif</h3>
+                    <p class="muted">
+                        Gardez le contrôle total sur votre assistant via votre <strong>Espace Client</strong>.
+                    </p>
+                    <ul class="checklist">
+                        <li>Paramétrage complet dans l'onglet "Connexion"</li>
+                        <li>Choix de l'heure et de la voix du résumé</li>
+                        <li>Personnalisation des filtres de lecture</li>
+                    </ul>
+                    <div style="margin-top: auto;">
+                        <a href="login.html" class="btn btn-ghost w-full" style="font-size:0.9rem;">Accéder aux
+                            paramètres →</a>
+                    </div>
+                </article>
+            </div>
+
+            <div class="glass-static reveal-fx" style="padding:40px; text-align:center;">
+                <h2>Des voix ultra-réalistes</h2>
+                <p class="muted" style="max-width:600px; margin:16px auto 32px;">
+                    Choisissez la voix qui vous accompagne. mial utilise les dernières technologies de synthèse vocale
+                    pour un rendu indiscernable d'une voix humaine.
+                </p>
+
+                <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Alloy</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Echo</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Fable</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Onyx</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Nova</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small">🔊 Shimmer</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        </div>
+    </section>
+
+    <!-- Contact Callout (Restored) -->
+    <section class="section" id="contact">
+        <div class="container center">
+            <div class="glass-jelly" style="max-width:600px; margin:0 auto; padding:40px;">
+                <h2>Une question ?</h2>
+                <p class="muted" style="margin-bottom:24px;">Notre équipe est là pour vous aider à choisir la solution
+                    la plus
+                    adaptée.</p>
+                <a href="mailto:contact@mial.be" class="btn btn-ghost">Nous contacter</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div>
+                <div class="brand">
+                    <img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28"
+                        height="28">
+                    <span class="brand-text">mial</span>
+                </div>
+                <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données privées.</p>
+            </div>
+            <div>
+                <h4>Produit</h4>
+                <ul>
+                    <li><a href="accueil.html#how">Comment ça marche</a></li>
+                    <li><a href="audio.html">Instant</a></li>
+                    <li><a href="accueil.html#pricing">Tarifs</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Société</h4>
+                <ul>
+                    <li><a href="team.html">Équipe</a></li>
+                    <li><a href="security.html">Sécurité</a></li>
+                    <li><a href="mentions-legales.html">Mentions Légales</a></li>
+                    <li><a href="accueil.html#contact">Contact</a></li>
+                    <li class="muted">© <span id="year"></span> mial</li>
+                </ul>
+            </div>
+            <div class="right">
+                <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo mial"> </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Inline script removed as main.js handles brief-audio-button
+    </script>
+</body>
+
+</html>
