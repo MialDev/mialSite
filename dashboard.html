@@ -445,7 +445,6 @@
                 F.filterSender.value = ""; F.excludeSender.value = ""; F.filterCc.value = "";
                 F.audio.checked = true; F.voice.value = "onyx"; F.speed.value = 1.0; F.lang.value = "fr";
 
-                // Prefill Recipient if new
                 const uEmail = document.getElementById('user-email').textContent;
                 if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
             } else {
@@ -453,9 +452,7 @@
                 document.getElementById('btn-save').textContent = "METTRE À JOUR";
             }
 
-            // Load Accounts (Always reload to get fresh status)
-            const savedAccountId = F.account.value; // preserve if re-rendering? no, likely replacing.
-
+            // Load Accounts
             F.account.innerHTML = '<option value="">Chargement...</option>';
             try {
                 let res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
@@ -469,63 +466,77 @@
                     F.account.innerHTML = '<option value="">Aucune boîte connectée</option>';
                     return;
                 }
+
+                // Build Options
                 F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
 
-                // AUTO SELECT SINGLE for new profiles
-                if (!isEdit && list.length === 1) F.account.selectedIndex = 0;
+                // 1. Logic "Auto-select" check (Fix UX Bug #1)
+                // If only 1 option, forced selection regardless of mode (unless edit mode overwrites it later)
+                if (F.account.options.length === 1) {
+                    F.account.selectedIndex = 0;
+                }
 
-            } catch (e) { F.account.innerHTML = '<option value="">Erreur</option>'; }
+            } catch (e) {
+                console.error(e);
+                F.account.innerHTML = '<option value="">Erreur chargement</option>';
+            }
         };
 
         window.editProfile = async function (id) {
             const p = PROFILES_BY_ID.get(id);
-            if (!p) return;
+            console.log('Editing profile:', p); // Debug Rule
+
+            if (!p) {
+                console.error("Profile not found:", id);
+                return;
+            }
 
             await showEditor(true); // Open in Edit Mode
             currentEditingId = id;
 
-            // Helper to safe get
-            const get = (obj, key, def) => (obj && obj[key] !== undefined && obj[key] !== null) ? obj[key] : def;
-            const sub = (str) => (str || '').substring(0, 5);
+            // Safe helper
+            const get = (v, def) => (v !== undefined && v !== null) ? v : def;
+            const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
 
-            // 1. Account & Recipient
-            F.account.value = get(p, 'email_account_id', '');
-            F.recipient.value = get(p, 'recap_recipient', '');
+            // 2. Logic "Edit Mode" Population (Fix UX Bug #2)
 
-            // 2. Time Range (Handle both flat and nested if API varies)
-            F.daysStart.value = get(p, 'jours_arriere_start', 1);
-            F.daysEnd.value = get(p, 'jours_arriere_end', 0);
-            F.timeStart.value = sub(get(p, 'heure_debut', '00:00'));
-            F.timeEnd.value = sub(get(p, 'heure_fin', '23:59'));
+            // Account & Recipient
+            if (p.email_account_id) F.account.value = p.email_account_id;
+            F.recipient.value = get(p.recap_recipient, '');
 
-            // 3. Schedule (User reported nested object issue)
+            // Time Range
+            F.daysStart.value = get(p.jours_arriere_start, 1);
+            F.daysEnd.value = get(p.jours_arriere_end, 0);
+            F.timeStart.value = sub(p.heure_debut); // e.g. "00:00:00" -> "00:00"
+            F.timeEnd.value = sub(p.heure_fin);
+
+            // Schedule (Handle Nested)
             let sTime = p.schedule_time;
             if (p.schedule && p.schedule.time_of_day) sTime = p.schedule.time_of_day;
             F.schedule.value = sub(sTime || '08:00');
 
-            // 4. Filters
-            F.unread.checked = !!get(p, 'only_unread', false);
-            F.sort.value = get(p, 'sort_mode', 'date_desc');
+            // Filters
+            F.unread.checked = !!p.only_unread;
+            F.sort.value = p.sort_mode || 'date_desc';
 
-            const toCsv = (arr) => Array.isArray(arr) ? arr.join(', ') : '';
-            if (p.filters) {
-                // Check varied naming conventions
-                F.filterSender.value = toCsv(p.filters.sender || p.filters.whitelist || []);
-                F.excludeSender.value = toCsv(p.filters.exclude || p.filters.blacklist || []);
-                F.filterCc.value = toCsv(p.filters.cc || []);
-            } else {
-                F.filterSender.value = '';
-                F.excludeSender.value = '';
-                F.filterCc.value = '';
-            }
+            const filters = p.filters || {};
+            const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
-            // 5. Audio / AI
-            F.audio.checked = !!get(p, 'audio_actif', true);
-            F.voice.value = get(p, 'voice', 'onyx');
-            F.speed.value = get(p, 'speed', 1.0);
-            if (document.getElementById('speed-val'))
-                document.getElementById('speed-val').textContent = F.speed.value + 'x';
-            F.lang.value = get(p, 'language', 'fr');
+            // Map keys robustly (whitelist vs sender)
+            const senders = filters.sender || filters.whitelist || [];
+            const excludes = filters.exclude || filters.blacklist || [];
+            const ccs = filters.cc || [];
+
+            F.filterSender.value = toCsv(senders);
+            F.excludeSender.value = toCsv(excludes);
+            F.filterCc.value = toCsv(ccs);
+
+            // Audio / Settings
+            F.audio.checked = (p.audio_actif !== undefined) ? p.audio_actif : true;
+            F.voice.value = p.voice || 'alloy';
+            F.speed.value = p.speed || 1.0;
+            if (document.getElementById('speed-val')) document.getElementById('speed-val').textContent = F.speed.value + 'x';
+            F.lang.value = p.language || 'fr';
         };
 
         window.saveProfile = async function () {
