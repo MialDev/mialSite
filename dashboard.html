@@ -533,15 +533,18 @@
                     <input type="hidden" id="f-account">
 
                     <div class="editor-section">
-                        <h3 class="editor-title">1. Configuration Principale</h3>
+                        <h3 class="editor-title">1. Informations Principales</h3>
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div>
                                 <label class="form-label">Destinataire du récap</label>
-                                <input type="email" id="f-recipient" class="form-input" required>
+                                <input type="email" id="f-recipient" class="form-input" required
+                                    placeholder="votre@email.com">
+                                <div class="form-helper">L'adresse qui recevra le résumé.</div>
                             </div>
                             <div>
                                 <label class="form-label">Heure d'envoi</label>
-                                <input type="time" id="f-schedule" class="form-input" value="08:00" required>
+                                <input type="time" id="f-schedule" class="form-input" required>
+                                <div class="form-helper">Quand voulez-vous recevoir l'email ?</div>
                             </div>
                         </div>
                     </div>
@@ -550,56 +553,61 @@
                         <h3 class="editor-title">2. Période Analysée</h3>
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div class="time-block">
-                                <h4>DÉBUT</h4>
+                                <h4>DÉBUT (De quand ?)</h4>
                                 <div style="display:flex; gap:12px;">
-                                    <div style="flex:1"><label class="form-label" style="font-size:0.8rem">Jours
-                                            arrière</label><input type="number" id="f-days-start" class="form-input"
-                                            value="1"></div>
-                                    <div style="flex:1"><label class="form-label"
-                                            style="font-size:0.8rem">Heure</label><input type="time" id="f-time-start"
-                                            class="form-input" value="00:00"></div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                        <input type="number" id="f-days-start" class="form-input" value="1" min="0"
+                                            max="30">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="f-time-start" class="form-input" value="00:00">
+                                    </div>
                                 </div>
                             </div>
                             <div class="time-block">
-                                <h4>FIN</h4>
+                                <h4>FIN (Jusqu'à quand ?)</h4>
                                 <div style="display:flex; gap:12px;">
-                                    <div style="flex:1"><label class="form-label" style="font-size:0.8rem">Jours
-                                            arrière</label><input type="number" id="f-days-end" class="form-input"
-                                            value="0"></div>
-                                    <div style="flex:1"><label class="form-label"
-                                            style="font-size:0.8rem">Heure</label><input type="time" id="f-time-end"
-                                            class="form-input" value="23:59"></div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                        <input type="number" id="f-days-end" class="form-input" value="0" min="0"
+                                            max="30">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="editor-section">
-                        <h3 class="editor-title">3. Filtres & Tri</h3>
+                        <h3 class="editor-title">3. Filtres & Intelligence</h3>
 
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                             <label class="form-label" style="margin:0;">Mode de Tri</label>
-                            <select id="f-sort" class="form-select" style="width:200px;" onchange="toggleCategoryUI()">
-                                <option value="date_desc">Chronologique</option>
-                                <option value="priority">Priorité IA</option>
-                                <option value="category">Par Catégorie</option>
+                            <select id="f-sort" class="form-select" style="width:220px;" onchange="toggleCategoryUI()">
+                                <option value="date_desc">Chronologique (Classique)</option>
+                                <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                <option value="category">Par Catégorie (Sujet)</option>
                             </select>
                         </div>
 
-                        <div id="ui-categories" style="display:none; margin-bottom:24px;">
-                            <label class="form-label">Catégories actives (Drag & Drop)</label>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div id="chips-categories" style="display:flex; flex-wrap:wrap;">
+                        <div id="ui-categories" class="category-manager" style="display:none; margin-bottom:24px;">
+                            <label class="form-label">Catégories actives</label>
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <div id="chips-categories" style="display:flex; gap:8px;">
                                 </div>
-                                <div class="add-cat-btn" title="Ajouter une catégorie"
-                                    onclick="alert('Bientôt disponible')">+</div>
+                                <div class="add-cat-btn" onclick="alert('Fonctionnalité Bientôt Disponible')">＋</div>
                             </div>
                         </div>
 
                         <div style="margin-bottom:16px;">
                             <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
-                                    title="Seuls ces emails seront traités">?</span></label>
+                                    title="Seuls ces emails seront traités.">?</span></label>
                             <div class="chip-container" id="container-sender">
                                 <input type="text" class="chip-input" placeholder="Ajouter un email...">
                             </div>
@@ -608,7 +616,7 @@
 
                         <div style="margin-bottom:16px;">
                             <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
-                                    title="Toujours ignorer ces emails">?</span></label>
+                                    title="Toujours ignorer ces emails.">?</span></label>
                             <div class="chip-container" id="container-exclude">
                                 <input type="text" class="chip-input" placeholder="Ajouter un email...">
                             </div>
@@ -617,7 +625,7 @@
 
                         <div style="margin-bottom:16px;">
                             <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
-                                    title="Filtre strict sur CC">?</span></label>
+                                    title="Ne garde que les emails où vous êtes en CC.">?</span></label>
                             <div class="chip-container" id="container-cc">
                                 <input type="text" class="chip-input" placeholder="Ajouter un email...">
                             </div>
@@ -625,8 +633,11 @@
                         </div>
 
                         <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #f1f5f9;">
-                            <span class="form-label" style="margin:0;">Ignorer les emails lus</span>
+                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
+                            <div>
+                                <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
+                                <div class="muted" style="font-size:0.8rem;">Seuls les non-lus seront résumés.</div>
+                            </div>
                             <label class="toggle-wrapper">
                                 <input type="checkbox" id="f-unread" class="toggle-input">
                                 <span class="toggle-slider"></span>
@@ -635,44 +646,40 @@
                     </div>
 
                     <div class="editor-section">
-                        <h3 class="editor-title">4. Audio & IA</h3>
+                        <h3 class="editor-title">4. Audio & Synthèse</h3>
                         <div class="grid-2"
                             style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-                            <!-- Row 1 -->
-                            <div style="display:flex; justify-content:space-between; align-items:center; height:42px;">
-                                <span class="form-label" style="margin:0;">Générer Audio</span>
-                                <label class="toggle-wrapper">
-                                    <input type="checkbox" id="f-audio" class="toggle-input" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div style="display:flex; flex-direction:column; justify-content:center;">
-                                <label class="form-label" style="font-size:0.85rem; margin-bottom:4px;">Vitesse : <span
-                                        id="speed-val" style="color:var(--blue)">1.0x</span></label>
-                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
-                                    style="height:4px;">
-                            </div>
-
-                            <!-- Row 2 -->
                             <div>
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                    <span class="form-label" style="margin:0;">Générer Podcast Audio</span>
+                                    <label class="toggle-wrapper">
+                                        <input type="checkbox" id="f-audio" class="toggle-input" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
                                 <label class="form-label">Voix IA</label>
                                 <select id="f-voice" class="form-select">
-                                    <option value="alloy">Alloy</option>
-                                    <option value="echo">Echo</option>
-                                    <option value="fable">Fable</option>
-                                    <option value="onyx">Onyx</option>
-                                    <option value="nova">Nova</option>
-                                    <option value="shimmer">Shimmer</option>
+                                    <option value="alloy">Alloy (Neutre)</option>
+                                    <option value="echo">Echo (Masculin)</option>
+                                    <option value="fable">Fable (Anglais)</option>
+                                    <option value="onyx">Onyx (Profond)</option>
+                                    <option value="nova">Nova (Femme)</option>
+                                    <option value="shimmer">Shimmer (Clair)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="form-label">Langue du résumé <span class="icon-help"
-                                        title="Langue de lecture (Français, Anglais, ou Auto)">?</span></label>
+                                <label class="form-label">Vitesse : <span id="speed-val"
+                                        style="color:var(--blue)">1.0x</span></label>
+                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
+                                    style="margin-bottom:16px;">
+
+                                <label class="form-label">Langue du résumé</label>
                                 <select id="f-lang" class="form-select">
                                     <option value="fr">Français</option>
                                     <option value="en">Anglais</option>
-                                    <option value="auto">Langue de l'email</option>
+                                    <option value="auto">Détection Auto</option>
                                 </select>
                             </div>
                         </div>
@@ -896,15 +903,26 @@
         };
 
         // 3. Ouverture de l'éditeur (Création)
+        // Affiche l'éditeur pour une NOUVELLE création
         window.openEditorForCreation = function (mailbox) {
             closeAccountModal();
-            showEditor(false); // Mode création
+            showEditor(false); // Reset form
 
-            // CRUCIAL : Remplir l'ID du compte pour le backend
-            document.getElementById('f-account').value = mailbox.email_account_id || mailbox.id;
+            // DEBUG: Vérifie ce que l'API renvoie
+            console.log("Mailbox data:", mailbox);
 
-            // Auto-fill Destinataire
-            document.getElementById('f-recipient').value = mailbox.email || "";
+            // 1. Remplir l'ID du compte (Caché) -> Essentiel pour le Backend
+            // On cherche 'id' ou 'email_account_id' selon la structure renvoyée par /my/mailboxes
+            const accountId = mailbox.id || mailbox.email_account_id;
+            document.getElementById('f-account').value = accountId;
+
+            // 2. Remplir le Destinataire par défaut
+            // On cherche 'email_address' ou 'email'
+            const emailStr = mailbox.email_address || mailbox.email || "";
+            document.getElementById('f-recipient').value = emailStr;
+
+            // 3. Defaults forcés
+            document.getElementById('f-schedule').value = "08:00";
 
             // Titres
             document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
@@ -942,11 +960,13 @@
         };
 
         // 5. Gestion Drag & Drop des Catégories (Simple HTML5)
+        // Fonction de rendu des Catégories (Avec croix de suppression)
         function renderCategories() {
             const container = document.getElementById('chips-categories');
-            // If already rendered, do nothing, unless we want to reset order on new edit?
-            if (container.children.length > 0) return;
+            if (!container) return;
 
+            // Liste statique pour l'instant (meeting, action, info, pub)
+            // Idéalement, on les rendrait dynamiques, mais on commence simple
             const cats = [
                 { id: 'meeting', label: 'Meeting', class: 'meeting' },
                 { id: 'action', label: 'Action', class: 'action' },
@@ -955,75 +975,55 @@
             ];
 
             container.innerHTML = cats.map(c =>
-                `<div class="cat-pill ${c.class}" draggable="true" id="cat-${c.id}">${c.label}</div>`
+                `<div class="cat-pill ${c.class}" draggable="true" id="cat-${c.id}">
+                    ${c.label} <span class="remove" onclick="this.parentElement.style.opacity='0.2'">×</span>
+                </div>`
             ).join('');
-
-            // Add DnD listeners
-            let dragSrcEl = null;
-            container.querySelectorAll('.cat-pill').forEach(item => {
-                item.addEventListener('dragstart', (e) => { dragSrcEl = item; e.dataTransfer.effectAllowed = 'move'; item.style.opacity = '0.4'; });
-                item.addEventListener('dragend', (e) => { item.style.opacity = '1'; });
-                item.addEventListener('dragover', (e) => { e.preventDefault(); return false; });
-                item.addEventListener('drop', (e) => {
-                    e.stopPropagation();
-                    if (dragSrcEl !== item) {
-                        // Swap DOM elements
-                        const list = Array.from(container.children);
-                        const idxSrc = list.indexOf(dragSrcEl);
-                        const idxTgt = list.indexOf(item);
-                        if (idxSrc < idxTgt) item.after(dragSrcEl); else item.before(dragSrcEl);
-                    }
-                    return false;
-                });
-            });
         }
 
         window.editProfile = async function (id) {
             const p = PROFILES_BY_ID.get(id);
             if (!p) return;
+
             await showEditor(true);
             currentEditingId = id;
 
-            // Helper for 00:00 format
+            // 1. Remplir l'ID du compte (Toujours présent dans le profil)
+            document.getElementById('f-account').value = p.email_account_id;
+
+            // 2. Mapping Données
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
             const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
-            // 1. Core & Flat Mapping
-            document.getElementById('f-account').value = p.email_account_id;
-            F.recipient.value = p.recap_recipient || '';
+            document.getElementById('f-recipient').value = p.recap_recipient || '';
 
-            // 2. Schedule & Times
-            F.schedule.value = sub(p.schedule_time || '08:00');
-            F.timeStart.value = sub(p.heure_debut);
-            F.timeEnd.value = sub(p.heure_fin);
-            F.daysStart.value = (p.jours_arriere_start !== undefined) ? p.jours_arriere_start : 1;
-            F.daysEnd.value = (p.jours_arriere_end !== undefined) ? p.jours_arriere_end : 0;
+            // Horaires
+            document.getElementById('f-schedule').value = sub(p.schedule_time || '08:00');
+            document.getElementById('f-time-start').value = sub(p.heure_debut);
+            document.getElementById('f-time-end').value = sub(p.heure_fin);
+            document.getElementById('f-days-start').value = (p.jours_arriere_start !== undefined) ? p.jours_arriere_start : 1;
+            document.getElementById('f-days-end').value = (p.jours_arriere_end !== undefined) ? p.jours_arriere_end : 0;
 
-            // 3. Filters
-            F.unread.checked = !!p.only_unread;
-            F.sort.value = p.sort_mode || 'date_desc';
-
-            // 4. Filter Arrays (Flat JSON from backend)
-            const sender = p.filtre_sender || [];
-            const exclude = p.exclude_sender || [];
-            const cc = p.filtre_cc || [];
+            // Filtres
+            document.getElementById('f-unread').checked = !!p.only_unread;
+            document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
 
             // Load Chips
             const cSender = document.getElementById('container-sender');
             const cExclude = document.getElementById('container-exclude');
             const cCc = document.getElementById('container-cc');
-            if (cSender && cSender.loadEmails) cSender.loadEmails(toCsv(sender));
-            if (cExclude && cExclude.loadEmails) cExclude.loadEmails(toCsv(exclude));
-            if (cCc && cCc.loadEmails) cCc.loadEmails(toCsv(cc));
+            if (cSender) cSender.loadEmails(toCsv(p.filtre_sender || []));
+            if (cExclude) cExclude.loadEmails(toCsv(p.exclude_sender || []));
+            if (cCc) cCc.loadEmails(toCsv(p.filtre_cc || []));
 
-            // 5. Audio / Settings
-            F.audio.checked = (p.audio_actif !== undefined && p.audio_actif !== null) ? !!p.audio_actif : true;
-            F.voice.value = p.voice || 'alloy';
-            F.speed.value = p.speed || 1.0;
-            if (document.getElementById('speed-val')) document.getElementById('speed-val').textContent = F.speed.value + 'x';
-            F.lang.value = p.language || 'fr';
+            // Audio
+            document.getElementById('f-audio').checked = (p.audio_actif !== undefined) ? !!p.audio_actif : true;
+            document.getElementById('f-voice').value = p.voice || 'alloy';
+            document.getElementById('f-speed').value = p.speed || 1.0;
+            if (document.getElementById('speed-val')) document.getElementById('speed-val').textContent = (p.speed || 1.0) + 'x';
+            document.getElementById('f-lang').value = p.language || 'fr';
 
-            // Titles
+            // Titres & UI
             document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
             document.getElementById('btn-save').textContent = "METTRE À JOUR";
 
