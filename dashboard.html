@@ -421,8 +421,9 @@
             viewEditor.style.display = 'none';
             viewList.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Reset state
+            // Reset state & Form
             currentEditingId = null;
+            document.getElementById('form-editor').reset();
         };
 
         window.showEditor = async function (isEdit = false) {
@@ -434,6 +435,7 @@
             // UI Reset
             if (!isEdit) {
                 currentEditingId = null;
+                document.getElementById('form-editor').reset(); // Ensure clean slate
                 document.getElementById('editor-main-title').textContent = "Configurer un nouveau récap";
                 document.getElementById('btn-save').textContent = "CRÉER LE RÉCAP";
 
@@ -471,11 +473,13 @@
                 // Build Options
                 F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
 
-                // 1. Logic "Auto-select" check (Fix UX Bug #1)
-                // If only 1 option, forced selection regardless of mode (unless edit mode overwrites it later)
+                // Auto Select Single
                 if (F.account.options.length === 1) {
                     F.account.selectedIndex = 0;
                 }
+
+                // If Editing, re-select correct account logic is handled in editProfile after this runs? 
+                // No, editProfile awaits showEditor, so we can set value after.
 
             } catch (e) {
                 console.error(e);
@@ -485,45 +489,40 @@
 
         window.editProfile = async function (id) {
             const p = PROFILES_BY_ID.get(id);
-            console.log('Editing profile:', p); // Debug Rule
+            console.log('Editing profile:', p);
 
-            if (!p) {
-                console.error("Profile not found:", id);
-                return;
-            }
+            if (!p) return;
 
             await showEditor(true); // Open in Edit Mode
             currentEditingId = id;
 
-            // Safe helper
+            // Safe helpers
             const get = (v, def) => (v !== undefined && v !== null) ? v : def;
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
 
-            // 2. Logic "Edit Mode" Population (Fix UX Bug #2)
-
-            // Account & Recipient
+            // 1. Account & Recipient
             if (p.email_account_id) F.account.value = p.email_account_id;
             F.recipient.value = get(p.recap_recipient, '');
 
-            // Time Range
+            // 2. Time Range
             F.daysStart.value = get(p.jours_arriere_start, 1);
             F.daysEnd.value = get(p.jours_arriere_end, 0);
-            F.timeStart.value = sub(p.heure_debut); // e.g. "00:00:00" -> "00:00"
+            F.timeStart.value = sub(p.heure_debut);
             F.timeEnd.value = sub(p.heure_fin);
 
-            // Schedule (Handle Nested)
+            // 3. Schedule
             let sTime = p.schedule_time;
             if (p.schedule && p.schedule.time_of_day) sTime = p.schedule.time_of_day;
             F.schedule.value = sub(sTime || '08:00');
 
-            // Filters
+            // 4. Filters
             F.unread.checked = !!p.only_unread;
             F.sort.value = p.sort_mode || 'date_desc';
 
             const filters = p.filters || {};
             const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
-            // Map keys robustly (whitelist vs sender)
+            // Map keys robustly
             const senders = filters.sender || filters.whitelist || [];
             const excludes = filters.exclude || filters.blacklist || [];
             const ccs = filters.cc || [];
@@ -532,12 +531,34 @@
             F.excludeSender.value = toCsv(excludes);
             F.filterCc.value = toCsv(ccs);
 
-            // Audio / Settings
+            // 5. Audio / Settings
             F.audio.checked = (p.audio_actif !== undefined) ? p.audio_actif : true;
             F.voice.value = p.voice || 'alloy';
             F.speed.value = p.speed || 1.0;
             if (document.getElementById('speed-val')) document.getElementById('speed-val').textContent = F.speed.value + 'x';
             F.lang.value = p.language || 'fr';
+        };
+
+        window.deleteProfile = async function (id) {
+            if (!confirm("Voulez-vous vraiment supprimer ce profil de récapitulatif ?\nCette action est irréversible.")) return;
+
+            const row = document.querySelector(`button[onclick="deleteProfile('${id}')"]`).closest('tr');
+            if (row) row.style.opacity = '0.5';
+
+            try {
+                const res = await fetch(apiUrl(`/my/profiles/${id}`), {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+
+                // Success
+                loadProfiles(); // Refresh list
+
+            } catch (e) {
+                alert("Erreur suppression: " + e.message);
+                if (row) row.style.opacity = '1';
+            }
         };
 
         window.saveProfile = async function () {
@@ -578,6 +599,12 @@
                 const url = isEdit ? `/my/profiles/${currentEditingId}` : '/my/profiles';
                 const method = isEdit ? 'PUT' : 'POST';
 
+                // Change Text to Loading
+                const btn = document.getElementById('btn-save');
+                const originalText = btn.textContent;
+                btn.textContent = "EN COURS...";
+                btn.disabled = true;
+
                 const res = await fetch(apiUrl(url), {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
@@ -588,9 +615,18 @@
                 if (!res.ok) throw new Error(await res.text());
 
                 showMsg(isEdit ? "Modifications enregistrées !" : "Profil créé !", "green");
-                setTimeout(() => { hideEditor(); loadProfiles(); }, 1000);
+                setTimeout(() => {
+                    hideEditor();
+                    loadProfiles();
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 1000);
 
-            } catch (e) { showMsg("Erreur: " + e.message, "red"); }
+            } catch (e) {
+                showMsg("Erreur: " + e.message, "red");
+                document.getElementById('btn-save').disabled = false;
+                document.getElementById('btn-save').textContent = isEdit ? "METTRE À JOUR" : "CRÉER LE RÉCAP";
+            }
         };
 
         function showMsg(txt, col) {
@@ -619,20 +655,27 @@
                         `<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>` :
                         `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
 
-                    // Format Timestamps
+                    // Format Timestamps & Display
                     const tStart = (p.heure_debut || '00:00:00').substring(0, 5);
                     const tEnd = (p.heure_fin || '23:59:00').substring(0, 5);
                     const tSend = (p.schedule && p.schedule.time_of_day) ? p.schedule.time_of_day.substring(0, 5) : (p.schedule_time || '??:??').substring(0, 5);
 
+                    const jStart = (p.jours_arriere_start !== undefined) ? p.jours_arriere_start : 1;
+                    const jEnd = (p.jours_arriere_end !== undefined) ? p.jours_arriere_end : 0;
+
+                    // Column Content
+                    // Plage Horaire: "J-1 00:00 -> J-0 23:59"
+                    const plage = `<span class="muted" style="font-size:0.85rem">J-${jStart}</span> <strong>${tStart}</strong> <span class="muted">à</span> <span class="muted" style="font-size:0.85rem">J-${jEnd}</span> <strong>${tEnd}</strong>`;
+
                     return `<tr>
                         <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
-                        <td>${tStart} → ${tEnd}</td>
+                        <td>${plage}</td>
                         <td style="font-weight:600; color:#475569;">${tSend}</td>
                         <td>${activeBadge}</td>
                         <td style="text-align:right;">
                              <button class="btn btn-ghost btn-small" style="color:var(--primary); font-weight:600; margin-right:8px;" onclick="editProfile('${p.id}')">EDITER</button>
-                             <button class="btn btn-ghost btn-small" style="color:#cbd5e1;" onclick="alert('Delete: To be implemented')">🗑</button>
+                             <button class="btn btn-ghost btn-small" style="color:#ef4444;" onclick="deleteProfile('${p.id}')">🗑</button>
                         </td>
                     </tr>`;
                 }).join('');
