@@ -421,6 +421,108 @@
             background: rgba(56, 189, 248, 0.1);
             margin-top: 12px;
         }
+
+        /* --- TOOLTIP HELPER (?) --- */
+        .icon-help {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 6px;
+            position: relative;
+        }
+
+        .icon-help:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            width: max-content;
+            max-width: 250px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+            font-weight: normal;
+        }
+
+        /* --- CATEGORIES PILLS (Light Style) --- */
+        .cat-pill {
+            display: inline-flex;
+            padding: 6px 16px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: grab;
+            border: 1px solid transparent;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: transform 0.2s;
+        }
+
+        .cat-pill:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        /* Couleurs Spécifiques (Fond clair, Texte coloré) */
+        .cat-pill.meeting {
+            background: #f3e8ff;
+            color: #9333ea;
+            border-color: #d8b4fe;
+        }
+
+        .cat-pill.action {
+            background: #ffedd5;
+            color: #ea580c;
+            border-color: #fdba74;
+        }
+
+        .cat-pill.info {
+            background: #e0f2fe;
+            color: #0284c7;
+            border-color: #7dd3fc;
+        }
+
+        .cat-pill.pub {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        /* Nouvelle cat */
+
+        /* Modal Account Buttons */
+        .account-select-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .account-select-btn:hover {
+            border-color: var(--blue);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+        }
     </style>
 </head>
 
@@ -456,7 +558,7 @@
                                 style="font-weight:600; color:var(--ink);">...</span></p>
                     </div>
                     <div style="display:flex; gap:12px;">
-                        <button class="btn btn-primary btn-small" onclick="showEditor()">＋ Configurer un nouveau
+                        <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un nouveau
                             récap</button>
                         <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
                     </div>
@@ -496,151 +598,165 @@
             <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                    <h2 style="margin:0;" id="editor-main-title">Éditeur de Profil</h2>
+                    <h2 style="margin:0;" id="editor-main-title">...</h2>
                     <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
                 </div>
 
                 <form id="form-editor">
+                    <input type="hidden" id="f-account">
                     <div class="editor-section">
                         <h3 class="editor-title">1. Configuration Principale</h3>
                         <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div id="group-account-select">
-                                <label class="form-label">Compte Source</label>
-                                <select id="f-account" class="form-select" required></select>
-                            </div>
-
                             <div>
-                                <label class="form-label">Destinataire du récap</label>
-                                <input type="email" id="f-recipient" class="form-input" required>
-                            </div>
 
-                            <div>
-                                <label class="form-label">Heure d'envoi du mail</label>
-                                <input type="time" id="f-schedule" class="form-input" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">2. Période d'Analyse</h3>
-                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div class="time-block">
-                                <h4>DÉBUT</h4>
-                                <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
-                                        id="f-days-start" class="form-input" value="1"></div>
-                                <div><label>Heure</label><input type="time" id="f-time-start" class="form-input"
-                                        value="00:00"></div>
-                            </div>
-                            <div class="time-block">
-                                <h4>FIN</h4>
-                                <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
-                                        id="f-days-end" class="form-input" value="0"></div>
-                                <div><label>Heure</label><input type="time" id="f-time-end" class="form-input"
-                                        value="23:59"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">3. Filtres & IA</h3>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding:12px; background:#f8fafc; border-radius:10px;">
-                            <div>
-                                <div style="font-weight:600;">Ignorer les emails lus</div>
-                                <div class="muted" style="font-size:0.85rem;">Seuls les non-lus seront résumés.</div>
-                            </div>
-                            <label class="glass-toggle-wrapper">
-                                <input type="checkbox" id="f-unread" class="glass-toggle-input">
-                                <span class="glass-toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div style="margin-bottom:20px;">
-                            <label class="form-label">Mode de Tri / Catégorisation</label>
-                            <select id="f-sort" class="form-select" onchange="toggleCategoryUI()">
-                                <option value="date_desc">Chronologique (Classique)</option>
-                                <option value="priority">Priorité IA (Urgent d'abord)</option>
-                                <option value="category">Par Catégorie (Sujet)</option>
-                            </select>
-                        </div>
-
-                        <div id="ui-categories" class="category-manager" style="display:none;">
-                            <label class="form-label" style="margin-bottom:12px;">Catégories actives
-                                (Visualisation)</label>
-                            <div id="chips-categories" style="display:flex; flex-wrap:wrap; gap:8px;">
-                                <span class="cat-chip cat-meeting">Meeting <span class="remove">×</span></span>
-                                <span class="cat-chip cat-action">Action <span class="remove">×</span></span>
-                                <span class="cat-chip cat-info">Info <span class="remove">×</span></span>
-                            </div>
-                            <div class="add-cat-btn"
-                                onclick="alert('Fonctionnalité Custom Catégorie bientôt disponible !')">
-                                ＋ Créer une catégorie perso
-                            </div>
-                        </div>
-
-                        <div class="grid-2"
-                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px;">
-                            <div>
-                                <label class="form-label">Whitelist (De qui ?)</label>
-                                <div class="chip-container" id="container-sender">
-                                    <input type="text" class="chip-input" placeholder="Ajouter...">
+                                <div>
+                                    <label class="form-label">Destinataire du récap</label>
+                                    <input type="email" id="f-recipient" class="form-input" required>
                                 </div>
-                                <textarea id="f-filtre-sender" class="hidden-textarea"></textarea>
-                            </div>
-                            <div>
-                                <label class="form-label">Blacklist (Exclure)</label>
-                                <div class="chip-container" id="container-exclude">
-                                    <input type="text" class="chip-input" placeholder="Ajouter...">
+
+                                <div>
+                                    <label class="form-label">Heure d'envoi du mail</label>
+                                    <input type="time" id="f-schedule" class="form-input" required>
                                 </div>
-                                <textarea id="f-exclude-sender" class="hidden-textarea"></textarea>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="editor-section">
-                        <h3 class="editor-title">4. Audio & Synthèse</h3>
-                        <div class="grid-2"
-                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-                            <div>
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                    <span style="font-weight:600;">Générer Podcast Audio</span>
-                                    <label class="glass-toggle-wrapper">
-                                        <input type="checkbox" id="f-audio" class="glass-toggle-input" checked>
-                                        <span class="glass-toggle-slider"></span>
+                        <div class="editor-section">
+                            <h3 class="editor-title">2. Période d'Analyse</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div class="time-block">
+                                    <h4>DÉBUT</h4>
+                                    <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
+                                            id="f-days-start" class="form-input" value="1"></div>
+                                    <div><label>Heure</label><input type="time" id="f-time-start" class="form-input"
+                                            value="00:00"></div>
+                                </div>
+                                <div class="time-block">
+                                    <h4>FIN</h4>
+                                    <div style="margin-bottom:8px"><label>Jours arrière</label><input type="number"
+                                            id="f-days-end" class="form-input" value="0"></div>
+                                    <div><label>Heure</label><input type="time" id="f-time-end" class="form-input"
+                                            value="23:59"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">3. Filtres & IA</h3>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding:12px; background:#f8fafc; border-radius:10px;">
+                                <div>
+                                    <div style="font-weight:600;">Ignorer les emails lus</div>
+                                    <div class="muted" style="font-size:0.85rem;">Seuls les non-lus seront résumés.
+                                    </div>
+                                </div>
+                                <label class="glass-toggle-wrapper">
+                                    <input type="checkbox" id="f-unread" class="glass-toggle-input">
+                                    <span class="glass-toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div style="margin-bottom:20px;">
+                                <label class="form-label">Mode de Tri / Catégorisation</label>
+                                <select id="f-sort" class="form-select" onchange="toggleCategoryUI()">
+                                    <option value="date_desc">Chronologique (Classique)</option>
+                                    <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                    <option value="category">Par Catégorie (Sujet)</option>
+                                </select>
+                            </div>
+
+                            <div id="ui-categories" class="category-manager" style="display:none;">
+                                <label class="form-label" style="margin-bottom:12px;">Catégories actives (Ordre de
+                                    priorité)</label>
+                                <div class="category-sort-area" id="chips-categories">
+                                    <!-- JS rendered -->
+                                </div>
+                            </div>
+
+                            <div class="grid-2"
+                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px;">
+                                <div>
+                                    <label class="form-label">
+                                        Whitelist (De qui ?)
+                                        <span class="icon-help"
+                                            data-tooltip="Si rempli, SEULS ces emails seront traités. Vide = Tout le monde.">?</span>
                                     </label>
+                                    <div class="chip-container" id="container-sender">
+                                        <input type="text" class="chip-input" placeholder="Ajouter...">
+                                    </div>
+                                    <textarea id="f-filtre-sender" class="hidden-textarea"></textarea>
                                 </div>
-                                <label class="form-label">Voix IA</label>
-                                <select id="f-voice" class="form-select">
-                                    <option value="onyx">Onyx (Homme Profond)</option>
-                                    <option value="alloy">Alloy (Neutre)</option>
-                                    <option value="nova">Nova (Femme Dynamique)</option>
-                                    <option value="shimmer">Shimmer (Clair)</option>
-                                </select>
+                                <div>
+                                    <label class="form-label">
+                                        Blacklist (Exclure)
+                                        <span class="icon-help"
+                                            data-tooltip="Ces emails seront totalement ignorés par l'IA.">?</span>
+                                    </label>
+                                    <div class="chip-container" id="container-exclude">
+                                        <input type="text" class="chip-input" placeholder="Ajouter...">
+                                    </div>
+                                    <textarea id="f-exclude-sender" class="hidden-textarea"></textarea>
+                                </div>
                             </div>
-
-                            <div>
-                                <label class="form-label">Vitesse : <span id="speed-val"
-                                        style="color:var(--blue)">1.0x</span></label>
-                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                                    oninput="document.getElementById('speed-val').textContent = this.value + 'x'"
-                                    style="margin-bottom:16px;">
-
-                                <label class="form-label">Langue du résumé</label>
-                                <select id="f-lang" class="form-select">
-                                    <option value="fr">Français</option>
-                                    <option value="en">Anglais</option>
-                                </select>
+                            <div style="margin-top:24px;">
+                                <label class="form-label">
+                                    Seulement en Copie (CC)
+                                    <span class="icon-help"
+                                        data-tooltip="Ne garde l'email que si votre adresse est en Copie (CC).">?</span>
+                                </label>
+                                <div class="chip-container" id="container-cc">
+                                    <input type="text" class="chip-input" placeholder="Ajouter...">
+                                </div>
+                                <textarea id="f-filtre-cc" class="hidden-textarea"></textarea>
                             </div>
                         </div>
-                    </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:16px; margin-top:20px;">
-                        <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
-                        <button type="button" class="btn btn-primary" id="btn-save"
-                            onclick="saveProfile()">ENREGISTRER</button>
-                    </div>
+                        <div class="editor-section">
+                            <h3 class="editor-title">4. Audio & Synthèse</h3>
+                            <div class="grid-2"
+                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+                                <div>
+                                    <div
+                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                        <span style="font-weight:600;">Générer Podcast Audio</span>
+                                        <label class="glass-toggle-wrapper">
+                                            <input type="checkbox" id="f-audio" class="glass-toggle-input" checked>
+                                            <span class="glass-toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <label class="form-label">Voix IA</label>
+                                    <select id="f-voice" class="form-select">
+                                        <option value="alloy">Alloy (Neutre/Clair)</option>
+                                        <option value="echo">Echo (Mature)</option>
+                                        <option value="fable">Fable (Expressif)</option>
+                                        <option value="onyx">Onyx (Homme Profond)</option>
+                                        <option value="nova">Nova (Femme Dynamique)</option>
+                                        <option value="shimmer">Shimmer (Clair/Positif)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">Vitesse : <span id="speed-val"
+                                            style="color:var(--blue)">1.0x</span></label>
+                                    <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                        oninput="document.getElementById('speed-val').textContent = this.value + 'x'"
+                                        style="margin-bottom:16px;">
+
+                                    <label class="form-label">Langue du résumé</label>
+                                    <select id="f-lang" class="form-select">
+                                        <option value="fr">Français</option>
+                                        <option value="en">Anglais</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:16px; margin-top:20px;">
+                            <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
+                            <button type="button" class="btn btn-primary" id="btn-save"
+                                onclick="saveProfile()">ENREGISTRER</button>
+                        </div>
                 </form>
             </div>
 
@@ -660,6 +776,7 @@
 
         let PROFILES_BY_ID = new Map();
         let currentEditingId = null;
+        let USER_MAILBOXES = []; // Stocke les boites chargées
 
         // --- ICONS SVG (Heroicons) ---
         const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`;
@@ -734,26 +851,30 @@
             return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
         };
 
-        // 1. Gérer l'affichage conditionnel des Catégories
-        window.toggleCategoryUI = function () {
-            const sortVal = document.getElementById('f-sort').value;
-            const ui = document.getElementById('ui-categories');
-            if (sortVal === 'category') {
-                ui.style.display = 'block';
-                // Animation simple d'entrée
-                ui.style.opacity = '0';
-                setTimeout(() => ui.style.opacity = '1', 10);
-            } else {
-                ui.style.display = 'none';
-            }
-        };
-
+        // 1. Initialisation : Charge les boites au démarrage (silencieusement)
+        async function initMailboxes() {
+            try {
+                const res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
+                if (res.ok) {
+                    let data = await res.json();
+                    // Si c'est un objet unique (cas rare), on le met dans un tableau
+                    if (Array.isArray(data)) USER_MAILBOXES = data;
+                    else if (data && data.connected) USER_MAILBOXES = [data];
+                    else if (data && !Array.isArray(data) && data.error) USER_MAILBOXES = []; // Error case
+                    else if (data) USER_MAILBOXES = [data]; // Fallback
+                }
+            } catch (e) { console.error("Err mailboxes", e); }
+        }
 
         // --- MAIN LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             // Initialize Chip Inputs
             setupChipInput('container-sender', 'f-filtre-sender');
             setupChipInput('container-exclude', 'f-exclude-sender');
+            setupChipInput('container-cc', 'f-filtre-cc');
+
+            // Init Mailboxes silently
+            initMailboxes();
 
             // Auth Check
             try {
@@ -789,10 +910,26 @@
             sort: document.getElementById('f-sort'),
             filterSender: document.getElementById('f-filtre-sender'), // Hidden textareas
             excludeSender: document.getElementById('f-exclude-sender'),
+            filterCc: document.getElementById('f-filtre-cc'),
             audio: document.getElementById('f-audio'),
             voice: document.getElementById('f-voice'),
             speed: document.getElementById('f-speed'),
             lang: document.getElementById('f-lang')
+        };
+
+        // 1. Gérer l'affichage conditionnel des Catégories
+        window.toggleCategoryUI = function () {
+            const sortVal = document.getElementById('f-sort').value;
+            const ui = document.getElementById('ui-categories');
+            if (sortVal === 'category') {
+                ui.style.display = 'block';
+                // Animation simple d'entrée
+                ui.style.opacity = '0';
+                setTimeout(() => ui.style.opacity = '1', 10);
+                renderCategories(); // Ensure sorting is active
+            } else {
+                ui.style.display = 'none';
+            }
         };
 
         window.hideEditor = function () {
@@ -807,33 +944,58 @@
             if (document.getElementById('container-cc').clear) document.getElementById('container-cc').clear();
         };
 
+        // 2. Gestionnaire du Bouton "+ Configurer"
+        window.handleCreateClick = function () {
+            if (USER_MAILBOXES.length === 0) {
+                alert("Aucune boîte mail connectée.");
+                return;
+            }
+            // Si 1 seule boite -> On ouvre direct
+            if (USER_MAILBOXES.length === 1) {
+                openEditorForCreation(USER_MAILBOXES[0]);
+            } else {
+                // Sinon -> Ouvre la modale
+                const list = document.getElementById('account-select-list');
+                list.innerHTML = USER_MAILBOXES.map(mb =>
+                    `<button class="account-select-btn" onclick='openEditorForCreation(${JSON.stringify(mb)})'>
+                        <span>${escapeHtml(mb.email)}</span> <span>→</span>
+                    </button>`
+                ).join('');
+                document.getElementById('modal-account-select').style.display = 'flex';
+            }
+        };
+
+        window.closeAccountModal = function () {
+            document.getElementById('modal-account-select').style.display = 'none';
+        };
+
+        // 3. Ouverture de l'éditeur (Création)
+        window.openEditorForCreation = function (mailbox) {
+            closeAccountModal();
+            showEditor(false); // Mode création
+
+            // Remplissage automatique
+            const idToUse = mailbox.email_account_id || mailbox.id;
+            document.getElementById('f-account').value = idToUse;
+            document.getElementById('f-recipient').value = mailbox.email; // Destinataire par défaut = Source
+
+            // Titres
+            document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
+            document.getElementById('btn-save').textContent = "CRÉER L'AUTOMATISATION";
+        };
+
         window.showEditor = async function (isEdit = false) {
             viewList.style.display = 'none';
             viewEditor.style.display = 'block';
             editorMsg.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // GESTION VISIBILITÉ COMPTE
-            const groupAccount = document.getElementById('group-account-select');
-            if (isEdit) {
-                groupAccount.style.display = 'none'; // On cache en mode édition
-                document.getElementById('editor-main-title').textContent = "Modifier le Profil";
-                document.getElementById('btn-save').textContent = "METTRE À JOUR";
-            } else {
-                groupAccount.style.display = 'block'; // On affiche en création
-                document.getElementById('editor-main-title').textContent = "Configurer un nouveau récap";
-                document.getElementById('btn-save').textContent = "CRÉER LE RÉCAP";
-
-                // Defaults
-                // ... (reset values if creating new)
-            }
-
             if (!isEdit) {
                 currentEditingId = null;
                 document.getElementById('form-editor').reset();
                 if (document.getElementById('container-sender').clear) document.getElementById('container-sender').clear();
                 if (document.getElementById('container-exclude').clear) document.getElementById('container-exclude').clear();
-                // CC not in new form per user request, removing logic
+                if (document.getElementById('container-cc').clear) document.getElementById('container-cc').clear();
 
                 // Defaults
                 F.schedule.value = "08:00";
@@ -844,29 +1006,50 @@
 
                 // Toggle Category UI reset
                 toggleCategoryUI();
+                renderCategories(); // Init Defaults
 
-                const uEmail = document.getElementById('user-email').textContent;
-                if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
+                // Note: f-recipient is filled by openEditorForCreation
             }
 
-            // Load Accounts
-            F.account.innerHTML = '<option value="">Chargement...</option>';
-            try {
-                let res = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
-                if (res.status === 404) res = await fetch(apiUrl('/mailbox/status'), { credentials: 'include' });
-
-                if (!res.ok) throw new Error("Erreur");
-                let data = await res.json();
-                const list = Array.isArray(data) ? data : (data.connected ? [data] : []);
-
-                if (list.length === 0) {
-                    F.account.innerHTML = '<option value="">Aucune boîte connectée</option>';
-                    return;
-                }
-                F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
-                if (F.account.options.length === 1) F.account.selectedIndex = 0;
-            } catch (e) { F.account.innerHTML = '<option value="">Erreur chargement</option>'; }
+            // Note: f-account is handled by openEditorForCreation or editProfile
         };
+
+        // 5. Gestion Drag & Drop des Catégories (Simple HTML5)
+        function renderCategories() {
+            const container = document.getElementById('chips-categories');
+            // If already rendered, do nothing, unless we want to reset order on new edit?
+            if (container.children.length > 0) return;
+
+            const cats = [
+                { id: 'meeting', label: 'Meeting', class: 'meeting' },
+                { id: 'action', label: 'Action', class: 'action' },
+                { id: 'info', label: 'Info', class: 'info' },
+                { id: 'pub', label: 'Pub', class: 'pub' }
+            ];
+
+            container.innerHTML = cats.map(c =>
+                `<div class="cat-pill ${c.class}" draggable="true" id="cat-${c.id}">${c.label}</div>`
+            ).join('');
+
+            // Add DnD listeners
+            let dragSrcEl = null;
+            container.querySelectorAll('.cat-pill').forEach(item => {
+                item.addEventListener('dragstart', (e) => { dragSrcEl = item; e.dataTransfer.effectAllowed = 'move'; item.style.opacity = '0.4'; });
+                item.addEventListener('dragend', (e) => { item.style.opacity = '1'; });
+                item.addEventListener('dragover', (e) => { e.preventDefault(); return false; });
+                item.addEventListener('drop', (e) => {
+                    e.stopPropagation();
+                    if (dragSrcEl !== item) {
+                        // Swap DOM elements
+                        const list = Array.from(container.children);
+                        const idxSrc = list.indexOf(dragSrcEl);
+                        const idxTgt = list.indexOf(item);
+                        if (idxSrc < idxTgt) item.after(dragSrcEl); else item.before(dragSrcEl);
+                    }
+                    return false;
+                });
+            });
+        }
 
         window.editProfile = async function (id) {
             const p = PROFILES_BY_ID.get(id);
@@ -874,12 +1057,17 @@
             await showEditor(true);
             currentEditingId = id;
 
+            // Titres
+            document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
+            document.getElementById('btn-save').textContent = "METTRE À JOUR";
+
             const get = (v, def) => (v !== undefined && v !== null) ? v : def;
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
             const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
             // 1. Account & Recipient
-            if (p.email_account_id) F.account.value = p.email_account_id;
+            // IMPORTANT : Le champ 'f-account' est un input hidden maintenant
+            if (p.email_account_id) document.getElementById('f-account').value = p.email_account_id;
             F.recipient.value = get(p.recap_recipient, '');
 
             // 2. Time Range
@@ -898,26 +1086,31 @@
             F.unread.checked = !!p.only_unread;
             F.sort.value = p.sort_mode || 'date_desc';
             toggleCategoryUI(); // UPDATE UI
+            renderCategories(); // Init DnD
 
             // Handle nested vs flat filters
             // The object might be flat on the profile or in a filters object
-            let sender = [], exclude = []; // CC removed
+            let sender = [], exclude = [], cc = [];
 
             if (p.filters) {
                 sender = p.filters.sender || [];
                 exclude = p.filters.exclude || [];
+                cc = p.filters.cc || [];
             } else {
                 // Try reading flat properties if they exist (legacy or flat stricture)
                 if (p.filtre_sender) sender = p.filtre_sender;
                 if (p.exclude_sender) exclude = p.exclude_sender;
+                if (p.filtre_cc) cc = p.filtre_cc;
             }
 
             // LOAD CHIPS DATA
             const cSender = document.getElementById('container-sender');
             const cExclude = document.getElementById('container-exclude');
+            const cCc = document.getElementById('container-cc');
 
             if (cSender && cSender.loadEmails) cSender.loadEmails(toCsv(sender));
             if (cExclude && cExclude.loadEmails) cExclude.loadEmails(toCsv(exclude));
+            if (cCc && cCc.loadEmails) cCc.loadEmails(toCsv(cc));
 
             // 5. Audio / Settings
             F.audio.checked = (p.audio_actif !== undefined) ? p.audio_actif : true;
@@ -959,7 +1152,7 @@
                 filters: {
                     sender: parseCsv(F.filterSender.value),
                     exclude: parseCsv(F.excludeSender.value),
-                    cc: [],
+                    cc: parseCsv(document.getElementById('f-filtre-cc').value),
                     destined_to: [], forwarded_from: []
                 },
                 audio_actif: F.audio.checked,
@@ -1115,6 +1308,17 @@
             }
         }
     </script>
+    <div id="modal-account-select"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(5px); z-index:100; align-items:center; justify-content:center;">
+        <div class="card glass-static" style="width:100%; max-width:400px; padding:32px; text-align:center;">
+            <h3 style="margin-bottom:16px;">Choisir le compte source</h3>
+            <p class="muted" style="margin-bottom:24px;">Quelle boîte mail voulez-vous analyser ?</p>
+            <div id="account-select-list" style="display:grid; gap:12px;">
+            </div>
+            <button class="btn btn-ghost" onclick="closeAccountModal()"
+                style="margin-top:24px; width:100%;">Annuler</button>
+        </div>
+    </div>
 </body>
 
 </html>
