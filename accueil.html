@@ -2,14 +2,6 @@
 <html lang="fr">
 
 <head>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3TS6HMSLCK"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-3TS6HMSLCK');
-  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>mial — Inbox IA pour PME</title>
@@ -25,7 +17,7 @@
 
   <header id="site-header" class="nav">
     <div class="container nav-inner">
-      <a href="#home" class="brand">
+      <a href="accueil.html" class="brand">
         <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88" height="88">
       </a>
 
@@ -34,279 +26,147 @@
       </button>
 
       <nav class="nav-links">
-        <a href="accueil.html" class="active">Accueil</a>
-        <a href="crm.html">CRM</a>
+        <a href="audio.html"><img src="assets/logos/instant.png" alt="mial Instant"
+            style="height: 28px; vertical-align: middle;"></a>
+        <a href="crm.html"><img src="assets/logos/flow.png" alt="mial Flow"
+            style="height: 28px; vertical-align: middle;"></a>
         <a href="team.html">Équipe</a>
-        <a href="#how">Fonctionnement</a>
-        <a href="login.html" data-track="cta_login" data-analytics-click="cta_login">Connexion</a>
-        <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top"
-          data-analytics-click="cta_demo_top">Demander une démo</a>
+        <a href="login.html">Connexion</a>
+        <a href="#contact" class="btn btn-primary mobile-cta">Demander une démo</a>
       </nav>
 
-      <a href="#contact" class="btn btn-primary desktop-cta" data-track="cta_demo_top"
-        data-analytics-click="cta_demo_top">Demander une démo</a>
+      <a href="#contact" class="btn btn-primary desktop-cta">Demander une démo</a>
     </div>
   </header>
 
-  <section id="home" class="section section-brief" style="padding-top: 140px;">
-    <div class="container brief-layout">
-      <div class="brief-visual">
-        <!-- Reusing the exact visual from the Brief section -->
-        <div class="brief-card glass-jelly card-hover">
-          <div class="brief-pill">Brief du matin · 07h45</div>
-          <div class="brief-email-list">
-            <div class="brief-email">
-              <span class="badge badge-client">Client</span>
-              <div class="brief-email-text">
-                <strong>Chantier Rue des Lilas</strong>
-                <span>3 nouveaux messages, 1 date à confirmer</span>
-              </div>
+  <section class="section hero center" style="padding-top:120px; padding-bottom:40px;">
+    <!-- Featured Instant Section (Full Width Visual) -->
+    <div class="container" style="max-width:1400px; margin-bottom:80px;">
+      <div class="glass-jelly"
+        style="border-radius:32px; overflow:hidden; position:relative; text-align:left; display:grid; grid-template-columns: 1.2fr 0.8fr; align-items:center;">
+
+        <div style="padding:48px;">
+          <div class="badge badge-client glass-static"
+            style="display:inline-block; margin-bottom:16px; color:#fb7185; background:rgba(251, 113, 133, 0.1);">
+            ✨ Nouveauté
+          </div>
+          <h1 style="font-size:3rem; line-height:1.1; margin-bottom:24px;">
+            Transformez votre inbox en <span
+              style="background: linear-gradient(45deg, #fb7185, #f43f5e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Podcast</span>
+          </h1>
+          <p class="lead" style="font-size:1.1rem; margin-bottom:32px; color:var(--ink);">
+            mial Instant lit vos emails pour vous. Écoutez votre résumé matinal en voiture, au sport ou autour d'un
+            café.
+          </p>
+
+          <!-- Audio Player Demo Mockup -->
+          <div class="glass-static"
+            style="padding:16px; border-radius:16px; display:flex; align-items:center; gap:16px; max-width:400px;">
+            <div
+              style="width:48px; height:48px; background:#fb7185; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; flex-shrink:0;">
+              ▶
             </div>
-            <div class="brief-email">
-              <span class="badge badge-sav">SAV</span>
-              <div class="brief-email-text">
-                <strong>Suivi SAV fenêtres alu</strong>
-                <span>Dernière réponse client à vérifier</span>
+            <div style="flex:1;">
+              <div style="height:4px; background:rgba(0,0,0,0.1); border-radius:2px; width:100%; position:relative;">
+                <div
+                  style="position:absolute; left:0; top:0; height:100%; width:40%; background:#fb7185; border-radius:2px;">
+                </div>
               </div>
-            </div>
-            <div class="brief-email">
-              <span class="badge badge-fournisseur">Fournisseur</span>
-              <div class="brief-email-text">
-                <strong>Commande profilés & grue</strong>
-                <span>Confirmation de livraison manquante</span>
+              <div
+                style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:6px; color:var(--muted);">
+                <span>01:12</span>
+                <span>03:45</span>
               </div>
             </div>
           </div>
 
-          <div class="brief-audio">
-            <div class="audio-badge" id="brief-audio-button">
-              <span class="audio-icon" id="brief-audio-icon">▶</span>
-              <div class="audio-text">
-                <strong>Lecture du brief</strong>
-                <span>2 min · résumé de vos emails</span>
-              </div>
-            </div>
-            <p class="audio-caption">
-              “Aujourd’hui : 5 chantiers à confirmer, 2 SAV prioritaires et 1 fournisseur en attente.”
-            </p>
-            <audio id="brief-audio" src="assets/audio/demo-brief.mp3"></audio>
+          <div style="margin-top:32px;">
+            <a href="audio.html" class="btn btn-primary" style="background:#fb7185; border-color:#fb7185;">Découvrir
+              mial Instant →</a>
           </div>
         </div>
-      </div>
 
-      <div class="brief-copy glass-static">
-        <h1>Commencez la journée avec un brief, pas une boîte mail</h1>
-        <p>
-          Chaque matin, Mial prépare pour vous un <strong>résumé des emails importants</strong>
-          et vous envoie un <strong>message vocal</strong> que vous pouvez écouter en voiture,
-          en marchant ou pendant le café.
+        <!-- Visual Side (Abstract Wave) -->
+        <div
+          style="height:100%; min-height:400px; background:linear-gradient(135deg, rgba(251, 113, 133, 0.2), rgba(244, 63, 94, 0.4)); display:flex; align-items:center; justify-content:center; position:relative;">
+          <div style="font-size:8rem; opacity:0.8;">🎙️</div>
+          <!-- Decorative Circles -->
+          <div
+            style="position:absolute; width:300px; height:300px; border-radius:50%; border:1px solid rgba(255,255,255,0.3); top:50%; left:50%; transform:translate(-50%, -50%);">
+          </div>
+          <div
+            style="position:absolute; width:450px; height:450px; border-radius:50%; border:1px solid rgba(255,255,255,0.1); top:50%; left:50%; transform:translate(-50%, -50%);">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Product Grid Section -->
+    <div class="container hero-inner"
+      style="display:block; max-width:900px; border-top:1px solid rgba(148,163,184,0.2); padding-top:60px;">
+      <div class="hero-copy" style="padding:0; max-width:100%;">
+
+        <h2 style="font-size:2rem; margin-bottom:16px;">Tout l'écosystème mial</h2>
+        <p class="lead" style="font-size:1.1rem; max-width:600px; margin:0 auto 48px;">
+          Des solutions complémentaires pour automatiser votre gestion administrative.
         </p>
-        <ul class="brief-list">
-          <li>Résumé des nouveaux emails filtrés selon vos règles (clients, urgences, projets…)</li>
-          <li>Regroupement par client ou par dossier pour savoir <strong>qui attendre / qui relancer</strong></li>
-          <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook</li>
-        </ul>
-        <div class="brief-note">
-          Vous choisissez l’heure, le canal, et ce que le brief doit couvrir. Mial s’adapte à votre manière de
-          travailler.
+
+        <!-- Product Cards -->
+        <div class="grid-2" style="gap:32px; text-align:left;">
+          <!-- Card Instant -->
+          <a href="audio.html" class="card card-hover"
+            style="text-decoration:none; display:block; padding:0; overflow:hidden;">
+            <div
+              style="height:200px; background:linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(244, 63, 94, 0.1)); display:flex; align-items:center; justify-content:center; position:relative;">
+              <!-- Visual Abstract Instant -->
+              <div class="flow-arrow-icon"
+                style="width:80px; height:80px; background:white; position:absolute; box-shadow:0 20px 40px rgba(251,113,133,0.2);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </div>
+            </div>
+            <div style="padding:32px;">
+              <h3 style="font-size:1.8rem; margin-bottom:12px;">mial Instant</h3>
+              <p class="muted" style="margin-bottom:24px;">
+                Vos emails en mode Podcast. Écoutez le résumé de votre activité quotidienne pendant vos trajets ou votre
+                sport.
+              </p>
+              <span class="btn btn-primary w-full" style="background:var(--ink);">Découvrir Instant →</span>
+            </div>
+          </a>
+
+          <!-- Card Flow -->
+          <a href="crm.html" class="card card-hover"
+            style="text-decoration:none; display:block; padding:0; overflow:hidden;">
+            <div
+              style="height:200px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); display:flex; align-items:center; justify-content:center; position:relative;">
+              <!-- Visual Abstract Flow -->
+              <div class="flow-arrow-icon"
+                style="width:80px; height:80px; background:white; position:absolute; box-shadow:0 20px 40px rgba(56,189,248,0.2);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div style="padding:32px;">
+              <h3 style="font-size:1.8rem; margin-bottom:12px;">mial Flow</h3>
+              <p class="muted" style="margin-bottom:24px;">
+                Votre inbox intelligente. Tri automatique, réponses brouillonnées et synchronisation CRM pour ne jamais
+                rater une opportunité.
+              </p>
+              <span class="btn btn-primary w-full">Découvrir Flow →</span>
+            </div>
+          </a>
         </div>
-        <div class="cta-row" style="margin-top: 2rem;">
-          <a href="#contact" class="btn btn-primary" data-track="cta_demo_mid"
-            data-analytics-click="cta_demo_mid">Demander une démo</a>
-        </div>
+
       </div>
-    </div>
-  </section>
-
-
-
-  <section class="section section-audience" id="audience">
-    <div class="container">
-      <div class="section-intro-card">
-        <h2>Pour qui est fait
-          <span class="logo-inline">
-            <img src="assets/logos/logo-mial-full-color.svg" alt="mial">
-          </span>
-          ?
-        </h2>
-        <p class="lead">
-          Mial s’adresse aux <strong>petites équipes sans service IT</strong>, noyées sous les e-mails :
-          <strong>dirigeants</strong>, <strong>back-office</strong> et <strong>indépendants</strong> qui gèrent tout
-          depuis leur <strong>boîte mail</strong>.
-        </p>
-      </div>
-
-      <div class="grid-3 audience-grid">
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>👔 Gérant / dirigeant de PME</h3>
-          <p class="persona-tagline">
-            Tu gères <strong>clients</strong>, <strong>équipe</strong> et <strong>paperasse</strong>… et ta
-            <strong>boîte mail déborde</strong>.
-          </p>
-          <ul class="checklist">
-            <li><strong>Boîte partagée</strong> saturée, mails qui se perdent</li>
-            <li>Pas de <strong>vue rapide</strong> sur les urgences et retards</li>
-            <li>Difficulté à <strong>tout traiter</strong> dans les temps</li>
-          </ul>
-          <p class="persona-promise">
-            Mial t’envoie chaque matin un <strong>résumé clair des priorités</strong>,
-            sans embauche en plus.
-          </p>
-        </article>
-
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>📥 Assistante, back-office, SAV, planning</h3>
-          <p class="persona-tagline">
-            Tu passes ta journée à <strong>trier</strong>, <strong>répondre</strong> et
-            <strong>mettre à jour des tableaux</strong>.
-          </p>
-          <ul class="checklist">
-            <li><strong>Boîtes partagées</strong>, doublons, mails qui tournent en boucle</li>
-            <li><strong>Ressaisies dans Excel</strong> avec risque d’erreur</li>
-            <li><strong>Demandes répétitives</strong> qui mangent tes journées</li>
-          </ul>
-          <p class="persona-promise">
-            Mial gère le <strong>tri</strong> et les <strong>réponses simples</strong> ;
-            toi tu gardes les <strong>cas sensibles</strong>.
-          </p>
-        </article>
-
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>🛠️ Indépendants & petites équipes sur rendez-vous</h3>
-          <p class="persona-tagline">
-            Tu es souvent en <strong>déplacement</strong>, rarement devant un PC.
-          </p>
-          <ul class="checklist">
-            <li><strong>Oublis de mails</strong>, no-show, changements d’horaire</li>
-            <li><strong>Confirmations</strong> et <strong>relances</strong> faites à la main</li>
-            <li>Tu gères tout depuis ton <strong>téléphone</strong> entre deux rendez-vous</li>
-          </ul>
-          <p class="persona-promise">
-            Mial envoie les <strong>rappels</strong>, les <strong>messages d’absence intelligents</strong>
-            et un <strong>récap audio</strong> le matin ; toi tu te concentres sur le terrain.
-          </p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-
-
-  <section class="section section-how" id="how">
-    <div class="container">
-      <div class="section-intro-card">
-        <h2>Mise en place, sans prise de tête</h2>
-        <p class="lead">
-          Contrairement à beaucoup de solutions IA, vous n’avez (presque) rien à faire :
-          on vient chez vous, on configure Mial sur vos mails et vos tableaux, puis on surveille
-          que tout tourne comme prévu.
-        </p>
-      </div>
-
-      <div class="grid-3 how-steps-grid">
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>1) Rendez-vous & diagnostic</h3>
-          <p>
-            On prend un rendez-vous avec vous pour comprendre vos flux réels :
-            types d’emails, tableaux utilisés, urgences, contraintes terrain.
-            L’objectif est de choisir <strong>les cas d’usage concrets</strong> à automatiser.
-          </p>
-        </article>
-
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>2) Connexion à vos outils</h3>
-          <p>
-            On connecte Mial à <strong>Microsoft 365, Google Workspace</strong>
-            avec des permissions minimales et révocables. On branche aussi vos fichiers
-            (Excel, Google Sheets ou base en ligne). C’est <strong>votre seule vraie action technique</strong>.
-          </p>
-        </article>
-
-        <article class="glass-jelly card-hover reveal-fx">
-          <h3>3) Construction & lancement</h3>
-          <p>
-            On développe votre scénario personnalisé (devis, SAV, planning, relances…),
-            on teste tout en sandbox, puis on active. Il ne vous reste plus qu’à
-            <strong>valider, ajuster et profiter du temps gagné</strong>.
-          </p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="pricing">
-    <h2 class="sr-only">Nos tarifs</h2>
-    <div class="container center">
-      <div class="pricing-switch-wrapper">
-        <fieldset class="switcher-glass">
-          <label class="switcher-glass__option">
-            <input class="switcher-glass__input" type="radio" name="billing" value="monthly" checked>
-            <span class="switcher-glass__text">Mensuel</span>
-          </label>
-          <label class="switcher-glass__option">
-            <input class="switcher-glass__input" type="radio" name="billing" value="yearly">
-            <span class="switcher-glass__text">Annuel</span>
-          </label>
-        </fieldset>
-      </div>
-
-    </div>
-
-    <div class="container grid-3" style="margin-top:40px;">
-
-      <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head">
-          <h3>Mial Brief</h3>
-        </div>
-        <div class="price" data-monthly="59.90" data-yearly="47.99">€59.90 <span>/mo</span> <span
-            class="discount-badge"></span></div>
-        <p class="muted" style="font-size:0.9rem; margin-bottom:12px">L'essentiel pour rester à jour.</p>
-        <ul class="checklist">
-          <li>1 adresse email connectée</li>
-          <li>Tri & réponses automatiques</li>
-          <li>Résumé quotidien (texte)</li>
-          <li><strong>Brief audio vocal</strong></li>
-        </ul>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Brief"
-          data-track="cta_choose_offer_basic" data-analytics-click="cta_choose_offer_basic"
-          data-analytics-conversion="pricing_click_basic">Choisir</a>
-      </article>
-
-      <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head">
-          <h3>Mial Gestion</h3><span class="pill">Automation</span>
-        </div>
-        <div class="price" data-monthly="159.90" data-yearly="127.15">€159.90 <span>/mo</span> <span
-            class="discount-badge"></span></div>
-        <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Votre admin en pilote automatique.</p>
-        <ul class="checklist">
-          <li>1 adresse email connectée</li>
-          <li>Liaison Excel / Google Sheets</li>
-          <li>Automatisation sur mesure</li>
-          <li>Extraction de données</li>
-        </ul>
-        <p style="font-size:0.75rem; color:#64748b; margin-top:12px;">* Coût de développement initial non inclus.</p>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Gestion"
-          data-track="cta_choose_offer_pro" data-analytics-click="cta_choose_offer_pro"
-          data-analytics-conversion="pricing_click_pro">Choisir</a>
-      </article>
-
-      <article class="card glass-static card-hover pricing-card">
-        <div class="plan-head">
-          <h3>Entreprise</h3>
-        </div>
-        <div class="price" style="font-size:1.8rem; padding: 6px 0;">Sur devis</div>
-        <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Architecture complexe & multi-comptes.</p>
-        <ul class="checklist">
-          <li>Module intégrateur tableur</li>
-          <li>Multi-boîtes mails</li>
-          <li>Connexions API spécifiques</li>
-          <li>Déploiement sur serveur dédié</li>
-        </ul>
-        <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Offre Entreprise Sur Mesure">Nous
-          contacter</a>
-      </article>
-
     </div>
   </section>
 
@@ -511,7 +371,7 @@
         <h4>Produit</h4>
         <ul>
           <li><a href="#how">Comment ça marche</a></li>
-          <li><a href="crm.html">CRM</a></li>
+          <li><a href="crm.html">Flow</a></li>
           <li><a href="#pricing">Tarifs</a></li>
         </ul>
       </div>
@@ -525,12 +385,11 @@
         </ul>
       </div>
       <div class="right">
-        <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo Mial"> </span>
+        <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo mial"> </span>
       </div>
     </div>
   </footer>
 
-  <script src="api.js"></script>
   <script src="main.js"></script>
 </body>
 
