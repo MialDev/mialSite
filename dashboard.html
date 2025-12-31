@@ -9,34 +9,17 @@
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
     <style>
+        /* --- UI COMPONENTS --- */
         /* Modern Form Styling */
         .editor-section {
             background: #fff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 16px;
+            /* Plus arrondi */
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-        }
-
-        .editor-title {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.15rem;
-            color: #1e293b;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .editor-title::before {
-            content: '';
-            display: block;
-            width: 4px;
-            height: 24px;
-            background: var(--primary);
-            border-radius: 2px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            /* Ombre plus douce */
         }
 
         .form-label {
@@ -52,7 +35,7 @@
         .form-textarea {
             width: 100%;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #cbd5e1;
             font-size: 0.95rem;
             background: #f8fafc;
@@ -63,39 +46,254 @@
         .form-select:focus,
         .form-textarea:focus {
             background: #fff;
-            border-color: #1fb6ff;
+            border-color: var(--blue);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(31, 182, 255, 0.1);
-        }
-
-        .form-helper {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: 6px;
-            line-height: 1.4;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
         /* Time Block Styling */
         .time-block {
             background: #f1f5f9;
-            padding: 16px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid #e2e8f0;
         }
 
         .time-block h4 {
-            margin: 0 0 12px 0;
-            font-size: 0.95rem;
+            margin: 0 0 16px 0;
+            font-size: 0.85rem;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: 700;
         }
 
         /* Range Slider */
         input[type=range] {
             width: 100%;
             cursor: pointer;
-            accent-color: var(--primary);
+            accent-color: var(--blue);
+        }
+
+        /* --- DASHBOARD TABLE REWORK --- */
+        .dashboard-table {
+            width: 100%;
+            border-collapse: separate;
+            /* Nécessaire pour le border-radius sur les tr */
+            border-spacing: 0 8px;
+            /* Espace entre les lignes */
+            white-space: nowrap;
+        }
+
+        .dashboard-table th {
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 700;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: none;
+        }
+
+        .dashboard-table tbody tr {
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .dashboard-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .dashboard-table td {
+            padding: 20px 24px;
+            /* Plus d'espace vertical */
+            vertical-align: middle;
+        }
+
+        .dashboard-table td:first-child {
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+        }
+
+        .dashboard-table td:last-child {
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+
+
+        /* --- STATUS PILL --- */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        /* Status Active (Vert) */
+        .status-pill.active {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .status-pill.active::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        /* Status Inactive (Gris) */
+        .status-pill.inactive {
+            background: #f1f5f9;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
+        .status-pill.inactive::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+
+        .status-pill:hover {
+            filter: brightness(0.95);
+            transform: scale(1.02);
+        }
+
+        .status-pill.loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+
+        /* --- ACTION ICONS & TOOLTIPS --- */
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.2s;
+            position: relative;
+            /* Pour le tooltip */
+        }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: var(--blue);
+        }
+
+        .btn-icon.delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Tooltip CSS simple */
+        .btn-icon[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: #1e293b;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            animation: tooltipFade 0.2s forwards;
+        }
+
+        @keyframes tooltipFade {
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-4px);
+            }
+        }
+
+
+        /* --- TOGGLE SWITCH (Réutilisation du style existant) --- */
+        /* S'assure que le style.css global est bien chargé pour la classe .toggle */
+
+
+        /* --- EMAIL CHIP INPUT (Outlook Style) --- */
+        .chip-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            min-height: 48px;
+            align-items: center;
+        }
+
+        .chip-container:focus-within {
+            background: #fff;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .chip-remove {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            line-height: 1;
+            color: #64748b;
+        }
+
+        .chip-remove:hover {
+            color: #ef4444;
+        }
+
+        .chip-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 4px;
+            font-size: 0.95rem;
+            min-width: 120px;
+        }
+
+        /* Cache le vrai textarea */
+        .hidden-textarea {
+            display: none;
         }
     </style>
 </head>
@@ -154,7 +352,7 @@
                                     <th>Plage horaire</th>
                                     <th>Envoi</th>
                                     <th>Status</th>
-                                    <th style="min-width:100px; text-align:right;">Actions</th>
+                                    <th style="min-width:100px; text-align:right;"></th>
                                 </tr>
                             </thead>
                             <tbody id="profiles-body">
@@ -260,32 +458,46 @@
                                     <option value="category">CATÉGORIE (Par sujet)</option>
                                 </select>
                             </div>
-                            <div style="display:flex; align-items:center; gap:12px; padding-top:24px;">
-                                <input type="checkbox" id="f-unread" style="width:20px; height:20px;">
-                                <label for="f-unread" style="font-weight:600; cursor:pointer;">Ne traiter que les emails
-                                    non-lus</label>
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; margin-top:24px; padding: 16px; background: #f8fafc; border-radius: 12px;">
+                                <div>
+                                    <label class="form-label" style="margin:0;">Traiter uniquement les non-lus</label>
+                                    <div class="form-helper" style="margin:0;">Ignore les emails déjà ouverts.</div>
+                                </div>
+                                <label class="toggle">
+                                    <input id="f-unread" type="checkbox">
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
 
                         <div style="margin-bottom:20px;">
                             <label class="form-label">Expéditeurs Whitelist (FROM)</label>
-                            <textarea id="f-filtre-sender" class="form-textarea" rows="2"
-                                placeholder="Ex: boss@company.com, @important-client.com"></textarea>
-                            <div class="form-helper">Seuls ces expéditeurs/domaines seront analysés si rempli (Vide =
-                                Tous).</div>
+
+                            <div class="chip-container" id="container-sender">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email et tapez Entrée...">
+                            </div>
+
+                            <textarea id="f-filtre-sender" class="hidden-textarea"></textarea>
+
+                            <div class="form-helper">Seuls ces expéditeurs seront analysés.</div>
                         </div>
 
                         <div style="margin-bottom:20px;">
                             <label class="form-label">Expéditeurs Exclus (Blacklist)</label>
-                            <textarea id="f-exclude-sender" class="form-textarea" rows="2"
-                                placeholder="Ex: newsletter@, notification@slack.com"></textarea>
+                            <div class="chip-container" id="container-exclude">
+                                <input type="text" class="chip-input" placeholder="Eclure un email...">
+                            </div>
+                            <textarea id="f-exclude-sender" class="hidden-textarea"></textarea>
                             <div class="form-helper">Ces emails seront systématiquement ignorés.</div>
                         </div>
 
                         <div>
                             <label class="form-label">Seulement si je suis en Copie (CC)</label>
-                            <textarea id="f-filtre-cc" class="form-textarea" rows="2"
-                                placeholder="Ex: mon-alias@company.com"></textarea>
+                            <div class="chip-container" id="container-cc">
+                                <input type="text" class="chip-input" placeholder="Email en copie...">
+                            </div>
+                            <textarea id="f-filtre-cc" class="hidden-textarea"></textarea>
                             <div class="form-helper">Filtre strict: l'email doit vous avoir en CC.</div>
                         </div>
                     </div>
@@ -367,8 +579,88 @@
         let PROFILES_BY_ID = new Map();
         let currentEditingId = null;
 
+        // --- ICONS SVG (Heroicons) ---
+        const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`;
+        const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>`;
+
+        // --- EMAIL CHIP LOGIC ---
+        function setupChipInput(containerId, textareaId) {
+            const container = document.getElementById(containerId);
+            const textarea = document.getElementById(textareaId);
+            const input = container.querySelector('.chip-input');
+            if (!container || !textarea || !input) return;
+
+            let emails = [];
+
+            function update() {
+                // 1. Update hidden textarea
+                textarea.value = emails.join(', ');
+                // 2. Render chips
+                container.querySelectorAll('.chip').forEach(c => c.remove());
+                emails.forEach(email => {
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.innerHTML = `<span>${escapeHtml(email)}</span><span class="chip-remove">×</span>`;
+                    chip.querySelector('.chip-remove').addEventListener('click', () => {
+                        emails = emails.filter(e => e !== email);
+                        update();
+                    });
+                    container.insertBefore(chip, input);
+                });
+            }
+
+            // Event listeners for input
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = input.value.trim().replace(',', '');
+                    if (val && validateEmail(val) && !emails.includes(val)) {
+                        emails.push(val);
+                        input.value = '';
+                        update();
+                    }
+                }
+                // Backspace to delete last chip
+                if (e.key === 'Backspace' && input.value === '' && emails.length > 0) {
+                    emails.pop();
+                    update();
+                }
+            });
+
+            // Lose focus adds the chip too
+            input.addEventListener('blur', () => {
+                const val = input.value.trim().replace(',', '');
+                if (val && validateEmail(val) && !emails.includes(val)) {
+                    emails.push(val);
+                    input.value = '';
+                    update();
+                }
+            });
+
+            // Public method to load data into chips
+            container.loadEmails = (csvString) => {
+                if (!csvString) { emails = []; update(); return; }
+                emails = csvString.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+                update();
+            };
+
+            container.clear = () => { emails = []; input.value = ''; update(); };
+        }
+
+        // Simple email regex for UI ux
+        function validateEmail(email) {
+            return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+        };
+
+
+        // --- MAIN LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Auth
+            // Initialize Chip Inputs
+            setupChipInput('container-sender', 'f-filtre-sender');
+            setupChipInput('container-exclude', 'f-exclude-sender');
+            setupChipInput('container-cc', 'f-filtre-cc');
+
+            // Auth Check
             try {
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (res.status === 401) window.location.href = 'login.html';
@@ -393,24 +685,16 @@
         const F = {
             account: document.getElementById('f-account'),
             recipient: document.getElementById('f-recipient'),
-
-            // Time Range
             daysStart: document.getElementById('f-days-start'),
             timeStart: document.getElementById('f-time-start'),
             daysEnd: document.getElementById('f-days-end'),
             timeEnd: document.getElementById('f-time-end'),
-
             schedule: document.getElementById('f-schedule'),
-
-            // Filters
-            unread: document.getElementById('f-unread'),
+            unread: document.getElementById('f-unread'), // Toggle
             sort: document.getElementById('f-sort'),
-
-            filterSender: document.getElementById('f-filtre-sender'),
+            filterSender: document.getElementById('f-filtre-sender'), // Hidden textareas
             excludeSender: document.getElementById('f-exclude-sender'),
             filterCc: document.getElementById('f-filtre-cc'),
-
-            // Audio
             audio: document.getElementById('f-audio'),
             voice: document.getElementById('f-voice'),
             speed: document.getElementById('f-speed'),
@@ -421,9 +705,12 @@
             viewEditor.style.display = 'none';
             viewList.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Reset state & Form
             currentEditingId = null;
             document.getElementById('form-editor').reset();
+            // Clear chips
+            if (document.getElementById('container-sender').clear) document.getElementById('container-sender').clear();
+            if (document.getElementById('container-exclude').clear) document.getElementById('container-exclude').clear();
+            if (document.getElementById('container-cc').clear) document.getElementById('container-cc').clear();
         };
 
         window.showEditor = async function (isEdit = false) {
@@ -432,10 +719,13 @@
             editorMsg.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // UI Reset
             if (!isEdit) {
                 currentEditingId = null;
-                document.getElementById('form-editor').reset(); // Ensure clean slate
+                document.getElementById('form-editor').reset();
+                if (document.getElementById('container-sender').clear) document.getElementById('container-sender').clear();
+                if (document.getElementById('container-exclude').clear) document.getElementById('container-exclude').clear();
+                if (document.getElementById('container-cc').clear) document.getElementById('container-cc').clear();
+
                 document.getElementById('editor-main-title').textContent = "Configurer un nouveau récap";
                 document.getElementById('btn-save').textContent = "CRÉER LE RÉCAP";
 
@@ -445,7 +735,6 @@
                 F.daysEnd.value = 0; F.timeEnd.value = "23:59";
                 F.unread.checked = false;
                 F.sort.value = "date_desc";
-                F.filterSender.value = ""; F.excludeSender.value = ""; F.filterCc.value = "";
                 F.audio.checked = true; F.voice.value = "alloy"; F.speed.value = 1.0; F.lang.value = "fr";
 
                 const uEmail = document.getElementById('user-email').textContent;
@@ -469,36 +758,20 @@
                     F.account.innerHTML = '<option value="">Aucune boîte connectée</option>';
                     return;
                 }
-
-                // Build Options
                 F.account.innerHTML = list.map(mb => `<option value="${mb.email_account_id || mb.id}">${escapeHtml(mb.email)}</option>`).join('');
-
-                // Auto Select Single
-                if (F.account.options.length === 1) {
-                    F.account.selectedIndex = 0;
-                }
-
-                // If Editing, re-select correct account logic is handled in editProfile after this runs? 
-                // No, editProfile awaits showEditor, so we can set value after.
-
-            } catch (e) {
-                console.error(e);
-                F.account.innerHTML = '<option value="">Erreur chargement</option>';
-            }
+                if (F.account.options.length === 1) F.account.selectedIndex = 0;
+            } catch (e) { F.account.innerHTML = '<option value="">Erreur chargement</option>'; }
         };
 
         window.editProfile = async function (id) {
             const p = PROFILES_BY_ID.get(id);
-            console.log('Editing profile:', p);
-
             if (!p) return;
-
-            await showEditor(true); // Open in Edit Mode
+            await showEditor(true);
             currentEditingId = id;
 
-            // Safe helpers
             const get = (v, def) => (v !== undefined && v !== null) ? v : def;
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
+            const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
             // 1. Account & Recipient
             if (p.email_account_id) F.account.value = p.email_account_id;
@@ -511,25 +784,38 @@
             F.timeEnd.value = sub(p.heure_fin);
 
             // 3. Schedule
+            // Handle flat schedule_time vs nested schedule.time_of_day
             let sTime = p.schedule_time;
-            if (p.schedule && p.schedule.time_of_day) sTime = p.schedule.time_of_day;
+            if (!sTime && p.schedule && p.schedule.time_of_day) sTime = p.schedule.time_of_day;
             F.schedule.value = sub(sTime || '08:00');
 
             // 4. Filters
             F.unread.checked = !!p.only_unread;
             F.sort.value = p.sort_mode || 'date_desc';
 
-            const filters = p.filters || {};
-            const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
+            // Handle nested vs flat filters
+            // The object might be flat on the profile or in a filters object
+            let sender = [], exclude = [], cc = [];
 
-            // Map keys robustly
-            const senders = filters.sender || filters.whitelist || [];
-            const excludes = filters.exclude || filters.blacklist || [];
-            const ccs = filters.cc || [];
+            if (p.filters) {
+                sender = p.filters.sender || [];
+                exclude = p.filters.exclude || [];
+                cc = p.filters.cc || [];
+            } else {
+                // Try reading flat properties if they exist (legacy or flat stricture)
+                if (p.filtre_sender) sender = p.filtre_sender;
+                if (p.exclude_sender) exclude = p.exclude_sender;
+                if (p.filtre_cc) cc = p.filtre_cc;
+            }
 
-            F.filterSender.value = toCsv(senders);
-            F.excludeSender.value = toCsv(excludes);
-            F.filterCc.value = toCsv(ccs);
+            // LOAD CHIPS DATA
+            const cSender = document.getElementById('container-sender');
+            const cExclude = document.getElementById('container-exclude');
+            const cCc = document.getElementById('container-cc');
+
+            if (cSender && cSender.loadEmails) cSender.loadEmails(toCsv(sender));
+            if (cExclude && cExclude.loadEmails) cExclude.loadEmails(toCsv(exclude));
+            if (cCc && cCc.loadEmails) cCc.loadEmails(toCsv(cc));
 
             // 5. Audio / Settings
             F.audio.checked = (p.audio_actif !== undefined) ? p.audio_actif : true;
@@ -540,25 +826,14 @@
         };
 
         window.deleteProfile = async function (id) {
-            if (!confirm("Voulez-vous vraiment supprimer ce profil de récapitulatif ?\nCette action est irréversible.")) return;
-
+            if (!confirm("Voulez-vous vraiment supprimer ce profil ?")) return;
             const row = document.querySelector(`button[onclick="deleteProfile('${id}')"]`).closest('tr');
             if (row) row.style.opacity = '0.5';
-
             try {
-                const res = await fetch(apiUrl(`/my/profiles/${id}`), {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
+                const res = await fetch(apiUrl(`/my/profiles/${id}`), { method: 'DELETE', credentials: 'include' });
                 if (!res.ok) throw new Error(await res.text());
-
-                // Success
-                loadProfiles(); // Refresh list
-
-            } catch (e) {
-                alert("Erreur suppression: " + e.message);
-                if (row) row.style.opacity = '1';
-            }
+                loadProfiles();
+            } catch (e) { alert("Erreur: " + e.message); if (row) row.style.opacity = '1'; }
         };
 
         window.saveProfile = async function () {
@@ -599,7 +874,6 @@
                 const url = isEdit ? `/my/profiles/${currentEditingId}` : '/my/profiles';
                 const method = isEdit ? 'PUT' : 'POST';
 
-                // Change Text to Loading
                 const btn = document.getElementById('btn-save');
                 const originalText = btn.textContent;
                 btn.textContent = "EN COURS...";
@@ -625,7 +899,6 @@
             } catch (e) {
                 showMsg("Erreur: " + e.message, "red");
                 document.getElementById('btn-save').disabled = false;
-                document.getElementById('btn-save').textContent = isEdit ? "METTRE À JOUR" : "CRÉER LE RÉCAP";
             }
         };
 
@@ -646,9 +919,10 @@
                 PROFILES_BY_ID.clear();
 
                 if (!profiles || profiles.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px;">Aucun profil configuré.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px;" class="muted">Aucun profil configuré.</td></tr>`;
                     return;
                 }
+
                 tbody.innerHTML = profiles.map(p => {
                     PROFILES_BY_ID.set(p.id, p);
 
@@ -656,56 +930,46 @@
                     const statusClass = isActive ? 'active' : 'inactive';
                     const statusText = isActive ? 'Actif' : 'Inactif';
 
-                    const toggleBtn = `<button class="status-toggle-btn ${statusClass}" 
-                                        onclick="toggleStatus('${p.id}')"
-                                        title="Basculer actif/inactif">
-                                        ${statusText}
-                                       </button>`;
+                    // STATUS PILL
+                    const statusPill = `<button class="status-pill ${statusClass}" onclick="toggleStatus('${p.id}')">${statusText}</button>`;
 
-                    // Format Timestamps & Display
                     const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
-                    const tStart = sub(p.heure_debut);
-                    const tEnd = sub(p.heure_fin);
-                    const tSend = sub(p.schedule_time);
+                    const tSend = sub(p.schedule_time || (p.schedule ? p.schedule.time_of_day : '00:00'));
+                    const plage = `<span class="muted">J-${p.jours_arriere_start || 0}</span> <strong>${sub(p.heure_debut)}</strong> <span class="muted">à</span> <span class="muted">J-${p.jours_arriere_end || 0}</span> <strong>${sub(p.heure_fin)}</strong>`;
 
-                    const jStart = (p.jours_arriere_start !== undefined) ? p.jours_arriere_start : 1;
-                    const jEnd = (p.jours_arriere_end !== undefined) ? p.jours_arriere_end : 0;
-
-                    // Column Content
-                    const plage = `<span class="muted" style="font-size:0.85rem">J-${jStart}</span> <strong>${tStart}</strong> <span class="muted">à</span> <span class="muted" style="font-size:0.85rem">J-${jEnd}</span> <strong>${tEnd}</strong>`;
+                    // ACTION ICONS
+                    const actions = `
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn-icon" data-tooltip="Modifier le profil" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
+                            <button class="btn-icon delete" data-tooltip="Supprimer définitivement" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
+                        </div>`;
 
                     return `<tr>
-                        <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
+                        <td style="font-weight:600;">${escapeHtml(p.account_email || '—')}</td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
                         <td>${plage}</td>
-                        <td style="font-weight:600; color:#475569;">${tSend}</td>
-                        <td>${toggleBtn}</td>
-                        <td style="text-align:right;">
-                             <button class="btn btn-ghost btn-small" style="color:var(--primary); font-weight:600; margin-right:8px;" onclick="editProfile('${p.id}')">EDITER</button>
-                             <button class="btn btn-ghost btn-small" style="color:#ef4444;" onclick="deleteProfile('${p.id}')">🗑</button>
-                        </td>
+                        <td style="font-weight:600; color:var(--ink);">${tSend}</td>
+                        <td>${statusPill}</td>
+                        <td style="text-align:right;">${actions}</td>
                     </tr>`;
                 }).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">${e.message}</td></tr>`; }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="color:#ef4444; text-align:center;">${e.message}</td></tr>`; }
         }
 
         async function toggleStatus(id) {
             const btn = document.querySelector(`button[onclick="toggleStatus('${id}')"]`);
             if (!btn) return;
 
-            // Optimistic UI
             const wasActive = btn.classList.contains('active');
             const newState = wasActive ? 'Inactive' : 'Active';
 
-            btn.className = 'status-toggle-btn loading';
-            btn.textContent = '...';
+            btn.className = 'status-pill loading'; // Visual feedback
 
             try {
-                // Get full profile
                 const p = PROFILES_BY_ID.get(id);
                 if (!p) throw new Error("Profil introuvable");
 
-                // Construct clean payload for PUT to avoid changing other fields
+                // Construct clean payload
                 const cleanPayload = {
                     email_account_id: p.email_account_id,
                     recap_recipient: p.recap_recipient,
@@ -735,21 +999,19 @@
 
                 if (!res.ok) throw new Error(await res.text());
 
-                // Success
+                // Update local state
                 p.status = newState;
                 PROFILES_BY_ID.set(id, p);
 
-                btn.className = `status-toggle-btn ${newState === 'Active' ? 'active' : 'inactive'}`;
-                btn.textContent = (newState === 'Active' ? 'Actif' : 'Inactif');
+                btn.className = `status-pill ${newState === 'Active' ? 'active' : 'inactive'}`;
+                btn.textContent = (newState === 'Active' ? 'Actif' : 'Inactif'); // Update text
 
             } catch (e) {
                 console.error(e);
-                alert("Erreur changement status: " + e.message);
-                btn.className = `status-toggle-btn ${wasActive ? 'active' : 'inactive'}`;
-                btn.textContent = (wasActive ? 'Actif' : 'Inactif');
+                alert("Erreur: " + e.message);
+                btn.className = `status-pill ${wasActive ? 'active' : 'inactive'}`;
             }
         }
-
     </script>
 </body>
 
