@@ -984,68 +984,51 @@
             await showEditor(true);
             currentEditingId = id;
 
-            // Remplissage ID Compte (Caché mais vital)
-            document.getElementById('f-account').value = p.email_account_id;
-
-            // Titres
-            document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
-            document.getElementById('btn-save').textContent = "METTRE À JOUR";
-
-            const get = (v, def) => (v !== undefined && v !== null) ? v : def;
+            // Helper for 00:00 format
             const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
             const toCsv = (arr) => (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '';
 
-            // 1. Account (Already filled) & Recipient
-            F.recipient.value = get(p.recap_recipient, '');
+            // 1. Core & Flat Mapping
+            document.getElementById('f-account').value = p.email_account_id;
+            F.recipient.value = p.recap_recipient || '';
 
-            // 2. Time Range
-            F.daysStart.value = get(p.jours_arriere_start, 1);
-            F.daysEnd.value = get(p.jours_arriere_end, 0);
+            // 2. Schedule & Times
+            F.schedule.value = sub(p.schedule_time || '08:00');
             F.timeStart.value = sub(p.heure_debut);
             F.timeEnd.value = sub(p.heure_fin);
+            F.daysStart.value = (p.jours_arriere_start !== undefined) ? p.jours_arriere_start : 1;
+            F.daysEnd.value = (p.jours_arriere_end !== undefined) ? p.jours_arriere_end : 0;
 
-            // 3. Schedule
-            // Handle flat schedule_time vs nested schedule.time_of_day
-            let sTime = p.schedule_time;
-            if (!sTime && p.schedule && p.schedule.time_of_day) sTime = p.schedule.time_of_day;
-            F.schedule.value = sub(sTime || '08:00');
-
-            // 4. Filters
+            // 3. Filters
             F.unread.checked = !!p.only_unread;
             F.sort.value = p.sort_mode || 'date_desc';
-            toggleCategoryUI(); // UPDATE UI
-            renderCategories(); // Init DnD
 
-            // Handle nested vs flat filters
-            // The object might be flat on the profile or in a filters object
-            let sender = [], exclude = [], cc = [];
+            // 4. Filter Arrays (Flat JSON from backend)
+            const sender = p.filtre_sender || [];
+            const exclude = p.exclude_sender || [];
+            const cc = p.filtre_cc || [];
 
-            if (p.filters) {
-                sender = p.filters.sender || [];
-                exclude = p.filters.exclude || [];
-                cc = p.filters.cc || [];
-            } else {
-                // Try reading flat properties if they exist (legacy or flat stricture)
-                if (p.filtre_sender) sender = p.filtre_sender;
-                if (p.exclude_sender) exclude = p.exclude_sender;
-                if (p.filtre_cc) cc = p.filtre_cc;
-            }
-
-            // LOAD CHIPS DATA
+            // Load Chips
             const cSender = document.getElementById('container-sender');
             const cExclude = document.getElementById('container-exclude');
             const cCc = document.getElementById('container-cc');
-
             if (cSender && cSender.loadEmails) cSender.loadEmails(toCsv(sender));
             if (cExclude && cExclude.loadEmails) cExclude.loadEmails(toCsv(exclude));
             if (cCc && cCc.loadEmails) cCc.loadEmails(toCsv(cc));
 
             // 5. Audio / Settings
-            F.audio.checked = (p.audio_actif !== undefined) ? p.audio_actif : true;
+            F.audio.checked = (p.audio_actif !== undefined && p.audio_actif !== null) ? !!p.audio_actif : true;
             F.voice.value = p.voice || 'alloy';
             F.speed.value = p.speed || 1.0;
             if (document.getElementById('speed-val')) document.getElementById('speed-val').textContent = F.speed.value + 'x';
             F.lang.value = p.language || 'fr';
+
+            // Titles
+            document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
+            document.getElementById('btn-save').textContent = "METTRE À JOUR";
+
+            toggleCategoryUI();
+            renderCategories();
         };
 
         window.deleteProfile = async function (id) {
@@ -1152,12 +1135,13 @@
                     const isActive = (String(p.status).toLowerCase() === 'active');
                     const statusClass = isActive ? 'active' : 'inactive';
                     const statusText = isActive ? 'Actif' : 'Inactif';
-
-                    // STATUS PILL
                     const statusPill = `<button class="status-pill ${statusClass}" onclick="toggleStatus('${p.id}')">${statusText}</button>`;
 
                     const sub = (s) => (s && s.length >= 5) ? s.substring(0, 5) : (s || '00:00');
-                    const tSend = sub(p.schedule_time || (p.schedule ? p.schedule.time_of_day : '00:00'));
+
+                    // NEW: Flat JSON Mapping
+                    const tSend = sub(p.schedule_time);
+                    const accountEmail = escapeHtml(p.account_email || '—');
                     const plage = `<span class="muted">J-${p.jours_arriere_start || 0}</span> <strong>${sub(p.heure_debut)}</strong> <span class="muted">à</span> <span class="muted">J-${p.jours_arriere_end || 0}</span> <strong>${sub(p.heure_fin)}</strong>`;
 
                     // ACTION ICONS
@@ -1168,7 +1152,7 @@
                         </div>`;
 
                     return `<tr>
-                        <td style="font-weight:600;">${escapeHtml(p.account_email || '—')}</td>
+                        <td style="font-weight:600;">${accountEmail}</td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
                         <td>${plage}</td>
                         <td style="font-weight:600; color:var(--ink);">${tSend}</td>
