@@ -152,13 +152,14 @@
                                     <th>Source</th>
                                     <th>Destinataire</th>
                                     <th>Plage horaire</th>
+                                    <th>Envoi</th>
                                     <th>Status</th>
                                     <th style="min-width:100px; text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="profiles-body">
                                 <tr>
-                                    <td colspan="5" style="text-align:center; padding: 40px;" class="muted">
+                                    <td colspan="6" style="text-align:center; padding: 40px;" class="muted">
                                         Chargement...</td>
                                 </tr>
                             </tbody>
@@ -443,7 +444,7 @@
                 F.unread.checked = false;
                 F.sort.value = "date_desc";
                 F.filterSender.value = ""; F.excludeSender.value = ""; F.filterCc.value = "";
-                F.audio.checked = true; F.voice.value = "onyx"; F.speed.value = 1.0; F.lang.value = "fr";
+                F.audio.checked = true; F.voice.value = "alloy"; F.speed.value = 1.0; F.lang.value = "fr";
 
                 const uEmail = document.getElementById('user-email').textContent;
                 if (uEmail && uEmail !== '...') F.recipient.value = uEmail;
@@ -609,7 +610,7 @@
                 PROFILES_BY_ID.clear();
 
                 if (!profiles || profiles.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px;">Aucun profil configuré.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px;">Aucun profil configuré.</td></tr>`;
                     return;
                 }
                 tbody.innerHTML = profiles.map(p => {
@@ -618,10 +619,16 @@
                         `<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Actif</span>` :
                         `<span style="background:#f1f5f9; color:#64748b; padding:2px 8px; border-radius:12px; font-size:0.8rem;">Inactif</span>`;
 
+                    // Format Timestamps
+                    const tStart = (p.heure_debut || '00:00:00').substring(0, 5);
+                    const tEnd = (p.heure_fin || '23:59:00').substring(0, 5);
+                    const tSend = (p.schedule && p.schedule.time_of_day) ? p.schedule.time_of_day.substring(0, 5) : (p.schedule_time || '??:??').substring(0, 5);
+
                     return `<tr>
                         <td><strong>${escapeHtml(p.account_email || '—')}</strong></td>
                         <td>${escapeHtml(p.recap_recipient || '—')}</td>
-                        <td>${p.heure_debut} → ${p.heure_fin}</td>
+                        <td>${tStart} → ${tEnd}</td>
+                        <td style="font-weight:600; color:#475569;">${tSend}</td>
                         <td>${activeBadge}</td>
                         <td style="text-align:right;">
                              <button class="btn btn-ghost btn-small" style="color:var(--primary); font-weight:600; margin-right:8px;" onclick="editProfile('${p.id}')">EDITER</button>
@@ -629,7 +636,7 @@
                         </td>
                     </tr>`;
                 }).join('');
-            } catch (e) { tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center;">${e.message}</td></tr>`; }
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" style="color:red; text-align:center;">${e.message}</td></tr>`; }
         }
 
     </script>
