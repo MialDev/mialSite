@@ -889,11 +889,12 @@
             } else {
                 // Sinon -> Ouvre la modale
                 const list = document.getElementById('account-select-list');
-                list.innerHTML = USER_MAILBOXES.map(mb =>
-                    `<button class="account-select-btn" onclick='openEditorForCreation(${JSON.stringify(mb)})'>
-                        <span>${escapeHtml(mb.email)}</span> <span>→</span>
-                    </button>`
-                ).join('');
+                list.innerHTML = USER_MAILBOXES.map(mb => {
+                    const safeMailbox = encodeURIComponent(JSON.stringify(mb));
+                    return `<button class="account-select-btn" onclick='openEditorForCreation(JSON.parse(decodeURIComponent("${safeMailbox}")))'>
+                        <span>${escapeHtml(mb.email || mb.email_address)}</span> <span>→</span>
+                    </button>`;
+                }).join('');
                 document.getElementById('modal-account-select').style.display = 'flex';
             }
         };
@@ -905,26 +906,40 @@
         // 3. Ouverture de l'éditeur (Création)
         // Affiche l'éditeur pour une NOUVELLE création
         window.openEditorForCreation = function (mailbox) {
-            closeAccountModal();
-            showEditor(false); // Reset form
+            // 1. Fermer la modale si elle est ouverte
+            document.getElementById('modal-account-select').style.display = 'none';
 
-            // DEBUG: Vérifie ce que l'API renvoie
-            console.log("Mailbox data:", mailbox);
+            // 2. Ouvrir l'éditeur en mode Création
+            showEditor(false);
 
-            // 1. Remplir l'ID du compte (Caché) -> Essentiel pour le Backend
-            // On cherche 'id' ou 'email_account_id' selon la structure renvoyée par /my/mailboxes
-            const accountId = mailbox.id || mailbox.email_account_id;
-            document.getElementById('f-account').value = accountId;
+            // 3. DEBUG LOG (Ouvre la console F12 pour voir ça)
+            console.log("Creation Mode - Mailbox:", mailbox);
 
-            // 2. Remplir le Destinataire par défaut
-            // On cherche 'email_address' ou 'email'
-            const emailStr = mailbox.email_address || mailbox.email || "";
-            document.getElementById('f-recipient').value = emailStr;
+            // 4. RÉCUPÉRATION ROBUSTE DE L'ID
+            // L'API renvoie parfois 'id' (table email_account) ou 'email_account_id' (table profile).
+            // Ici, c'est une mailbox, donc c'est souvent 'id'.
+            let accountId = mailbox.id;
+            if (!accountId && mailbox.email_account_id) accountId = mailbox.email_account_id;
 
-            // 3. Defaults forcés
-            document.getElementById('f-schedule').value = "08:00";
+            if (!accountId) {
+                alert("Erreur critique: Impossible de récupérer l'ID du compte. Rechargez la page.");
+                return;
+            }
 
-            // Titres
+            // 5. REMPLISSAGE DU CHAMP CACHÉ (VITAL !)
+            const accountInput = document.getElementById('f-account');
+            if (accountInput) {
+                accountInput.value = accountId;
+                console.log("Input f-account set to:", accountId);
+            } else {
+                console.error("FATAL: Input #f-account introuvable dans le DOM !");
+            }
+
+            // 6. Pré-remplir le destinataire avec l'email du compte
+            const email = mailbox.email || mailbox.email_address || "";
+            document.getElementById('f-recipient').value = email;
+
+            // 7. Titres
             document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
             document.getElementById('btn-save').textContent = "CRÉER L'AUTOMATISATION";
         };
@@ -1045,6 +1060,13 @@
         window.saveProfile = async function () {
             editorMsg.style.display = 'none';
             if (!F.account.value) return showMsg("Sélectionnez une boîte mail.", "red");
+
+            const accId = document.getElementById('f-account').value;
+            if (!accId) {
+                alert("Erreur interne: Le compte source n'est pas sélectionné. Veuillez recommencer.");
+                return;
+            }
+
             if (!F.recipient.value) return showMsg("Email destinataire requis.", "red");
 
             const parseCsv = (val) => val.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
