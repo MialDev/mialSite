@@ -745,19 +745,42 @@ window.deleteProfile = async function (id) {
 };
 
 window.toggleStatus = async function (id) {
-  // Logique de toggle status (simplifiée pour ce prompt)
   const btn = document.querySelector(`button[onclick="toggleStatus('${id}')"]`);
   if (!btn) return;
+
+  // UI Loading State
+  const originalText = btn.textContent;
+  btn.textContent = "...";
+  btn.style.opacity = "0.7";
+  btn.disabled = true;
+
   try {
     const p = PROFILES_BY_ID.get(id);
     if (!p) return;
-    const newStatus = p.status === 'Active' ? 'Paused' : 'Active';
-    await fetch(apiUrl(`/my/profiles/${id}/status`), {
+
+    // Logique inversée et minuscule stricte
+    const isCurrentlyActive = String(p.status).toLowerCase() === 'active';
+    const newStatus = isCurrentlyActive ? 'inactive' : 'active';
+
+    const res = await fetch(apiUrl(`/my/profiles/${id}/status`), {
       method: 'PUT',
       body: JSON.stringify({ status: newStatus }),
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
+
+    if (!res.ok) throw new Error("Erreur serveur");
+
+    // Mise à jour immédiate UI (Optimiste ou après confirmation)
+    // Ici on recharge pour être sûr d'avoir la donnée fraîche du backend
     loadProfiles();
-  } catch (e) { console.error(e); }
+
+  } catch (e) {
+    console.error(e);
+    alert("Impossible de changer le statut : " + e.message);
+    // Reset UI en cas d'erreur
+    btn.textContent = originalText;
+    btn.style.opacity = "1";
+    btn.disabled = false;
+  }
 };
