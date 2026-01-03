@@ -17,36 +17,6 @@
     <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
     <link rel="stylesheet" href="style.css" />
     <meta name="theme-color" content="#1fb6ff">
-    <style>
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper input {
-            padding-right: 40px;
-        }
-
-        .eye-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--muted);
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .eye-btn:hover {
-            color: var(--ink);
-        }
-
-        /* Tabs styling adjustment if needed, but switcher-glass in style.css should work */
-    </style>
 </head>
 
 <body>
@@ -74,29 +44,30 @@
                 </div>
 
                 <!-- Provider Tabs -->
-                <div style="margin-bottom: 24px;">
+                <!-- Note: The CSS .switcher-glass is optimized for 2 items. We use 3 items here. -->
+                <div class="pricing-switch-wrapper" style="margin-top: 0; margin-bottom: 24px;">
                     <fieldset class="switcher-glass" id="provider-tabs">
                         <label class="switcher-glass__option">
                             <input class="switcher-glass__input" type="radio" name="providerTab" value="outlook"
                                 checked />
-                            <span class="switcher-glass__text">Outlook</span>
+                            <span>Outlook</span>
                         </label>
                         <label class="switcher-glass__option">
                             <input class="switcher-glass__input" type="radio" name="providerTab" value="gmail" />
-                            <span class="switcher-glass__text">Gmail</span>
+                            <span>Gmail</span>
                         </label>
                         <label class="switcher-glass__option">
                             <input class="switcher-glass__input" type="radio" name="providerTab" value="other" />
-                            <span class="switcher-glass__text">Autre</span>
+                            <span>Autre</span>
                         </label>
                     </fieldset>
                 </div>
 
                 <!-- Instructions Blocks & OAuth -->
-                <div id="instr-outlook" class="instruction-block" style="text-align: center; margin-bottom: 24px;">
+                <div id="instr-outlook" class="instruction-block center" style="margin-bottom: 24px;">
                     <!-- OAuth Button for Outlook -->
                     <button type="button" id="btn-outlook-auth" class="btn btn-primary w-full"
-                        style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        style="justify-content:center;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                             <path fill="currentColor"
                                 d="M11.55 21H3v-8.55h8.55V21zM21 21h-8.55v-8.55H21V21zm-9.45-9.45H3V3h8.55v8.55zm9.45 0h-8.55V3H21v8.55z" />
@@ -113,39 +84,34 @@
                     <ul style="margin:8px 0 0 18px; padding:0;">
                         <li>Activez la <strong>Validation en deux étapes</strong> sur votre compte Google.</li>
                         <li>Allez dans <em>Gérer votre compte Google > Sécurité</em>.</li>
-                        <li>Cherchez "Mots de passe d'application" (barre de recherche) ou en bas de page.</li>
-                        <li>Générez un mot de passe pour "Messagerie" / "Autre". Copiez la clé de 16 caractères.</li>
+                        <li>Cherchez "Mots de passe d'application".</li>
+                        <li>Générez un mot de passe pour "Messagerie". Copiez la clé de 16 caractères.</li>
                     </ul>
                 </div>
 
                 <div id="instr-other" class="instruction-block"
                     style="display:none; margin-bottom:20px; font-size:0.9rem; color:var(--muted); background:rgba(255,255,255,0.6); padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,0.2);">
                     <strong>Autre (IMAP) :</strong>
-                    <p style="margin-top:4px;">Généralement, vous devez activer l'accès IMAP et générer un mot de passe
-                        spécifique si le 2FA est actif.</p>
+                    <p style="margin-top:4px;">Assurez-vous que l'accès IMAP est activé sur votre compte.</p>
                 </div>
 
                 <form id="onboarding-form" class="form">
-                    <!-- Hidden Select -->
-                    <div style="display:none;">
-                        <label>Provider</label>
-                        <select id="f-provider" name="provider">
-                            <option value="outlook">Outlook</option>
-                            <option value="gmail">Gmail</option>
-                            <option value="other">Autre (IMAP)</option>
-                        </select>
-                    </div>
+                    <!-- Manual Fields -->
+                    <div id="manual-fields" style="display: none;">
+                        <div>
+                            <label style="display:block; margin-bottom:6px; font-weight:500;">Email</label>
+                            <input type="email" name="email" id="f-email" placeholder="nom@entreprise.com" />
+                        </div>
 
-                    <div id="manual-fields">
-                        <label>Email
-                            <input type="email" name="email" id="f-email" required placeholder="nom@entreprise.com" />
-                        </label>
-
-                        <label>Mot de passe d'application / Secret
-                            <div class="input-wrapper">
-                                <input type="password" name="secret" id="f-secret" required
-                                    placeholder="••••••••••••" />
-                                <button type="button" class="eye-btn" onclick="togglePwd('f-secret')">
+                        <div>
+                            <label style="display:block; margin-bottom:6px; font-weight:500;">Mot de passe d'application
+                                / Secret
+                            </label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="password" name="secret" id="f-secret" placeholder="••••••••••••"
+                                    style="flex:1;" />
+                                <button type="button" class="btn btn-ghost" onclick="togglePwd('f-secret')"
+                                    style="padding: 0 12px;" title="Afficher/Masquer">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -155,9 +121,10 @@
                                 </button>
                             </div>
                             <div class="muted" style="font-size:0.75rem; margin-top:4px;">
-                                Utilisez un mot de passe d'application pour Gmail/Outlook.
+                                Utilisez le mot de passe d'application généré.
                             </div>
-                        </label>
+                        </div>
+
                         <div style="margin-top: 16px;">
                             <button type="submit" class="btn btn-primary w-full">Connecter Manuellement</button>
                         </div>
@@ -168,8 +135,7 @@
 
                     <div class="center" style="margin-top: 20px;">
                         <a href="dashboard.html?connected=false" class="muted"
-                            style="text-decoration: underline; font-size: 0.9rem;">Passer cette étape (Configuration
-                            plus tard)</a>
+                            style="text-decoration: underline; font-size: 0.9rem;">Passer cette étape</a>
                     </div>
                 </form>
             </div>
@@ -199,46 +165,54 @@
             else inp.type = 'password';
         }
 
-        // Tabs Logic
+        // --- TABS LOGIC ---
         const tabs = document.getElementsByName('providerTab');
-        const select = document.getElementById('f-provider');
         const manualFields = document.getElementById('manual-fields');
+        const instrOutlook = document.getElementById('instr-outlook');
+        const instrGmail = document.getElementById('instr-gmail');
+        const instrOther = document.getElementById('instr-other');
 
-        // Initial State for Outlook
-        if (manualFields) manualFields.style.display = 'none';
-
-        for (const t of tabs) {
-            t.addEventListener('change', () => {
-                if (t.checked) {
-                    select.value = t.value;
-                    updateInstructions(t.value);
-                }
-            });
+        // Helper to get selected provider
+        function getSelectedProvider() {
+            for (const t of tabs) { if (t.checked) return t.value; }
+            return 'outlook';
         }
 
-        function updateInstructions(val) {
-            // Reset visibility
-            document.getElementById('instr-outlook').style.display = 'none';
-            document.getElementById('instr-gmail').style.display = 'none';
-            document.getElementById('instr-other').style.display = 'none';
+        function updateUI() {
+            const provider = getSelectedProvider();
 
-            // Default to showing manual form unless Outlook
-            if (manualFields) manualFields.style.display = 'block';
+            // Hide all instructions
+            instrOutlook.style.display = 'none';
+            instrGmail.style.display = 'none';
+            instrOther.style.display = 'none';
 
-            if (val === 'outlook') {
-                document.getElementById('instr-outlook').style.display = 'block';
-                if (manualFields) manualFields.style.display = 'none'; // OAuth only
+            // Setup form visibility
+            if (provider === 'outlook') {
+                instrOutlook.style.display = 'block';
+                manualFields.style.display = 'none';
+            } else if (provider === 'gmail') {
+                instrGmail.style.display = 'block';
+                manualFields.style.display = 'block';
+            } else {
+                instrOther.style.display = 'block';
+                manualFields.style.display = 'block';
             }
-            if (val === 'gmail') document.getElementById('instr-gmail').style.display = 'block';
-            if (val === 'other') document.getElementById('instr-other').style.display = 'block';
         }
 
-        // --- OAUTH LOGIC ---
+        // Attach listeners
+        for (const t of tabs) {
+            t.addEventListener('change', updateUI);
+        }
+
+        // Init
+        updateUI();
+
+        // --- OAUTH LOGIC (Outlook) ---
         const btnOutlook = document.getElementById('btn-outlook-auth');
         if (btnOutlook) {
             btnOutlook.addEventListener('click', async () => {
+                const err = document.getElementById('error-message');
                 try {
-                    // Use correct redirect_uri (auto-detect current origin)
                     const redirectUri = window.location.origin + '/callback.html';
                     const res = await fetch(apiUrl(`/auth/microsoft/url?redirect_uri=${encodeURIComponent(redirectUri)}`), {
                         credentials: 'include'
@@ -252,32 +226,36 @@
                         throw new Error("URL de redirection manquante");
                     }
                 } catch (e) {
-                    const err = document.getElementById('error-message');
                     err.textContent = e.message;
                     err.style.display = 'block';
                 }
             });
         }
 
-        // Form Submit
+        // --- MANUAL SUBMIT LOGIC ---
         document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const errDiv = document.getElementById('error-message');
             errDiv.style.display = 'none';
 
-            let provider = select.value;
-            // Backend expects 'microsoft' for Outlook
-            if (provider === 'outlook') provider = 'microsoft';
+            const provider = getSelectedProvider();
+
+            // Should not happen for Outlook as fields are hidden, but safety check
+            if (provider === 'outlook') return;
 
             const email = document.getElementById('f-email').value.trim();
             const secret = document.getElementById('f-secret').value.trim();
 
-            if (!email || !secret) return;
+            if (!email || !secret) {
+                errDiv.textContent = "Veuillez remplir tous les champs.";
+                errDiv.style.display = 'block';
+                return;
+            }
 
             const payload = {
-                provider,
-                email,
-                secret
+                provider: provider, // 'gmail' or 'other'
+                email: email,
+                secret: secret
             };
 
             try {
@@ -292,9 +270,9 @@
 
                 if (!res.ok) {
                     if (res.status === 409) {
-                        throw new Error("Cette boîte est déjà connectée à un autre utilisateur. Contacte un admin pour la libérer.");
+                        throw new Error("Cette boîte est déjà connectée.");
                     }
-                    const errorMsg = data.detail || JSON.stringify(data) || res.statusText;
+                    const errorMsg = data.detail || "Erreur de connexion";
                     throw new Error(errorMsg);
                 }
 
@@ -303,7 +281,7 @@
 
             } catch (e) {
                 console.error("Mailbox Connect Error:", e);
-                errDiv.textContent = `Erreur de connexion : ${e.message}`;
+                errDiv.textContent = `Erreur : ${e.message}`;
                 errDiv.style.display = 'block';
             }
         });
