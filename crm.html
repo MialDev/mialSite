@@ -615,23 +615,24 @@
 
   <section class="section" id="contact">
     <div class="container">
-      <form name="contact" method="POST" action="/" data-netlify="true" class="card glass-static form" id="contact-form"
-        data-analytics-conversion="contact_submit">
+      <form id="contact-form" class="card glass-static form" data-analytics-conversion="contact_submit">
         <input type="hidden" name="form-name" value="contact" />
         <input type="hidden" name="offre_choisie" id="hidden-plan-input" value="">
 
         <div class="grid-2">
-          <label>Nom <input name="name" required placeholder="Votre nom" /></label>
-          <label>Email <input name="email" type="email" required placeholder="votre@email.com" /></label>
+          <label>Nom <input id="name" name="name" required placeholder="Votre nom" /></label>
+          <label>Email <input id="email" name="email" type="email" required placeholder="votre@email.com" /></label>
         </div>
         <div class="grid-2">
-          <label>Société <input name="company" placeholder="Nom de la société" /></label>
-          <label>Volume <input name="volume" placeholder="Emails / jour (approx.)" /></label>
+          <label>Société <input id="company" name="company" placeholder="Nom de la société" /></label>
+          <label>Volume <input id="volume" name="volume" placeholder="Emails / jour (approx.)" /></label>
         </div>
 
         <label>Message
-          <textarea name="message" rows="5" placeholder="Dites-nous en plus sur vos besoins..."></textarea>
+          <textarea id="message" name="message" rows="5" placeholder="Dites-nous en plus sur vos besoins..."></textarea>
         </label>
+
+        <div id="formMsg" style="margin-bottom: 1rem; font-weight: 500;"></div>
 
         <div class="form-actions">
           <label class="agree"><input type="checkbox" checked> J'accepte d'être contacté par mial</label>

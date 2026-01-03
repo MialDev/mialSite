@@ -97,248 +97,366 @@
   }
 
   function initContactForm() {
-    const form = document.getElementById('contact-form');
-    if (!form) return;
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const msgDiv = document.getElementById('formMsg');
-      if (msgDiv) { msgDiv.textContent = 'Envoi en cours...'; msgDiv.style.color = 'var(--blue)'; }
-      const data = {
-        name: document.getElementById('name') ? document.getElementById('name').value.trim() : '',
-        email: document.getElementById('email') ? document.getElementById('email').value.trim() : '',
-        company: document.getElementById('company') ? document.getElementById('company').value.trim() : '',
-        profession: document.getElementById('profession') ? document.getElementById('profession').value.trim() : null,
-        volume: document.getElementById('volume') ? document.getElementById('volume').value : '',
-        phone: document.getElementById('phone') ? document.getElementById('phone').value.trim() : null,
-        message: document.getElementById('message') ? document.getElementById('message').value.trim() : ''
-      };
-      if (!data.name || !data.email || !data.message) {
-        if (msgDiv) { msgDiv.textContent = "Veuillez remplir les champs obligatoires."; msgDiv.style.color = '#ef4444'; }
-        return;
-      }
-      try {
-        const path = window.apiUrl ? window.apiUrl('/contact') : '/portal-api/contact';
-        const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        const json = await res.json().catch(() => ({}));
-        if (res.ok) {
-          if (msgDiv) { msgDiv.textContent = "Message envoyé ! Nous vous répondrons très vite."; msgDiv.style.color = 'green'; }
-          form.reset();
-        } else {
-          if (msgDiv) { msgDiv.textContent = "Erreur: " + (json.detail || "Inconnue"); msgDiv.style.color = '#ef4444'; }
-        }
-      } catch (err) {
-        if (msgDiv) { msgDiv.textContent = "Impossible de contacter le serveur."; msgDiv.style.color = '#ef4444'; }
-      }
-    });
+  });
+}
+
+  // --- ADMIN LEADS LOGIC ---
+  window.switchAdminView = (viewName) => {
+  const vProfiles = document.getElementById('view-profiles');
+  const vLeads = document.getElementById('view-leads');
+  if (!vProfiles || !vLeads) return;
+
+  if (viewName === 'leads') {
+    vProfiles.style.display = 'none';
+    vLeads.style.display = 'block';
+    loadLeads();
+  } else {
+    vProfiles.style.display = 'block';
+    vLeads.style.display = 'none';
   }
+};
 
-  function initYear() {
-    const el = document.getElementById('year');
-    if (el) el.textContent = new Date().getFullYear();
-  }
+window.loadLeads = async () => {
+  const tbody = document.getElementById('leads-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="center muted py-4">Chargement...</td></tr>';
 
-
-  // --- ANALYTICS TRACKING ---
-  const CONSENT_KEY = 'mial_consent';
-  const ENDPOINT = '/portal-api/a/collect';
-  const DEBUG = new URLSearchParams(window.location.search).has('analytics_debug');
-
-  function uuidv4() {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-  const PAGE_ID = uuidv4();
-  const PAGE_START = performance.now();
-  const PATH = window.location.pathname;
-  const REF = document.referrer || null;
-
-  let hasConsented = false;
   try {
-    const c = JSON.parse(localStorage.getItem(CONSENT_KEY) || '{}');
-    hasConsented = c.analytics === true;
-  } catch (e) { }
-
-  function log(msg, ...args) {
-    if (DEBUG) console.log(`[Analytics] ${msg}`, ...args);
+    const res = await fetch(apiUrl('/admin/api/prospects'), { credentials: 'include' });
+    if (!res.ok) throw new Error("Erreur chargement leads");
+    const leads = await res.json();
+    renderLeads(leads);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="center error-text py-4">${e.message}</td></tr>`;
   }
-  function logError(msg, ...args) {
-    if (DEBUG) console.error(`[Analytics] ${msg}`, ...args);
+};
+
+function renderLeads(leads) {
+  const tbody = document.getElementById('leads-tbody');
+  if (!leads || leads.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="center muted py-4">Aucun prospect.</td></tr>';
+    return;
   }
 
-  function sendEvent(payload) {
-    if (!hasConsented) return;
+  tbody.innerHTML = leads.map(l => {
+    const date = new Date(l.created_at).toLocaleString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    const shortMsg = l.message.length > 50 ? l.message.substring(0, 50) + '...' : l.message;
 
-    const fullPayload = {
-      event: payload.event,
-      path: PATH,
-      ts: Date.now(),
-      referrer: REF,
-      page_id: PAGE_ID,
-      duration_ms: payload.duration_ms || null,
-      props: payload.props || null
-    };
+    return `
+        <tr>
+          <td>${date}</td>
+          <td>${l.name}</td>
+          <td><a href="mailto:${l.email}">${l.email}</a></td>
+          <td>${l.company || '-'}</td>
+          <td title="${l.message.replace(/"/g, '&quot;')}">${shortMsg}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="action-btn" title="Répondre" onclick="openReplyModal('${l.id}', '${l.email}', '${l.name.replace(/'/g, "\\'")}')">
+              ✉️
+            </button>
+            <button class="action-btn" title="Supprimer" style="color:#ef4444; margin-left:8px;" onclick="deleteLead('${l.id}')">
+              🗑
+            </button>
+          </td>
+        </tr>
+      `;
+  }).join('');
+}
 
-    log('Sending:', fullPayload);
+window.deleteLead = async (id) => {
+  if (!confirm("Supprimer ce prospect ?")) return;
+  try {
+    const res = await fetch(apiUrl(`/admin/api/prospects/${id}`), { method: 'DELETE', credentials: 'include' });
+    if (!res.ok) throw new Error("Erreur suppression");
+    loadLeads(); // Reload
+  } catch (e) {
+    alert(e.message);
+  }
+};
 
-    const blob = new Blob([JSON.stringify(fullPayload)], { type: 'application/json' });
+let currentLeadReplyId = null;
 
-    // Beacon for reliability (especially pageclose)
-    if (navigator.sendBeacon) {
-      if (navigator.sendBeacon(ENDPOINT, blob)) {
-        log('Sent via Beacon (status not available in beacon)');
-        return;
-      }
-    }
+window.openReplyModal = (id, email, name) => {
+  currentLeadReplyId = id;
+  const modal = document.getElementById('modal-reply');
+  const sub = document.getElementById('modal-reply-subtitle');
+  const subj = document.getElementById('reply-subject');
 
-    // Fallback
-    fetch(ENDPOINT, {
+  if (sub) sub.textContent = `À: ${name} (${email})`;
+  if (subj) subj.value = `Re: Votre demande de contact mial`;
+  document.getElementById('reply-message').value = '';
+
+  if (modal) modal.showModal();
+};
+
+window.submitReply = async () => {
+  if (!currentLeadReplyId) return;
+  const subject = document.getElementById('reply-subject').value;
+  const message = document.getElementById('reply-message').value;
+  const modal = document.getElementById('modal-reply');
+
+  if (!subject || !message) return alert("Veuillez remplir le sujet et le message.");
+
+  try {
+    const res = await fetch(apiUrl(`/admin/api/prospects/${currentLeadReplyId}/reply`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(fullPayload),
-      keepalive: true,
+      body: JSON.stringify({ subject, message }),
       credentials: 'include'
-    }).then(res => {
-      log('Fetch status:', res.status);
-    }).catch(err => {
-      logError('Fetch error:', err);
     });
+    if (!res.ok) throw new Error("Erreur envoi réponse");
+
+    alert("Réponse envoyée !");
+    if (modal) modal.close();
+    loadLeads();
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+}) ();
+if (!form) return;
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgDiv = document.getElementById('formMsg');
+  if (msgDiv) { msgDiv.textContent = 'Envoi en cours...'; msgDiv.style.color = 'var(--blue)'; }
+  const data = {
+    name: document.getElementById('name') ? document.getElementById('name').value.trim() : '',
+    email: document.getElementById('email') ? document.getElementById('email').value.trim() : '',
+    company: document.getElementById('company') ? document.getElementById('company').value.trim() : '',
+    profession: document.getElementById('profession') ? document.getElementById('profession').value.trim() : null,
+    volume: document.getElementById('volume') ? document.getElementById('volume').value : '',
+    phone: document.getElementById('phone') ? document.getElementById('phone').value.trim() : null,
+    message: document.getElementById('message') ? document.getElementById('message').value.trim() : ''
+  };
+  if (!data.name || !data.email || !data.message) {
+    if (msgDiv) { msgDiv.textContent = "Veuillez remplir les champs obligatoires."; msgDiv.style.color = '#ef4444'; }
+    return;
+  }
+  try {
+    const path = window.apiUrl ? window.apiUrl('/contact') : '/portal-api/contact';
+    const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      if (msgDiv) { msgDiv.textContent = "Message envoyé ! Nous vous répondrons très vite."; msgDiv.style.color = 'green'; }
+      form.reset();
+    } else {
+      if (msgDiv) { msgDiv.textContent = "Erreur: " + (json.detail || "Inconnue"); msgDiv.style.color = '#ef4444'; }
+    }
+  } catch (err) {
+    if (msgDiv) { msgDiv.textContent = "Impossible de contacter le serveur."; msgDiv.style.color = '#ef4444'; }
+  }
+});
   }
 
-  function trackPageview() {
-    sendEvent({ event: 'pageview' });
+function initYear() {
+  const el = document.getElementById('year');
+  if (el) el.textContent = new Date().getFullYear();
+}
+
+
+// --- ANALYTICS TRACKING ---
+const CONSENT_KEY = 'mial_consent';
+const ENDPOINT = '/portal-api/a/collect';
+const DEBUG = new URLSearchParams(window.location.search).has('analytics_debug');
+
+function uuidv4() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+const PAGE_ID = uuidv4();
+const PAGE_START = performance.now();
+const PATH = window.location.pathname;
+const REF = document.referrer || null;
+
+let hasConsented = false;
+try {
+  const c = JSON.parse(localStorage.getItem(CONSENT_KEY) || '{}');
+  hasConsented = c.analytics === true;
+} catch (e) { }
+
+function log(msg, ...args) {
+  if (DEBUG) console.log(`[Analytics] ${msg}`, ...args);
+}
+function logError(msg, ...args) {
+  if (DEBUG) console.error(`[Analytics] ${msg}`, ...args);
+}
+
+function sendEvent(payload) {
+  if (!hasConsented) return;
+
+  const fullPayload = {
+    event: payload.event,
+    path: PATH,
+    ts: Date.now(),
+    referrer: REF,
+    page_id: PAGE_ID,
+    duration_ms: payload.duration_ms || null,
+    props: payload.props || null
+  };
+
+  log('Sending:', fullPayload);
+
+  const blob = new Blob([JSON.stringify(fullPayload)], { type: 'application/json' });
+
+  // Beacon for reliability (especially pageclose)
+  if (navigator.sendBeacon) {
+    if (navigator.sendBeacon(ENDPOINT, blob)) {
+      log('Sent via Beacon (status not available in beacon)');
+      return;
+    }
   }
 
-  let pagecloseSent = false;
-  function trackPageClose() {
-    if (pagecloseSent) return;
-    pagecloseSent = true;
-    const duration = Math.round(performance.now() - PAGE_START);
-    sendEvent({ event: 'pageclose', duration_ms: duration });
-  }
+  // Fallback
+  fetch(ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fullPayload),
+    keepalive: true,
+    credentials: 'include'
+  }).then(res => {
+    log('Fetch status:', res.status);
+  }).catch(err => {
+    logError('Fetch error:', err);
+  });
+}
 
-  function initHeartbeat() {
-    setInterval(() => {
-      // 15s interval, strictly visible & consented
-      if (document.visibilityState === 'visible' && hasConsented) {
-        sendEvent({ event: 'heartbeat' });
+function trackPageview() {
+  sendEvent({ event: 'pageview' });
+}
+
+let pagecloseSent = false;
+function trackPageClose() {
+  if (pagecloseSent) return;
+  pagecloseSent = true;
+  const duration = Math.round(performance.now() - PAGE_START);
+  sendEvent({ event: 'pageclose', duration_ms: duration });
+}
+
+function initHeartbeat() {
+  setInterval(() => {
+    // 15s interval, strictly visible & consented
+    if (document.visibilityState === 'visible' && hasConsented) {
+      sendEvent({ event: 'heartbeat' });
+    }
+  }, 15000);
+}
+
+function initScrollTracking() {
+  const thresholds = [25, 50, 75, 100];
+  const sent = new Set();
+  const checkScroll = () => {
+    if (!hasConsented) return;
+    const h = document.documentElement;
+    const b = document.body;
+    const st = h.scrollTop || b.scrollTop;
+    const sh = h.scrollHeight || b.scrollHeight;
+    const ch = h.clientHeight;
+    if (sh <= ch) return;
+
+    const pct = Math.floor((st / (sh - ch)) * 100);
+    thresholds.forEach(t => {
+      if (pct >= t && !sent.has(t)) {
+        sent.add(t);
+        sendEvent({ event: `scroll:${t}`, props: { scroll_pct: t } });
       }
-    }, 15000);
-  }
-
-  function initScrollTracking() {
-    const thresholds = [25, 50, 75, 100];
-    const sent = new Set();
-    const checkScroll = () => {
-      if (!hasConsented) return;
-      const h = document.documentElement;
-      const b = document.body;
-      const st = h.scrollTop || b.scrollTop;
-      const sh = h.scrollHeight || b.scrollHeight;
-      const ch = h.clientHeight;
-      if (sh <= ch) return;
-
-      const pct = Math.floor((st / (sh - ch)) * 100);
-      thresholds.forEach(t => {
-        if (pct >= t && !sent.has(t)) {
-          sent.add(t);
-          sendEvent({ event: `scroll:${t}`, props: { scroll_pct: t } });
-        }
-      });
-    };
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(() => { checkScroll(); ticking = false; });
-        ticking = true;
-      }
-    }, { passive: true });
-  }
-
-  function initInteractionTracking() {
-    const handle = (e, attr) => {
-      const el = e.target.closest(`[${attr}]`);
-      if (el) {
-        const val = el.getAttribute(attr);
-        const evtName = (attr === 'data-analytics-conversion') ? `conversion:${val}` : `click:${val}`;
-        sendEvent({ event: evtName });
-      }
-    };
-
-    document.addEventListener('click', (e) => {
-      handle(e, 'data-analytics-click');
-      handle(e, 'data-analytics-conversion');
     });
+  };
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => { checkScroll(); ticking = false; });
+      ticking = true;
+    }
+  }, { passive: true });
+}
 
-    document.addEventListener('submit', (e) => {
-      const el = e.target.closest('[data-analytics-conversion]');
-      if (el) {
-        const val = el.getAttribute('data-analytics-conversion');
-        sendEvent({ event: `conversion:${val}` });
-      }
-    });
-  }
+function initInteractionTracking() {
+  const handle = (e, attr) => {
+    const el = e.target.closest(`[${attr}]`);
+    if (el) {
+      const val = el.getAttribute(attr);
+      const evtName = (attr === 'data-analytics-conversion') ? `conversion:${val}` : `click:${val}`;
+      sendEvent({ event: evtName });
+    }
+  };
 
-  function initCookieBanner() {
-    if (localStorage.getItem(CONSENT_KEY)) return;
-    const banner = document.createElement('div');
-    banner.id = 'cookie-banner';
-    banner.innerHTML = `
+  document.addEventListener('click', (e) => {
+    handle(e, 'data-analytics-click');
+    handle(e, 'data-analytics-conversion');
+  });
+
+  document.addEventListener('submit', (e) => {
+    const el = e.target.closest('[data-analytics-conversion]');
+    if (el) {
+      const val = el.getAttribute('data-analytics-conversion');
+      sendEvent({ event: `conversion:${val}` });
+    }
+  });
+}
+
+function initCookieBanner() {
+  if (localStorage.getItem(CONSENT_KEY)) return;
+  const banner = document.createElement('div');
+  banner.id = 'cookie-banner';
+  banner.innerHTML = `
       <div><h4>🍪 Cookies & Confidentialité</h4><p>En acceptant, vous nous aidez à améliorer Mial via des statistiques anonymes.</p></div>
       <div class="cookie-actions">
         <button id="cookie-accept" class="btn btn-primary w-full" style="padding: 0.6rem;">Accepter</button>
         <button id="cookie-decline" class="btn btn-ghost w-full" style="padding: 0.6rem;">Refuser</button>
       </div>
     `;
-    document.body.appendChild(banner);
-    requestAnimationFrame(() => banner.classList.add('visible'));
+  document.body.appendChild(banner);
+  requestAnimationFrame(() => banner.classList.add('visible'));
 
-    document.getElementById('cookie-accept').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: true }));
-      hasConsented = true;
-      banner.remove();
-      trackPageview();
-    });
-    document.getElementById('cookie-decline').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: false }));
-      hasConsented = false;
-      banner.remove();
-    });
-  }
+  document.getElementById('cookie-accept').addEventListener('click', () => {
+    localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: true }));
+    hasConsented = true;
+    banner.remove();
+    trackPageview();
+  });
+  document.getElementById('cookie-decline').addEventListener('click', () => {
+    localStorage.setItem(CONSENT_KEY, JSON.stringify({ analytics: false }));
+    hasConsented = false;
+    banner.remove();
+  });
+}
 
 
-  document.addEventListener('DOMContentLoaded', () => {
-    initMobileNav();
-    initBriefAudio();
-    initRevealAnimations();
-    initYear();
-    initPricingSwitch();
-    initPlanSelection();
-    initContactForm();
+document.addEventListener('DOMContentLoaded', () => {
+  initMobileNav();
+  initBriefAudio();
+  initRevealAnimations();
+  initYear();
+  initPricingSwitch();
+  initPlanSelection();
+  initContactForm();
 
-    initCookieBanner();
-    if (hasConsented) trackPageview();
+  initCookieBanner();
+  if (hasConsented) trackPageview();
 
-    initHeartbeat();
-    initScrollTracking();
-    initInteractionTracking();
+  initHeartbeat();
+  initScrollTracking();
+  initInteractionTracking();
 
-    window.addEventListener('pagehide', trackPageClose);
-    window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackPageClose(); });
+  window.addEventListener('pagehide', trackPageClose);
+  window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackPageClose(); });
 
-    document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(btn => {
-      btn.addEventListener('click', (e) => { e.preventDefault(); if (window.doLogout) window.doLogout(); });
-    });
-
-    onScroll();
+  document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); if (window.doLogout) window.doLogout(); });
   });
 
-  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+});
 
-})();
+window.addEventListener('scroll', onScroll, { passive: true });
+
+}) ();
 
 /* =========================================================
    DASHBOARD LOGIC (Gestion des Profils)
