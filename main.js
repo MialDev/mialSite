@@ -581,26 +581,8 @@ window.initAdminDashboard = async function () {
   if (document.getElementById('profile-editor')) window.initAdminEditorListeners();
 
   try {
-    let useTree = false;
-    try {
-      const treeRes = await fetch(apiUrl('/admin/api/admin-tree'), { credentials: 'include' });
-      if (treeRes.ok) {
-        const tree = await treeRes.json();
-        ADMIN_CACHE.users = tree;
-        tree.forEach(u => {
-          if (u.mailboxes) {
-            ADMIN_CACHE.mailboxes[u.id] = u.mailboxes;
-            u.mailboxes.forEach(m => {
-              if (m.profiles) ADMIN_CACHE.profiles[m.id] = m.profiles;
-            });
-          }
-        });
-        useTree = true;
-        renderAdminUsersRoot(tree);
-      }
-    } catch (e) { console.log("Tree check failed, using fallback", e); }
-
-    if (!useTree) await fetchAdminUsers();
+    // Direct call to fetchAdminUsers as requested (removing admin-tree legacy)
+    await fetchAdminUsers();
   } catch (e) {
     if (root) root.innerHTML = `<div style="text-align:center; color:red; padding: 20px;">Erreur init: ${e.message}</div>`;
   }
