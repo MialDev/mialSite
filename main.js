@@ -839,6 +839,7 @@ window.openAdminEditor = function (id) {
 
   setVal('admin-f-recipient', p.recap_recipient);
   setVal('admin-f-schedule', timeSub(p.schedule_time));
+  setVal('admin-f-account', p.email_account_id);
 
   setVal('admin-f-days-start', p.jours_arriere_start ?? 1);
   setVal('admin-f-time-start', timeSub(p.heure_debut));
@@ -900,6 +901,7 @@ window.saveAdminProfile = async function () {
 
   try {
     const payload = {
+      email_account_id: getVal('admin-f-account'),
       recap_recipient: getVal('admin-f-recipient'),
       schedule_time: fixTime(getVal('admin-f-schedule')),
       jours_arriere_start: parseInt(getVal('admin-f-days-start')) || 0,
@@ -921,7 +923,7 @@ window.saveAdminProfile = async function () {
       speed: parseFloat(getVal('admin-f-speed')),
       language: getVal('admin-f-lang'),
       timezone: getVal('admin-f-timezone'),
-      categories: 'ALL' // default
+      categories_filter: 'ALL'
     };
 
     const res = await fetch(apiUrl(`/admin/api/recap-profiles/${ADMIN_EDITOR_ID}`), {
