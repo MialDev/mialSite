@@ -902,3 +902,473 @@ window.toggleStatus = async function (id) {
     btn.disabled = false;
   }
 };
+
+// --- ADMIN DASHBOARD LOGIC ---
+if (window.location.pathname.includes('/admin/dashboard.html')) {
+  let ADMIN_PROFILES_BY_ID = new Map();
+  let CURRENT_ADMIN_PROFILE_ID = null;
+
+  const ADMIN_CACHE = {
+    users: [],
+    mailboxes: {},
+    profiles: {}
+  };
+  const ADMIN_LOADING = {
+    mailboxes: {},
+    profiles: {}
+  };
+
+  window.initAdminDashboard = async () => {
+    ADMIN_CACHE.users = [];
+    ADMIN_CACHE.mailboxes = {};
+    ADMIN_CACHE.profiles = {};
+    const root = document.getElementById('hierarchy-root');
+    if (root) root.innerHTML = '<div style="text-align:center; padding: 40px;" class="muted">Chargement de la hiérarchie...</div>';
+
+    try {
+      let useTree = false;
+      try {
+        const treeRes = await fetch(apiUrl('/admin/api/admin-tree'), { credentials: 'include' });
+        if (treeRes.ok) {
+          const tree = await treeRes.json();
+          ADMIN_CACHE.users = tree;
+          tree.forEach(u => {
+            if (u.mailboxes) {
+              ADMIN_CACHE.mailboxes[u.id] = u.mailboxes;
+              u.mailboxes.forEach(m => {
+                if (m.profiles) ADMIN_CACHE.profiles[m.id] = m.profiles;
+              });
+            }
+          });
+          useTree = true;
+          renderAdminUsersRoot(tree);
+        }
+      } catch (e) { console.log("Tree check failed:", e); }
+
+      if (!useTree) await fetchAdminUsers();
+
+    } catch (e) {
+      if (root) root.innerHTML = `<div style="text-align:center; color:red; padding: 20px;">Erreur init: ${e.message}</div>`;
+    }
+  };
+
+  async function fetchAdminUsers() {
+    try {
+      const res = await fetch(apiUrl('/admin/api/users'), { credentials: 'include' });
+      if (!res.ok) throw new Error('Impossible de charger les utilisateurs');
+      const users = await res.json();
+      ADMIN_CACHE.users = users;
+      renderAdminUsersRoot(users);
+    } catch (e) {
+      document.getElementById('hierarchy-root').innerHTML = `<div style="text-align:center; color:red;">${e.message}</div>`;
+    }
+  }
+
+  function renderAdminUsersRoot(users) {
+    const root = document.getElementById('hierarchy-root');
+    if (!users || users.length === 0) {
+      root.innerHTML = '<div style="text-align:center; padding: 20px;">Aucun utilisateur.</div>';
+      return;
+    }
+    root.innerHTML = users.map(u => buildAdminUserRow(u)).join('');
+  }
+
+  function buildAdminUserRow(u) {
+    const created = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+    const activeBadge = u.is_active
+      ? `<span class="badge-active">ACTIF</span>`
+      : `<span class="badge-inactive">INACTIF</span>`;
+
+    let mbCount = '?';
+    let pfCount = '?';
+    if (u.mailboxes_count !== undefined) mbCount = u.mailboxes_count;
+    if (u.profiles_count !== undefined) pfCount = u.profiles_count;
+
+    if (ADMIN_CACHE.mailboxes[u.id]) {
+      mbCount = ADMIN_CACHE.mailboxes[u.id].length;
+      let localPCount = 0;
+      ADMIN_CACHE.mailboxes[u.id].forEach(m => {
+        if (ADMIN_CACHE.profiles[m.id]) localPCount += ADMIN_CACHE.profiles[m.id].length;
+      });
+      if (mbCount > 0) pfCount = localPCount;
+    }
+
+    const safeEmail = String(u.email || '').replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]; });
+
+    return `
+        <div id="user-container-${u.id}" class="user-row" style="border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; background: white; overflow: hidden;">
+            <div onclick="toggleAdminUser('${u.id}')" style="padding: 12px 16px; background: #f8fafc; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid transparent;">
+                <div style="display:flex; align-items:center; gap: 12px;">
+                    <span style="font-size: 1.2rem; transform: rotate(0deg); transition: transform 0.2s;" id="icon-user-${u.id}">▶</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 1rem; color: #1e293b;">${safeEmail}</div>
+                        <div class="muted" style="font-size: 0.8rem;">
+                            ID: ${u.id.substring(0, 8)}... · ${u.role || 'user'} · ${created}
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap: 16px;">
+                     <div style="font-size: 0.85rem; color: #64748b;">
+                        <span id="count-mb-${u.id}"><strong>${mbCount}</strong> Boîtes</span> · 
+                        <span id="count-pf-${u.id}"><strong>${pfCount}</strong> Profils</span>
+                     </div>
+                     ${activeBadge}
+                     <button class="action-btn" style="color: #ef4444; border-color: #fecaca; margin-left: 12px;" onclick="event.stopPropagation(); deleteAdminUser('${u.id}')">Supprimer</button>
+                </div>
+            </div>
+            <div id="content-user-${u.id}" style="display: none; border-top: 1px solid #e2e8f0;">
+                <div style="padding: 16px; background: #fff;" id="inner-user-${u.id}"></div>
+            </div>
+        </div>
+        `;
+  }
+
+  window.toggleAdminUser = async (userId) => {
+    const content = document.getElementById(`content-user-${userId}`);
+    const icon = document.getElementById(`icon-user-${userId}`);
+    const inner = document.getElementById(`inner-user-${userId}`);
+
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      icon.style.transform = 'rotate(90deg)';
+      if (!ADMIN_CACHE.mailboxes[userId] && !ADMIN_LOADING.mailboxes[userId]) {
+        ADMIN_LOADING.mailboxes[userId] = true;
+        inner.innerHTML = '<div class="muted">Chargement des boîtes...</div>';
+        try {
+          const res = await fetch(apiUrl(`/admin/api/users/${userId}/email-accounts`), { credentials: 'include' });
+          if (res.ok) {
+            const mbs = await res.json();
+            ADMIN_CACHE.mailboxes[userId] = mbs;
+            renderAdminMailboxes(userId, mbs);
+          } else {
+            inner.innerHTML = '<div class="muted" style="padding:8px;">Aucune boîte mail.</div>';
+          }
+        } catch (e) {
+          inner.innerHTML = `<div style="color:red;">${e.message}</div>`;
+        } finally {
+          ADMIN_LOADING.mailboxes[userId] = false;
+        }
+      } else if (ADMIN_CACHE.mailboxes[userId]) {
+        renderAdminMailboxes(userId, ADMIN_CACHE.mailboxes[userId]);
+      }
+    } else {
+      content.style.display = 'none';
+      icon.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  function renderAdminMailboxes(userId, mailboxes) {
+    const container = document.getElementById(`inner-user-${userId}`);
+    if (!mailboxes || mailboxes.length === 0) {
+      container.innerHTML = '<div class="muted" style="padding:8px; font-style:italic;">Aucune boîte mail connectée.</div>';
+      return;
+    }
+    container.innerHTML = mailboxes.map(mb => buildAdminMailboxRow(mb)).join('');
+  }
+
+  function buildAdminMailboxRow(mb) {
+    const statusColor = (mb.status === 'connected') ? '#16a34a' : '#f59e0b';
+    const safeEmail = String(mb.email_address || '').replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]; });
+
+    return `
+        <div id="mailbox-container-${mb.id}" style="margin-top: 8px; border: 1px solid #f1f5f9; border-radius: 6px; background: #f8fafc;">
+             <div onclick="toggleAdminMailbox('${mb.id}')" style="padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display:flex; align-items:center; gap: 8px;">
+                    <span id="icon-mb-${mb.id}" style="font-size: 0.9rem; transition: transform 0.2s;">▶</span>
+                    <strong>${safeEmail}</strong>
+                    <span style="font-size:0.8rem; background: #e2e8f0; padding: 1px 6px; border-radius: 4px;">${mb.provider}</span>
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
+                </div>
+                <div>
+                     <button class="action-btn" style="color: #ef4444; border-color: #fecaca; font-size: 0.75rem;" onclick="event.stopPropagation(); deleteAdminMailbox('${mb.id}', '${mb.user_id}')">Supprimer Boîte</button>
+                </div>
+             </div>
+             <div id="content-mb-${mb.id}" style="display: none; padding: 12px; border-top: 1px solid #f1f5f9; background: white;">
+                <table class="dashboard-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Recipient</th>
+                            <th>Timezone</th>
+                            <th>Heures</th>
+                            <th>Jours</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-mb-${mb.id}"></tbody>
+                </table>
+             </div>
+        </div>
+        `;
+  }
+
+  window.toggleAdminMailbox = async (mbId) => {
+    const content = document.getElementById(`content-mb-${mbId}`);
+    const icon = document.getElementById(`icon-mb-${mbId}`);
+    const tbody = document.getElementById(`tbody-mb-${mbId}`);
+
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      icon.style.transform = 'rotate(90deg)';
+      if (!ADMIN_CACHE.profiles[mbId] && !ADMIN_LOADING.profiles[mbId]) {
+        ADMIN_LOADING.profiles[mbId] = true;
+        tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Chargement profils...</td></tr>';
+        try {
+          const res = await fetch(apiUrl(`/admin/api/email-accounts/${mbId}/recap-profiles`), { credentials: 'include' });
+          if (res.ok) {
+            const profs = await res.json();
+            ADMIN_CACHE.profiles[mbId] = profs;
+            renderAdminProfiles(mbId, profs);
+          } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Aucun profil.</td></tr>';
+          }
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">${e.message}</td></tr>`;
+        } finally {
+          ADMIN_LOADING.profiles[mbId] = false;
+        }
+      } else if (ADMIN_CACHE.profiles[mbId]) {
+        renderAdminProfiles(mbId, ADMIN_CACHE.profiles[mbId]);
+      }
+    } else {
+      content.style.display = 'none';
+      icon.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  function renderAdminProfiles(mbId, profiles) {
+    const tbody = document.getElementById(`tbody-mb-${mbId}`);
+    if (!profiles || profiles.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center; font-style:italic;">Aucun profil de récap.</td></tr>';
+      return;
+    }
+
+    profiles.forEach(p => ADMIN_PROFILES_BY_ID.set(p.id, p));
+
+    tbody.innerHTML = profiles.map(p => {
+      const status = String(p.status ?? '—');
+      const isStatusActive = (status.toLowerCase() === 'active');
+      const statusClass = isStatusActive ? 'badge-active' : 'badge-inactive';
+      const recipient = String(p.recap_recipient || '—').replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]; });
+
+      return `
+            <tr id="profile-row-${p.id}">
+                <td style="font-family:monospace; font-size:0.85rem; color:#64748b;">${p.id.substring(0, 8)}...</td>
+                <td><strong>${recipient}</strong></td>
+                <td>${p.timezone || '—'}</td>
+                <td>${p.heure_debut || '—'} - ${p.heure_fin || '—'}</td>
+                <td>${p.jours_arriere_start || 0} → ${p.jours_arriere_end || 0}</td>
+                <td><span class="${statusClass}">${status}</span></td>
+                <td style="text-align: right; white-space: nowrap;">
+                     <button class="action-btn" onclick="openAdminEditor('${p.id}')">Éditer / Détails</button>
+                     <button class="action-btn" style="color:#ef4444; border-color:transparent; background:transparent;" onclick="deleteAdminProfile('${p.id}', '${mbId}')">🗑</button>
+                </td>
+            </tr>
+            `;
+    }).join('');
+  }
+
+  // --- DELETION ---
+  window.deleteAdminUser = async (id) => {
+    if (!confirm("Attention: Supprimer cet utilisateur ?")) return;
+    try {
+      const res = await fetch(apiUrl(`/admin/api/users/${id}`), { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Delete failed');
+      const row = document.getElementById(`user-container-${id}`);
+      if (row) row.remove();
+      if (ADMIN_CACHE.users) ADMIN_CACHE.users = ADMIN_CACHE.users.filter(u => u.id !== id);
+    } catch (e) { alert(e.message); }
+  };
+
+  window.deleteAdminMailbox = async (mbId, userId) => {
+    if (!confirm("Supprimer cette boîte mail ?")) return;
+    try {
+      const res = await fetch(apiUrl(`/admin/api/email-accounts/${mbId}`), { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Delete failed');
+      const row = document.getElementById(`mailbox-container-${mbId}`);
+      if (row) row.remove();
+      // Update counts logic omitted for brevity, but cache cleanup:
+      if (ADMIN_CACHE.mailboxes[userId]) ADMIN_CACHE.mailboxes[userId] = ADMIN_CACHE.mailboxes[userId].filter(m => m.id !== mbId);
+    } catch (e) { alert(e.message); }
+  };
+
+  window.deleteAdminProfile = async (pId, mbId) => {
+    if (!confirm("Supprimer ce profil ?")) return;
+    try {
+      const res = await fetch(apiUrl(`/admin/api/recap-profiles/${pId}`), { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Delete failed');
+      const row = document.getElementById(`profile-row-${pId}`);
+      if (row) row.remove();
+      if (ADMIN_CACHE.profiles[mbId]) ADMIN_CACHE.profiles[mbId] = ADMIN_CACHE.profiles[mbId].filter(p => p.id !== pId);
+    } catch (e) { alert(e.message); }
+  };
+
+  // --- EDITOR ---
+  window.openAdminEditor = (id) => {
+    const p = ADMIN_PROFILES_BY_ID.get(id);
+    if (!p) return;
+    CURRENT_ADMIN_PROFILE_ID = id;
+    document.getElementById('edit-profile-id').textContent = id;
+    document.getElementById('editor-error').style.display = 'none';
+    document.getElementById('editor-ok').style.display = 'none';
+    document.getElementById('profile-editor').style.display = 'block';
+
+    // Fill fields
+    document.getElementById('f-timezone').value = p.timezone || '';
+    document.getElementById('f-start').value = p.heure_debut || '';
+    document.getElementById('f-end').value = p.heure_fin || '';
+    document.getElementById('f-days-start').value = p.jours_arriere_start ?? 0;
+    document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
+    document.getElementById('f-debug').checked = (p.debug_mode === true);
+
+    const f = p.filters || {};
+    const arrToCsv = (a) => Array.isArray(a) ? a.join(', ') : '';
+    document.getElementById('f-filter-sender').value = arrToCsv(f.sender);
+    document.getElementById('f-filter-exclude').value = arrToCsv(f.exclude);
+    document.getElementById('f-filter-cc').value = arrToCsv(f.cc);
+    document.getElementById('f-filter-destined').value = arrToCsv(f.destined_to);
+    document.getElementById('f-filter-forwarded').value = arrToCsv(f.forwarded_from);
+
+    document.getElementById('f-unread').checked = (p.only_unread === true);
+    document.getElementById('f-audio').checked = (p.audio_actif === true);
+    document.getElementById('f-voice').value = p.voice || 'alloy';
+    document.getElementById('f-speed').value = p.speed || 1.0;
+    document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
+    document.getElementById('f-lang').value = p.language || 'fr';
+    document.getElementById('f-categories').value = p.categories || '';
+    document.getElementById('f-status').checked = (String(p.status).toLowerCase() === 'active');
+
+    // Assign
+    const assignEmailInput = document.getElementById('f-assign-email');
+    const unassignBtn = document.getElementById('btn-unassign');
+    const assignStatus = document.getElementById('assign-status');
+    if (p.assigned_to_email) {
+      assignEmailInput.value = p.assigned_to_email;
+      unassignBtn.style.display = 'inline-block';
+      assignStatus.textContent = `Assigné à : ${p.assigned_to_email}`;
+    } else {
+      assignEmailInput.value = '';
+      unassignBtn.style.display = 'none';
+      assignStatus.textContent = "Non assigné (Orphelin)";
+    }
+    document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // ADMIN EDITOR LISTENERS
+  document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('editor-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => {
+      document.getElementById('profile-editor').style.display = 'none';
+      CURRENT_ADMIN_PROFILE_ID = null;
+    });
+
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) saveBtn.addEventListener('click', async () => {
+      if (!CURRENT_ADMIN_PROFILE_ID) return;
+      const errDiv = document.getElementById('editor-error');
+      const okDiv = document.getElementById('editor-ok');
+      errDiv.style.display = 'none';
+      okDiv.style.display = 'none';
+
+      const normalizeTime = (t) => {
+        if (!t) return null;
+        const m = t.match(/^(\d{1,2}):(\d{2})$/);
+        if (m) return `${m[1].padStart(2, '0')}:${m[2]}:00`;
+        return t.length === 8 ? t : null;
+      };
+
+      const tz = document.getElementById('f-timezone').value.trim();
+      const cleanStart = normalizeTime(document.getElementById('f-start').value);
+      const cleanEnd = normalizeTime(document.getElementById('f-end').value);
+
+      if (!tz || !cleanStart || !cleanEnd) { errDiv.style.display = 'block'; errDiv.innerText = "Champs invalides"; return; }
+
+      const csvToArr = (s) => s.split(',').map(x => x.trim()).filter(x => x.length > 0);
+      const payload = {
+        timezone: tz,
+        heure_debut: cleanStart,
+        heure_fin: cleanEnd,
+        jours_arriere_start: parseInt(document.getElementById('f-days-start').value) || 0,
+        jours_arriere_end: parseInt(document.getElementById('f-days-end').value) || 0,
+        debug_mode: document.getElementById('f-debug').checked,
+        status: document.getElementById('f-status').checked ? 'Active' : 'Inactive',
+        filters: {
+          sender: csvToArr(document.getElementById('f-filter-sender').value),
+          exclude: csvToArr(document.getElementById('f-filter-exclude').value),
+          cc: csvToArr(document.getElementById('f-filter-cc').value),
+          destined_to: csvToArr(document.getElementById('f-filter-destined').value),
+          forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
+        },
+        only_unread: document.getElementById('f-unread').checked,
+        audio_actif: document.getElementById('f-audio').checked,
+        voice: document.getElementById('f-voice').value,
+        speed: parseFloat(document.getElementById('f-speed').value),
+        sort_mode: document.getElementById('f-sort').value,
+        language: document.getElementById('f-lang').value,
+        categories: document.getElementById('f-categories').value.trim()
+      };
+
+      try {
+        const res = await fetch(apiUrl(`/profiles/${CURRENT_ADMIN_PROFILE_ID}/settings`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        });
+        if (!res.ok) throw new Error(await res.text());
+        okDiv.style.display = 'block'; okDiv.textContent = "Sauvegardé !";
+        Object.assign(ADMIN_PROFILES_BY_ID.get(CURRENT_ADMIN_PROFILE_ID), payload);
+      } catch (e) {
+        errDiv.style.display = 'block'; errDiv.textContent = e.message;
+      }
+    });
+
+    // --- ASSIGN BUTTONS ---
+    const btnAssign = document.getElementById('btn-assign');
+    if (btnAssign) btnAssign.addEventListener('click', async () => {
+      if (!CURRENT_ADMIN_PROFILE_ID) return;
+      const email = document.getElementById('f-assign-email').value.trim();
+      if (!email) return alert("Email requis");
+      try {
+        await fetch(apiUrl('/admin/assign'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile_id: CURRENT_ADMIN_PROFILE_ID, user_email: email }), credentials: 'include' });
+        alert("Assigné !");
+        openAdminEditor(CURRENT_ADMIN_PROFILE_ID);
+      } catch (e) { alert(e.message); }
+    });
+
+    const btnUnassign = document.getElementById('btn-unassign');
+    if (btnUnassign) btnUnassign.addEventListener('click', async () => {
+      if (!CURRENT_ADMIN_PROFILE_ID) return;
+      if (!confirm("Retirer l'assignation ?")) return;
+      try {
+        await fetch(apiUrl(`/admin/assign/${CURRENT_ADMIN_PROFILE_ID}`), { method: 'DELETE', credentials: 'include' });
+        alert("Désassigné !");
+        openAdminEditor(CURRENT_ADMIN_PROFILE_ID);
+      } catch (e) { alert(e.message); }
+    });
+
+    // --- DELETE BUTTON ---
+    const btnDel = document.getElementById('btn-delete-profile');
+    if (btnDel) btnDel.addEventListener('click', async () => {
+      if (!CURRENT_ADMIN_PROFILE_ID || !confirm("Supprimer ?")) return;
+      try {
+        const res = await fetch(apiUrl(`/admin/api/recap-profiles/${CURRENT_ADMIN_PROFILE_ID}`), { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error("Erreur supression");
+        alert("Profil supprimé");
+        document.getElementById('profile-editor').style.display = 'none';
+        // Note: The UI row update is tricky here because we lost context of which mailbox it belongs to easily.
+        // But we can just reload the tree or ignore it until refresh.
+        // We'll just hide the row if we can find it.
+        const row = document.getElementById(`profile-row-${CURRENT_ADMIN_PROFILE_ID}`);
+        if (row) row.remove();
+        CURRENT_ADMIN_PROFILE_ID = null;
+      } catch (e) { alert(e.message); }
+    });
+
+    // Init on load
+    initAdminDashboard();
+  });
+} // End Admin Logic Check
+
+}) ();
