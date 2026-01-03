@@ -702,26 +702,25 @@ function renderAdminMailboxes(userId, mailboxes) {
 function buildAdminMailboxRow(mb) {
   const statusColor = (mb.status === 'connected') ? '#16a34a' : '#f59e0b';
   const safeEmail = String(mb.email_address || '').replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]; });
+
+  // Level 2: Mailbox - Darker bg or left border
   return `
-    <div id="mailbox-container-${mb.id}" style="margin-top: 8px; border: 1px solid #f1f5f9; border-radius: 6px; background: #f8fafc;">
-         <div onclick="toggleAdminMailbox('${mb.id}')" style="padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display:flex; align-items:center; gap: 8px;">
-                <span id="icon-mb-${mb.id}" style="font-size: 0.9rem; transition: transform 0.2s;">▶</span>
-                <strong>${safeEmail}</strong>
-                <span style="font-size:0.8rem; background: #e2e8f0; padding: 1px 6px; border-radius: 4px;">${mb.provider}</span>
+    <div id="mailbox-container-${mb.id}" style="margin-top: 12px; margin-left: 20px; border-left: 3px solid #3b82f6; background: #f1f5f9; border-radius: 0 6px 6px 0;">
+         <div onclick="toggleAdminMailbox('${mb.id}')" style="padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <span id="icon-mb-${mb.id}" style="font-size: 0.9rem; transition: transform 0.2s; color:#475569;">▶</span>
+                <strong style="color:#334155;">${safeEmail}</strong>
+                <span style="font-size:0.75rem; background: #cbd5e1; padding: 2px 6px; border-radius: 4px; color:#1e293b;">${mb.provider}</span>
                 <span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
             </div>
             <div>
-                 <button class="action-btn" style="color: #ef4444; border-color: #fecaca; font-size: 0.75rem;" onclick="event.stopPropagation(); deleteAdminMailbox('${mb.id}', '${mb.user_id}')">Supprimer Boîte</button>
+                 <button class="action-btn" style="color: #ef4444; border-color: #fecaca; font-size: 0.75rem; background:white;" onclick="event.stopPropagation(); deleteAdminMailbox('${mb.id}', '${mb.user_id}')">Supprimer Boîte</button>
             </div>
          </div>
-         <div id="content-mb-${mb.id}" style="display: none; padding: 12px; border-top: 1px solid #f1f5f9; background: white;">
-            <table class="dashboard-table" style="width: 100%;">
-                <thead>
-                    <tr><th>ID</th><th>Recipient</th><th>Heures</th><th>Jours</th><th>Status</th><th style="text-align: right;">Actions</th></tr>
-                </thead>
-                <tbody id="tbody-mb-${mb.id}"></tbody>
-            </table>
+         
+         <!-- Level 3 Container -->
+         <div id="content-mb-${mb.id}" style="display: none; padding: 12px 12px 12px 34px;">
+            <div id="profiles-container-${mb.id}" style="display:flex; flex-direction:column; gap:8px;"></div>
          </div>
     </div>`;
 }
@@ -729,15 +728,16 @@ function buildAdminMailboxRow(mb) {
 window.toggleAdminMailbox = async function (mbId) {
   const content = document.getElementById(`content-mb-${mbId}`);
   const icon = document.getElementById(`icon-mb-${mbId}`);
-  const tbody = document.getElementById(`tbody-mb-${mbId}`);
+  const container = document.getElementById(`profiles-container-${mbId}`);
   if (!content) return;
 
   if (content.style.display === 'none') {
     content.style.display = 'block';
     if (icon) icon.style.transform = 'rotate(90deg)';
+
     if (!ADMIN_CACHE.profiles[mbId] && !ADMIN_LOADING.profiles[mbId]) {
       ADMIN_LOADING.profiles[mbId] = true;
-      tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Chargement profils...</td></tr>';
+      container.innerHTML = '<div class="muted" style="font-size:0.9rem;">Chargement des profils...</div>';
       try {
         const res = await fetch(apiUrl(`/admin/api/email-accounts/${mbId}/recap-profiles`), { credentials: 'include' });
         if (res.ok) {
@@ -745,10 +745,10 @@ window.toggleAdminMailbox = async function (mbId) {
           ADMIN_CACHE.profiles[mbId] = profs;
           renderAdminProfiles(mbId, profs);
         } else {
-          tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;">Aucun profil.</td></tr>';
+          container.innerHTML = '<div class="muted" style="font-size:0.9rem;">Aucun profil de récap.</div>';
         }
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">${e.message}</td></tr>`;
+        container.innerHTML = `<div style="color:red; font-size:0.9rem;">${e.message}</div>`;
       } finally {
         ADMIN_LOADING.profiles[mbId] = false;
       }
@@ -762,29 +762,35 @@ window.toggleAdminMailbox = async function (mbId) {
 };
 
 function renderAdminProfiles(mbId, profiles) {
-  const tbody = document.getElementById(`tbody-mb-${mbId}`);
+  const container = document.getElementById(`profiles-container-${mbId}`);
   if (!profiles || profiles.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center; font-style:italic;">Aucun profil de récap.</td></tr>';
+    container.innerHTML = '<div class="muted" style="font-size:0.9rem; font-style:italic;">Aucun profil configuré.</div>';
     return;
   }
   profiles.forEach(p => ADMIN_PROFILES_BY_ID.set(p.id, p));
 
-  tbody.innerHTML = profiles.map(p => {
+  container.innerHTML = profiles.map(p => {
     const isStatusActive = (String(p.status ?? '').toLowerCase() === 'active');
     const statusClass = isStatusActive ? 'badge-active' : 'badge-inactive';
     const recipient = String(p.recap_recipient || '—').replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]; });
+
+    // Level 3: Profile - Compact Card
     return `
-        <tr id="profile-row-${p.id}">
-            <td style="font-family:monospace; font-size:0.85rem; color:#64748b;">${p.id.substring(0, 8)}...</td>
-            <td><strong>${recipient}</strong></td>
-            <td>${p.heure_debut || '—'} - ${p.heure_fin || '—'}</td>
-            <td>${p.jours_arriere_start || 0} → ${p.jours_arriere_end || 0}</td>
-            <td><span class="${statusClass}">${p.status || '—'}</span></td>
-            <td style="text-align: right; white-space: nowrap;">
-                 <button class="action-btn" onclick="openAdminEditor('${p.id}')">Éditer / Détails</button>
-                 <button class="action-btn" style="color:#ef4444; border-color:transparent; background:transparent;" onclick="deleteAdminProfile('${p.id}', '${mbId}')">🗑</button>
-            </td>
-        </tr>`;
+        <div id="profile-row-${p.id}" style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+                <div style="font-family:monospace; font-size:0.75rem; color:#94a3b8; background:#f1f5f9; padding:2px 4px; border-radius:3px;">${p.id.substring(0, 8)}</div>
+                <div style="font-weight:600; font-size:0.95rem; color:#1e293b;">${recipient}</div>
+                <div style="font-size:0.85rem; color:#64748b;">
+                    🕒 ${p.heure_debut || '??:??'} - ${p.heure_fin || '??:??'} 
+                    <span class="muted" style="margin-left:4px;">(J-${p.jours_arriere_start} à J-${p.jours_arriere_end})</span>
+                </div>
+                <span class="${statusClass}" style="font-size:0.75rem; padding: 2px 8px;">${p.status || '—'}</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                 <button class="action-btn" style="font-size:0.8rem;" onclick="openAdminEditor('${p.id}')">Éditer</button>
+                 <button class="action-btn" style="color:#ef4444; border-color:#fee2e2; background:#fef2f2; font-size:0.8rem;" onclick="deleteAdminProfile('${p.id}', '${mbId}')">🗑</button>
+            </div>
+        </div>`;
   }).join('');
 }
 
