@@ -832,6 +832,9 @@ window.openAdminEditor = function (id) {
   document.getElementById('admin-edit-title-id').textContent = id;
   document.getElementById('admin-editor-error').style.display = 'none';
 
+  // Debug
+  console.log("Admin Editor loaded:", p);
+
   // 1. Populate Fields
   const setVal = (eid, v) => { const el = document.getElementById(eid); if (el) el.value = v || ''; };
   const setChk = (eid, v) => { const el = document.getElementById(eid); if (el) el.checked = !!v; };
@@ -839,7 +842,11 @@ window.openAdminEditor = function (id) {
 
   setVal('admin-f-recipient', p.recap_recipient);
   setVal('admin-f-schedule', timeSub(p.schedule_time));
-  setVal('admin-f-account', p.email_account_id);
+
+  // Robust ID check
+  const accId = p.email_account_id || p.account_id || "";
+  const accInput = document.getElementById('admin-f-account');
+  if (accInput) accInput.value = accId;
 
   setVal('admin-f-days-start', p.jours_arriere_start ?? 1);
   setVal('admin-f-time-start', timeSub(p.heure_debut));
@@ -899,9 +906,12 @@ window.saveAdminProfile = async function () {
   const fixTime = (t) => (t.length === 5) ? t + ':00' : t;
   const csvArr = (s) => s.split(/[,\n]+/).map(x => x.trim()).filter(Boolean);
 
+  const accId = document.getElementById('admin-f-account').value;
+  if (!accId) { alert("Erreur interne: ID du compte manquant. Rechargez la page."); return; }
+
   try {
     const payload = {
-      email_account_id: getVal('admin-f-account'),
+      email_account_id: accId,
       recap_recipient: getVal('admin-f-recipient'),
       schedule_time: fixTime(getVal('admin-f-schedule')),
       jours_arriere_start: parseInt(getVal('admin-f-days-start')) || 0,
