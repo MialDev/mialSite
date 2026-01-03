@@ -829,148 +829,163 @@ window.openAdminEditor = function (id) {
   const p = ADMIN_PROFILES_BY_ID.get(id);
   if (!p) return;
   ADMIN_EDITOR_ID = id;
-  document.getElementById('edit-profile-id').textContent = id;
-  document.getElementById('editor-error').style.display = 'none';
-  document.getElementById('editor-ok').style.display = 'none';
-  document.getElementById('profile-editor').style.display = 'block';
+  document.getElementById('admin-edit-title-id').textContent = id;
+  document.getElementById('admin-editor-error').style.display = 'none';
 
-  document.getElementById('f-timezone').value = p.timezone || '';
-  document.getElementById('f-start').value = p.heure_debut || '';
-  document.getElementById('f-end').value = p.heure_fin || '';
-  document.getElementById('f-days-start').value = p.jours_arriere_start ?? 0;
-  document.getElementById('f-days-end').value = p.jours_arriere_end ?? 0;
-  document.getElementById('f-debug').checked = (p.debug_mode === true);
+  // 1. Populate Fields
+  const setVal = (eid, v) => { const el = document.getElementById(eid); if (el) el.value = v || ''; };
+  const setChk = (eid, v) => { const el = document.getElementById(eid); if (el) el.checked = !!v; };
+  const timeSub = (t) => (t && t.length >= 5) ? t.substring(0, 5) : (t || '00:00');
 
+  setVal('admin-f-recipient', p.recap_recipient);
+  setVal('admin-f-schedule', timeSub(p.schedule_time));
+
+  setVal('admin-f-days-start', p.jours_arriere_start ?? 1);
+  setVal('admin-f-time-start', timeSub(p.heure_debut));
+  setVal('admin-f-days-end', p.jours_arriere_end ?? 0);
+  setVal('admin-f-time-end', timeSub(p.heure_fin));
+
+  setChk('admin-f-status', String(p.status).toLowerCase() === 'active');
+  setChk('admin-f-debug', p.debug_mode);
+  setVal('admin-f-sort', p.sort_mode || 'date_desc');
+
+  // Filters (CSV Textareas)
   const f = p.filters || {};
-  const arrToCsv = (a) => Array.isArray(a) ? a.join(', ') : '';
-  document.getElementById('f-filter-sender').value = arrToCsv(f.sender);
-  document.getElementById('f-filter-exclude').value = arrToCsv(f.exclude);
-  document.getElementById('f-filter-cc').value = arrToCsv(f.cc);
-  document.getElementById('f-filter-destined').value = arrToCsv(f.destined_to);
-  document.getElementById('f-filter-forwarded').value = arrToCsv(f.forwarded_from);
+  const toCsv = (a) => Array.isArray(a) ? a.join(', ') : '';
+  setVal('admin-f-filter-sender', toCsv(f.sender));
+  setVal('admin-f-filter-exclude', toCsv(f.exclude));
+  setVal('admin-f-filter-cc', toCsv(f.cc));
 
-  document.getElementById('f-unread').checked = (p.only_unread === true);
-  document.getElementById('f-audio').checked = (p.audio_actif === true);
-  document.getElementById('f-voice').value = p.voice || 'alloy';
-  document.getElementById('f-speed').value = p.speed || 1.0;
-  document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
-  document.getElementById('f-lang').value = p.language || 'fr';
-  document.getElementById('f-categories').value = p.categories || '';
-  document.getElementById('f-status').checked = (String(p.status).toLowerCase() === 'active');
+  setChk('admin-f-unread', p.only_unread);
 
-  const assignEmailInput = document.getElementById('f-assign-email');
-  const unassignBtn = document.getElementById('btn-unassign');
-  const assignStatus = document.getElementById('assign-status');
+  // Audio
+  setChk('admin-f-audio', p.audio_actif !== false); // default true
+  setVal('admin-f-voice', p.voice || 'alloy');
+  setVal('admin-f-speed', p.speed || 1.0);
+  setVal('admin-f-lang', p.language || 'fr');
+  setVal('admin-f-timezone', p.timezone || 'Europe/Paris');
+
+  // Assignment logic
+  const assignInput = document.getElementById('admin-f-assign-email');
+  const btnAssign = document.getElementById('admin-btn-assign');
+  const btnUnassign = document.getElementById('admin-btn-unassign');
+  const statusDiv = document.getElementById('admin-assign-status');
+
   if (p.assigned_to_email) {
-    assignEmailInput.value = p.assigned_to_email;
-    unassignBtn.style.display = 'inline-block';
-    assignStatus.textContent = `Assigné à : ${p.assigned_to_email}`;
+    if (assignInput) assignInput.value = p.assigned_to_email;
+    if (btnAssign) btnAssign.style.display = 'none';
+    if (btnUnassign) btnUnassign.style.display = 'inline-block';
+    if (statusDiv) statusDiv.innerHTML = `Assigné à : <strong>${p.assigned_to_email}</strong>`;
   } else {
-    assignEmailInput.value = '';
-    unassignBtn.style.display = 'none';
-    assignStatus.textContent = "Non assigné (Orphelin)";
+    if (assignInput) assignInput.value = '';
+    if (btnAssign) btnAssign.style.display = 'inline-block';
+    if (btnUnassign) btnUnassign.style.display = 'none';
+    if (statusDiv) statusDiv.textContent = 'Non assigné';
   }
-  document.getElementById('profile-editor').scrollIntoView({ behavior: 'smooth' });
+
+  const modal = document.getElementById('modal-admin-edit');
+  if (modal) modal.showModal();
 };
+
+window.saveAdminProfile = async function () {
+  if (!ADMIN_EDITOR_ID) return;
+  const errDiv = document.getElementById('admin-editor-error');
+  if (errDiv) errDiv.style.display = 'none';
+
+  // Helpers
+  const getVal = (eid) => document.getElementById(eid).value;
+  const getChk = (eid) => document.getElementById(eid).checked;
+  const fixTime = (t) => (t.length === 5) ? t + ':00' : t;
+  const csvArr = (s) => s.split(/[,\n]+/).map(x => x.trim()).filter(Boolean);
+
+  try {
+    const payload = {
+      recap_recipient: getVal('admin-f-recipient'),
+      schedule_time: fixTime(getVal('admin-f-schedule')),
+      jours_arriere_start: parseInt(getVal('admin-f-days-start')) || 0,
+      heure_debut: fixTime(getVal('admin-f-time-start')),
+      jours_arriere_end: parseInt(getVal('admin-f-days-end')) || 0,
+      heure_fin: fixTime(getVal('admin-f-time-end')),
+      status: getChk('admin-f-status') ? 'Active' : 'Inactive',
+      debug_mode: getChk('admin-f-debug'),
+      sort_mode: getVal('admin-f-sort'),
+      filters: {
+        sender: csvArr(getVal('admin-f-filter-sender')),
+        exclude: csvArr(getVal('admin-f-filter-exclude')),
+        cc: csvArr(getVal('admin-f-filter-cc')),
+        destined_to: [], forwarded_from: []
+      },
+      only_unread: getChk('admin-f-unread'),
+      audio_actif: getChk('admin-f-audio'),
+      voice: getVal('admin-f-voice'),
+      speed: parseFloat(getVal('admin-f-speed')),
+      language: getVal('admin-f-lang'),
+      timezone: getVal('admin-f-timezone'),
+      categories: 'ALL' // default
+    };
+
+    const res = await fetch(apiUrl(`/admin/api/recap-profiles/${ADMIN_EDITOR_ID}`), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    // Success
+    alert("Profil Admin mis à jour !");
+    document.getElementById('modal-admin-edit').close();
+
+    // Update local object & re-render if visible
+    const p = ADMIN_PROFILES_BY_ID.get(ADMIN_EDITOR_ID);
+    if (p) {
+      Object.assign(p, payload);
+      // Refresh visuals?
+      // Find parent mailbox to re-render
+      // ... Ideally we just reload the parent box or the row
+      const row = document.getElementById(`profile-row-${ADMIN_EDITOR_ID}`);
+      if (row && row.parentNode) {
+        // Determine mbId from context? simpler to just reload the world or do nothing as changes appear on next toggle
+      }
+    }
+  } catch (e) {
+    if (errDiv) { errDiv.style.display = 'block'; errDiv.textContent = e.message; }
+    else alert(e.message);
+  }
+};
+
 
 window.initAdminEditorListeners = function () {
   if (window._adminEditorListenersAttached) return;
   window._adminEditorListenersAttached = true;
 
-  const closeBtn = document.getElementById('editor-close');
-  if (closeBtn) closeBtn.addEventListener('click', () => {
-    document.getElementById('profile-editor').style.display = 'none';
-    ADMIN_EDITOR_ID = null;
-  });
-
-  const saveBtn = document.getElementById('save-settings');
-  if (saveBtn) saveBtn.addEventListener('click', async () => {
-    if (!ADMIN_EDITOR_ID) return;
-    const errDiv = document.getElementById('editor-error');
-    const okDiv = document.getElementById('editor-ok');
-    errDiv.style.display = 'none'; okDiv.style.display = 'none';
-
-    const normalizeTime = (t) => {
-      if (!t) return null;
-      const m = t.match(/^(\d{1,2}):(\d{2})$/);
-      if (m) return `${m[1].padStart(2, '0')}:${m[2]}:00`;
-      return t.length === 8 ? t : null;
-    };
-    const tz = document.getElementById('f-timezone').value.trim();
-    const cleanStart = normalizeTime(document.getElementById('f-start').value);
-    const cleanEnd = normalizeTime(document.getElementById('f-end').value);
-    if (!tz || !cleanStart || !cleanEnd) { errDiv.style.display = 'block'; errDiv.innerText = "Champs invalides"; return; }
-
-    const csvToArr = (s) => s.split(',').map(x => x.trim()).filter(x => x.length > 0);
-    const payload = {
-      timezone: tz, heure_debut: cleanStart, heure_fin: cleanEnd,
-      jours_arriere_start: parseInt(document.getElementById('f-days-start').value) || 0,
-      jours_arriere_end: parseInt(document.getElementById('f-days-end').value) || 0,
-      debug_mode: document.getElementById('f-debug').checked,
-      status: document.getElementById('f-status').checked ? 'Active' : 'Inactive',
-      filters: {
-        sender: csvToArr(document.getElementById('f-filter-sender').value),
-        exclude: csvToArr(document.getElementById('f-filter-exclude').value),
-        cc: csvToArr(document.getElementById('f-filter-cc').value),
-        destined_to: csvToArr(document.getElementById('f-filter-destined').value),
-        forwarded_from: csvToArr(document.getElementById('f-filter-forwarded').value)
-      },
-      only_unread: document.getElementById('f-unread').checked,
-      audio_actif: document.getElementById('f-audio').checked,
-      voice: document.getElementById('f-voice').value,
-      speed: parseFloat(document.getElementById('f-speed').value),
-      sort_mode: document.getElementById('f-sort').value,
-      language: document.getElementById('f-lang').value,
-      categories: document.getElementById('f-categories').value.trim()
-    };
-
-    try {
-      const res = await fetch(apiUrl(`/profiles/${ADMIN_EDITOR_ID}/settings`), {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload), credentials: 'include'
-      });
-      if (!res.ok) throw new Error(await res.text());
-      okDiv.style.display = 'block'; okDiv.textContent = "Sauvegardé !";
-      if (ADMIN_PROFILES_BY_ID.has(ADMIN_EDITOR_ID)) Object.assign(ADMIN_PROFILES_BY_ID.get(ADMIN_EDITOR_ID), payload);
-    } catch (e) { errDiv.style.display = 'block'; errDiv.textContent = e.message; }
-  });
-
-  const btnAssign = document.getElementById('btn-assign');
+  // Assignment Buttons
+  const btnAssign = document.getElementById('admin-btn-assign');
   if (btnAssign) btnAssign.addEventListener('click', async () => {
     if (!ADMIN_EDITOR_ID) return;
-    const email = document.getElementById('f-assign-email').value.trim();
+    const email = document.getElementById('admin-f-assign-email').value.trim();
     if (!email) return alert("Email requis");
     try {
-      await fetch(apiUrl('/admin/assign'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile_id: ADMIN_EDITOR_ID, user_email: email }), credentials: 'include' });
+      await fetch(apiUrl('/admin/assign'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: ADMIN_EDITOR_ID, user_email: email }),
+        credentials: 'include'
+      });
       alert("Assigné !");
-      window.openAdminEditor(ADMIN_EDITOR_ID);
+      window.openAdminEditor(ADMIN_EDITOR_ID); // Refresh modal state
     } catch (e) { alert(e.message); }
   });
 
-  const btnUnassign = document.getElementById('btn-unassign');
+  const btnUnassign = document.getElementById('admin-btn-unassign');
   if (btnUnassign) btnUnassign.addEventListener('click', async () => {
     if (!ADMIN_EDITOR_ID) return;
     if (!confirm("Retirer l'assignation ?")) return;
     try {
       await fetch(apiUrl(`/admin/assign/${ADMIN_EDITOR_ID}`), { method: 'DELETE', credentials: 'include' });
       alert("Désassigné !");
-      window.openAdminEditor(ADMIN_EDITOR_ID);
-    } catch (e) { alert(e.message); }
-  });
-
-  // Bind DELETE Profile in editor (distinct from table icon)
-  const btnDel = document.getElementById('btn-delete-profile');
-  if (btnDel) btnDel.addEventListener('click', async () => {
-    if (!ADMIN_EDITOR_ID || !confirm("Supprimer ce profil ?")) return;
-    try {
-      const res = await fetch(apiUrl(`/admin/api/recap-profiles/${ADMIN_EDITOR_ID}`), { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) throw new Error("Erreur supression");
-      alert("Profil supprimé");
-      document.getElementById('profile-editor').style.display = 'none';
-      // Try to find row and remove it
-      const row = document.getElementById(`profile-row-${ADMIN_EDITOR_ID}`);
-      if (row) row.remove();
-      ADMIN_EDITOR_ID = null;
+      window.openAdminEditor(ADMIN_EDITOR_ID); // Refresh modal state
     } catch (e) { alert(e.message); }
   });
 };
@@ -979,7 +994,9 @@ window.initAdminEditorListeners = function () {
 // ANALYTICS LOGIC (Simplified)
 // =========================================================
 const DEBUG_ANALYTICS = new URLSearchParams(window.location.search).has('analytics_debug');
-function uuidv4() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
+}
 const PAGE_ID = uuidv4();
 let hasConsented = false;
 try { hasConsented = JSON.parse(localStorage.getItem(CONSENT_KEY) || '{}').analytics === true; } catch (e) { }

@@ -144,42 +144,177 @@
                 </div>
 
                 <!-- Profile Editor (Hidden by default) -->
-                <section id="profile-editor" class="card glass-static"
-                    style="margin-top:24px; display:none; border: 2px solid #3b82f6;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-                        <div>
-                            <h3 style="margin:0;">Éditeur de Profil (Admin)</h3>
-                            <div class="muted" style="font-size:0.9rem;">ID: <span id="edit-profile-id"></span></div>
+                <!-- Modal Admin Editor -->
+                <dialog id="modal-admin-edit" class="glass-static"
+                    style="padding:0; border:none; border-radius:16px; width:100%; max-width:900px; backdrop-filter:blur(12px); box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+                    <div style="padding:32px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                            <div>
+                                <h2 style="margin:0;">Éditeur Admin</h2>
+                                <div class="muted" style="font-size:0.9rem;">ID: <span id="admin-edit-title-id"></span>
+                                </div>
+                            </div>
+                            <form method="dialog"><button class="btn btn-ghost" style="color:#ef4444;">Fermer</button>
+                            </form>
                         </div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-ghost btn-small" id="btn-delete-profile"
-                                style="color:#ef4444; border-color:#ef4444;">Supprimer Profil</button>
-                            <button class="btn btn-ghost btn-small" id="editor-close">Fermer</button>
+
+                        <div id="admin-editor-error"
+                            style="display:none; margin-bottom:16px; color:#ef4444; font-size:0.95rem;"></div>
+
+                        <!-- Assignment Block -->
+                        <div id="admin-assign-block"
+                            style="margin-bottom:24px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
+                            <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation Propriétaire</h4>
+                            <div style="display:flex; gap:8px; align-items:flex-end;">
+                                <label style="flex:1;">Email utilisateur
+                                    <input id="admin-f-assign-email" class="form-input" type="email"
+                                        placeholder="client@example.com" style="margin-top:4px;" />
+                                </label>
+                                <button class="btn btn-primary btn-small" id="admin-btn-assign">Assigner</button>
+                                <button class="btn btn-ghost btn-small" id="admin-btn-unassign"
+                                    style="display:none;">Désassigner</button>
+                            </div>
+                            <div id="admin-assign-status" style="margin-top:8px; font-size:0.9rem; color: #64748b;">
+                            </div>
                         </div>
-                    </div>
 
-                    <div id="editor-error" style="display:none; margin-top:12px; color:#ef4444; font-size:0.95rem;">
-                    </div>
-                    <div id="editor-ok" style="display:none; margin-top:12px; color:#16a34a; font-size:0.95rem;"></div>
+                        <!-- Full Form (prefixed admin-) -->
+                        <div class="editor-section">
+                            <h3 class="editor-title">1. Informations Principales</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div>
+                                    <label class="form-label">Destinataire du récap</label>
+                                    <input type="email" id="admin-f-recipient" class="form-input" required>
+                                </div>
+                                <div>
+                                    <label class="form-label">Heure d'envoi</label>
+                                    <input type="time" id="admin-f-schedule" class="form-input" required>
+                                </div>
+                            </div>
+                            <!-- Status & Debug (Admin specific) -->
+                            <div style="margin-top:16px; display:flex; gap:24px;">
+                                <label style="display:flex; align-items:center; gap:8px;">
+                                    <input type="checkbox" id="admin-f-status">
+                                    <strong>Actif</strong>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:8px;">
+                                    <input type="checkbox" id="admin-f-debug">
+                                    <span>Mode Debug</span>
+                                </label>
+                            </div>
+                        </div>
 
-                    <!-- Assignment Block -->
-                    <div id="admin-assign-block"
-                        style="margin-top:16px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
-                        <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation</h4>
-                        <div style="display:flex; gap:8px; align-items:flex-end;">
-                            <label style="flex:1;">Email utilisateur (Propriétaire)
-                                <input id="f-assign-email" type="email" placeholder="client@example.com" />
+                        <div class="editor-section">
+                            <h3 class="editor-title">2. Période Analysée</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div class="time-block">
+                                    <h4>DÉBUT (Jours arrière)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours</label>
+                                            <input type="number" id="admin-f-days-start" class="form-input" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="admin-f-time-start" class="form-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="time-block">
+                                    <h4>FIN (Jours arrière)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours</label>
+                                            <input type="number" id="admin-f-days-end" class="form-input" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="admin-f-time-end" class="form-input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">3. Filtres & Options</h3>
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Mode de Tri</label>
+                                <select id="admin-f-sort" class="form-select">
+                                    <option value="date_desc">Chronologique</option>
+                                    <option value="priority">Priorité IA</option>
+                                    <option value="category">Par Catégorie</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Whitelist (Sender)</label>
+                                <textarea id="admin-f-filter-sender" class="form-textarea" rows="2"
+                                    placeholder="email1, email2..."></textarea>
+                            </div>
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Blacklist (Sender)</label>
+                                <textarea id="admin-f-filter-exclude" class="form-textarea" rows="2"></textarea>
+                            </div>
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Seulement si en CC</label>
+                                <textarea id="admin-f-filter-cc" class="form-textarea" rows="2"></textarea>
+                            </div>
+                            <label style="display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" id="admin-f-unread">
+                                <span>Seulement les non-lus</span>
                             </label>
-                            <button class="btn btn-primary btn-small" id="btn-assign">Assigner</button>
-                            <button class="btn btn-ghost btn-small" id="btn-unassign"
-                                style="display:none;">Désassigner</button>
                         </div>
-                        <div id="assign-status" style="margin-top:8px; font-size:0.9rem; color: #64748b;"></div>
-                    </div>
 
-                    <!-- Form -->
-                    </form>
-                </section>
+                        <div class="editor-section">
+                            <h3 class="editor-title">4. Audio</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div>
+                                    <label class="form-label">Activer Audio</label>
+                                    <input type="checkbox" id="admin-f-audio">
+                                </div>
+                                <div>
+                                    <label class="form-label">Voix</label>
+                                    <select id="admin-f-voice" class="form-select">
+                                        <option value="alloy">Alloy</option>
+                                        <option value="echo">Echo</option>
+                                        <option value="fable">Fable</option>
+                                        <option value="onyx">Onyx</option>
+                                        <option value="nova">Nova</option>
+                                        <option value="shimmer">Shimmer</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Speed</label>
+                                    <input type="number" id="admin-f-speed" class="form-input" step="0.1" min="0.5"
+                                        max="2.0">
+                                </div>
+                                <div>
+                                    <label class="form-label">Langue</label>
+                                    <select id="admin-f-lang" class="form-select">
+                                        <option value="fr">Français</option>
+                                        <option value="en">Anglais</option>
+                                        <option value="auto">Auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:16px; margin-bottom:16px;">
+                            <label class="form-label">Timezone</label>
+                            <input type="text" id="admin-f-timezone" class="form-input" value="Europe/Paris">
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #e2e8f0;">
+                            <form method="dialog"><button class="btn btn-ghost">Annuler</button></form>
+                            <button class="btn btn-primary" onclick="saveAdminProfile()">ENREGISTRER</button>
+                        </div>
+                    </div>
+                </dialog>
             </div>
             <!-- End View Profiles -->
 
