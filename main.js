@@ -28,12 +28,9 @@ const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox=
 // UTILS & HELPERS
 // =========================================================
 function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
-function apiUrl(path) { return window.apiUrl ? window.apiUrl(path) : path; }
+// apiUrl is REMOVED from here to avoid Main.js recursion. It is loaded from api.js.
 
-// =========================================================
-// GENERAL SITE LOGIC
-// =========================================================
-function onScroll() {
+window.onScroll = function () {
   const y = window.scrollY || 0;
   const dy = y - lastY;
   const goingDown = dy > 0;
@@ -42,18 +39,18 @@ function onScroll() {
     else header.classList.remove('nav-hidden');
   }
   lastY = y;
-}
+};
 
-function initMobileNav() {
+window.initMobileNav = function () {
   if (!header) return;
   const toggle = header.querySelector('.nav-toggle');
   const links = header.querySelector('.nav-links');
   if (!toggle || !links) return;
   toggle.addEventListener('click', () => header.classList.toggle('nav-open'));
   links.addEventListener('click', (e) => { if (e.target.tagName === 'A') header.classList.remove('nav-open'); });
-}
+};
 
-function initBriefAudio() {
+window.initBriefAudio = function () {
   const audio = document.getElementById('brief-audio');
   const btn = document.getElementById('brief-audio-button');
   const icon = document.getElementById('brief-audio-icon');
@@ -63,9 +60,9 @@ function initBriefAudio() {
     else { audio.pause(); btn.classList.remove('is-playing'); icon.textContent = '▶'; }
   });
   audio.addEventListener('ended', () => { btn.classList.remove('is-playing'); icon.textContent = '▶'; });
-}
+};
 
-function initRevealAnimations() {
+window.initRevealAnimations = function () {
   if (prefersReducedMotion.matches) return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -78,9 +75,9 @@ function initRevealAnimations() {
     });
   }, { threshold: 0.25 });
   document.querySelectorAll('.reveal-fx').forEach(el => observer.observe(el));
-}
+};
 
-function initPricingSwitch() {
+window.initPricingSwitch = function () {
   const switcher = document.querySelector('.switcher-glass');
   if (!switcher) return;
   const radios = switcher.querySelectorAll('input[name="billing"]');
@@ -102,9 +99,9 @@ function initPricingSwitch() {
       }
     });
   });
-}
+};
 
-function initPlanSelection() {
+window.initPlanSelection = function () {
   const buttons = document.querySelectorAll('.select-plan-btn');
   const messageField = document.querySelector('textarea[name="message"]');
   const hiddenInput = document.getElementById('hidden-plan-input');
@@ -122,9 +119,9 @@ function initPlanSelection() {
       else messageField.value = `Intéressé par : ${planName}.\n` + messageField.value.replace(/^Intéressé par : .*\n/, '');
     });
   });
-}
+};
 
-function initContactForm() {
+window.initContactForm = function () {
   const form = document.getElementById('contact-form');
   if (!form) return;
   form.addEventListener('submit', async (e) => {
@@ -145,7 +142,7 @@ function initContactForm() {
       return;
     }
     try {
-      const path = apiUrl('/contact');
+      const path = apiUrl('/contact'); // Uses global api.js function
       const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       const json = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -158,12 +155,12 @@ function initContactForm() {
       if (msgDiv) { msgDiv.textContent = "Impossible de contacter le serveur."; msgDiv.style.color = '#ef4444'; }
     }
   });
-}
+};
 
-function initYear() {
+window.initYear = function () {
   const el = document.getElementById('year');
   if (el) el.textContent = new Date().getFullYear();
-}
+};
 
 // =========================================================
 // USER DASHBOARD LOGIC
@@ -481,10 +478,7 @@ window.toggleStatus = async function (id) {
 };
 
 // =========================================================
-// ADMIN DASHBOARD & ANALYTICS PLACEHOLDER
-// =========================================================
-// =========================================================
-// ADMIN DASHBOARD LOGIC
+// ADMIN DASHBOARD LOGIC (Leads & Users)
 // =========================================================
 
 window.switchAdminView = function (viewName) {
@@ -579,19 +573,15 @@ window.submitReply = async function () {
   } catch (e) { alert(e.message); }
 };
 
-// --- PROFILES & USERS MANAGEMENT ---
-
 window.initAdminDashboard = async function () {
   ADMIN_CACHE.users = []; ADMIN_CACHE.mailboxes = {}; ADMIN_CACHE.profiles = {};
   const root = document.getElementById('hierarchy-root');
   if (root) root.innerHTML = '<div style="text-align:center; padding: 40px;" class="muted">Chargement de la hiérarchie...</div>';
 
-  // Bind editor listeners here if needed, but we do it in initAdminEditorListeners
   if (document.getElementById('profile-editor')) window.initAdminEditorListeners();
 
   try {
     let useTree = false;
-    // Try Tree first
     try {
       const treeRes = await fetch(apiUrl('/admin/api/admin-tree'), { credentials: 'include' });
       if (treeRes.ok) {
@@ -618,7 +608,7 @@ window.initAdminDashboard = async function () {
 
 async function fetchAdminUsers() {
   try {
-    const res = await fetch(apiUrl('/admin/api/users'), { credentials: 'include' }); // Fallback endpoint
+    const res = await fetch(apiUrl('/admin/api/users'), { credentials: 'include' });
     if (!res.ok) throw new Error('Impossible de charger les utilisateurs');
     const users = await res.json();
     ADMIN_CACHE.users = users;
@@ -646,7 +636,6 @@ function buildAdminUserRow(u) {
   if (u.mailboxes_count !== undefined) mbCount = u.mailboxes_count;
   if (u.profiles_count !== undefined) pfCount = u.profiles_count;
 
-  // Adjust counts from cache if available
   if (ADMIN_CACHE.mailboxes[u.id]) {
     mbCount = ADMIN_CACHE.mailboxes[u.id].length;
     let localPCount = 0;
@@ -897,7 +886,6 @@ window.openAdminEditor = function (id) {
 };
 
 window.initAdminEditorListeners = function () {
-  // Only init once
   if (window._adminEditorListenersAttached) return;
   window._adminEditorListenersAttached = true;
 
@@ -999,14 +987,12 @@ window.initAdminEditorListeners = function () {
   });
 };
 
-
 // =========================================================
 // ANALYTICS LOGIC (Simplified)
 // =========================================================
 const DEBUG_ANALYTICS = new URLSearchParams(window.location.search).has('analytics_debug');
 function uuidv4() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
 const PAGE_ID = uuidv4();
-const PAGE_START = performance.now();
 let hasConsented = false;
 try { hasConsented = JSON.parse(localStorage.getItem(CONSENT_KEY) || '{}').analytics === true; } catch (e) { }
 
@@ -1041,13 +1027,18 @@ function initHeartbeat() { setInterval(() => { if (document.visibilityState === 
 // MAIN INITIALIZATION
 // =========================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  initMobileNav();
-  initBriefAudio();
-  initRevealAnimations();
-  initYear();
-  initPricingSwitch();
-  initPlanSelection();
-  initContactForm();
+  // Mobile Nav
+  window.initMobileNav();
+
+  // General Inits
+  window.initBriefAudio();
+  window.initRevealAnimations();
+  window.initYear();
+  window.initPricingSwitch();
+  window.initPlanSelection();
+
+  // Forms & Analytics
+  window.initContactForm();
   initCookieBanner();
 
   if (hasConsented) trackPageview();
@@ -1074,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (Array.isArray(data)) USER_MAILBOXES = data;
         else if (data && data.connected) USER_MAILBOXES = [data];
       }
-      window.loadProfiles();
+      if (window.loadProfiles) window.loadProfiles();
     } catch (e) { console.error(e); }
   }
 
@@ -1083,8 +1074,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.initAdminDashboard) window.initAdminDashboard();
   }
 
-  onScroll();
+  // Init OnScroll
+  window.onScroll();
 });
 
-window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('scroll', window.onScroll, { passive: true });
 window.addEventListener('scroll', () => { /* simplistic scroll track */ }, { passive: true });
