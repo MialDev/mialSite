@@ -1071,6 +1071,23 @@ p {
   transform: translateX(100%);
 }
 
+/* Modifier pour 3 items (Outlook / Gmail / Other) */
+.switcher-glass.switcher-tri::after {
+  width: calc(33.333% - 6px);
+}
+
+.switcher-glass.switcher-tri:has(input[value="outlook"]:checked)::after {
+  transform: translateX(0%);
+}
+
+.switcher-glass.switcher-tri:has(input[value="gmail"]:checked)::after {
+  transform: translateX(100%);
+}
+
+.switcher-glass.switcher-tri:has(input[value="other"]:checked)::after {
+  transform: translateX(200%);
+}
+
 /* Les options (texte) */
 .switcher-glass__option {
   position: relative;
