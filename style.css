@@ -1772,6 +1772,16 @@ p {
   z-index: 1;
 }
 
+/* Cache l'ancienne bulle si elle traîne */
+.switcher-glass:not(.switcher-tri)::after {
+  display: none;
+}
+
+/* Force le style unique */
+.switcher-glass.switcher-tri {
+  overflow: visible;
+}
+
 /* Logique de déplacement de la bulle selon l'input coché */
 /* Si le 1er (Outlook) est coché (par défaut ::before est à gauche) */
 .switcher-glass:has(input[value="outlook"]:checked)::before {
