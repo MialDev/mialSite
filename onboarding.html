@@ -17,31 +17,19 @@
     <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
     <link rel="stylesheet" href="style.css" />
     <meta name="theme-color" content="#1fb6ff">
+    <style>
+        /* Fix Double Bulle */
+        .switcher-glass.switcher-tri::before {
+            border-radius: 8px !important;
+            /* S'assurer qu'il n'y a pas d'autre background parasite */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
 </head>
 
 <body>
 
-    <header id="site-header" class="nav">
-        <div class="container nav-wrapper">
-            <div class="nav-inner">
-                <a href="accueil.html" class="brand">
-                    <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
-                        height="88">
-                </a>
-                <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
-                    <span class="nav-toggle-bar"></span>
-                </button>
-                <nav class="nav-links">
-                    <a href="accueil.html">Accueil</a>
-                    <span class="nav-divider"></span>
-                    <a href="dashboard.html">Tableau de bord</a>
-                    <span class="nav-divider"></span>
-                    <a href="account.html">Mon Compte</a>
-                </nav>
-            </div>
-            <!-- No external button on onboarding to keep it focused -->
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <section class="section" style="padding-top: 140px; min-height: 80vh; display: flex; align-items: center;">
         <div class="container" style="max-width: 520px;">
@@ -190,39 +178,7 @@
 
 
 
-            <footer class="footer footer-responsive">
-                <div class="container footer-grid">
-                    <div>
-                        <div class="brand">
-                            <img class="brand-logo" src="assets/logos/logo-mial-small-color.svg" alt="mial logo"
-                                width="28" height="28">
-                            <span class="brand-text">mial</span>
-                        </div>
-                        <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données
-                            privées.</p>
-                    </div>
-                    <div>
-                        <h4>Produit</h4>
-                        <ul>
-                            <li><a href="accueil.html#how">Comment ça marche</a></li>
-                            <li><a href="crm.html">Flow</a></li>
-                            <li><a href="accueil.html#pricing">Tarifs</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4>Société</h4>
-                        <ul>
-                            <li><a href="security.html">Sécurité</a></li>
-                            <li><a href="mentions-legales.html">Mentions Légales</a></li>
-                            <li><a href="accueil.html#contact">Contact</a></li>
-                            <li class="muted">© <span id="year"></span> mial</li>
-                        </ul>
-                    </div>
-                    <div class="right">
-                        <span> <img src="assets/logos/logo-mial-small-color.svg" alt="Logo mial"> </span>
-                    </div>
-                </div>
-            </footer>
+            <div id="footer-placeholder"></div>
 
             <script src="main.js"></script>
             <script src="/api.js"></script>

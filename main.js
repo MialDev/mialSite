@@ -795,7 +795,7 @@ function renderAdminProfiles(mbId, profiles) {
                     🕒 ${p.heure_debut || '??:??'} - ${p.heure_fin || '??:??'} 
                     <span class="muted" style="margin-left:4px;">(J-${p.jours_arriere_start} à J-${p.jours_arriere_end})</span>
                 </div>
-                <span class="${statusClass}" style="font-size:0.75rem; padding: 2px 8px;">${p.status || '—'}</span>
+                <button class="${statusClass}" style="font-size:0.75rem; padding: 2px 8px; border:none; cursor:pointer;" onclick="window.toggleAdminStatus('${p.id}', '${p.status || ''}')">${p.status || '—'}</button>
             </div>
             <div style="display:flex; gap:8px;">
                  <button class="action-btn" style="font-size:0.8rem;" onclick="openAdminEditor('${p.id}')">Éditer</button>
@@ -804,6 +804,37 @@ function renderAdminProfiles(mbId, profiles) {
         </div>`;
   }).join('');
 }
+
+window.toggleAdminStatus = async function (id, currentStatus) {
+  // Determine new status: if 'Active' (case insensitive) -> 'Inactive', else 'Active'
+  const isNowActive = String(currentStatus).toLowerCase() === 'active';
+  const newStatus = isNowActive ? 'Inactive' : 'Active';
+
+  if (!confirm(`Basculer le statut de ${currentStatus} vers ${newStatus} ?`)) return;
+
+  try {
+    const p = ADMIN_PROFILES_BY_ID.get(id);
+    // We reuse the update pattern but just for status
+    const payload = { ...p, status: newStatus };
+
+    // Ensure we send valid categories_filter if backend requires it (often 'ALL' or csv)
+    if (!payload.categories_filter) payload.categories_filter = 'ALL';
+
+    const res = await fetch(apiUrl(`/admin/api/recap-profiles/${id}`), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    // Refresh
+    // We can just reload the dashboard to be safe and consistent
+    window.initAdminDashboard();
+  } catch (e) {
+    alert("Erreur changement statut: " + e.message);
+  }
+};
 
 window.deleteAdminUser = async function (id) {
   if (!confirm("Attention: Supprimer cet utilisateur ?")) return;
@@ -1079,7 +1110,41 @@ function initHeartbeat() { setInterval(() => { if (document.visibilityState === 
 // =========================================================
 document.addEventListener('DOMContentLoaded', async () => {
   // Mobile Nav
-  window.initMobileNav();
+  // window.initMobileNav(); // Moved to loadComponents callback
+
+  // Component Loader
+  window.loadComponents = async function () {
+    const load = async (id, file) => {
+      const el = document.getElementById(id);
+      if (el) {
+        try {
+          const res = await fetch(file);
+          if (res.ok) el.innerHTML = await res.text();
+          // Re-init mobile nav if header was loaded
+          if (id.includes('header')) window.initMobileNav();
+          // Re-bind logout if present
+          if (file.includes('nav-app')) {
+            const btn = document.getElementById('logout-btn');
+            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); if (window.doLogout) window.doLogout(); });
+          }
+        } catch (e) { console.error("Error loading component", file, e); }
+      }
+    };
+
+    // Detection: App vs Public
+    const isApp = window.location.pathname.includes('dashboard') || window.location.pathname.includes('account') || window.location.pathname.includes('/admin/');
+    // Admin uses specific logic usually, but let's stick to requested logic for now or specific admin header if needed. 
+    // The request said: "const navFile = isApp ? '/components/nav-app.html' : '/components/nav-public.html';"
+    // However, admin pages might need a different one? For now adhering to request.
+    const navFile = isApp ? '/components/nav-app.html' : '/components/nav-public.html';
+
+    await Promise.all([
+      load('header-placeholder', navFile),
+      load('footer-placeholder', '/components/footer.html')
+    ]);
+  };
+
+  await window.loadComponents();
 
   // General Inits
   window.initBriefAudio();
