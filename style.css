@@ -303,11 +303,27 @@ p {
   transform: translateY(-120%);
 }
 
-.nav-inner {
-  max-width: 960px;
+/* Wrapper pour centrer la pilule + le bouton externe */
+.nav-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 1200px;
   margin: 10px auto;
-  /* PADDING EXACT RESTAURÉ */
-  padding: 8px 18px;
+  padding: 0 16px;
+}
+
+.nav-inner {
+  /* La pilule elle-même */
+  flex: 1;
+  /* Prend l'espace disponible mais permet au bouton d'exister à côté */
+  max-width: 960px;
+  /* Garde une taille max raisonnable */
+  /* Marge retirée car gérée par nav-wrapper */
+  margin: 0;
+  padding: 8px 12px 8px 20px;
+  /* Padding ajusté */
   border-radius: 999px;
   background: rgba(255, 255, 255, .78);
   backdrop-filter: blur(22px);
@@ -317,6 +333,78 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* Diviseur Vertical */
+.nav-divider {
+  width: 1px;
+  height: 16px;
+  background-color: #cbd5e1;
+  margin: 0 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Connexion Bubble Style */
+.nav-login-bubble {
+  background-color: #f1f5f9;
+  color: #0f172a !important;
+  /* Force color consistency */
+  padding: 8px 20px !important;
+  border-radius: 999px;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.nav-login-bubble:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Bouton Contact Externe (Desktop) */
+.nav-external-btn {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@media (max-width: 960px) {
+  .nav-wrapper {
+    display: block;
+    /* Retour au format block sur mobile pour gérer la position fixed simplifiée */
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-inner {
+    margin: 10px 16px;
+    /* Remet les marges sur mobile */
+    max-width: none;
+  }
+
+  .nav-external-btn {
+    display: none;
+    /* Cache le bouton externe sur mobile/tablette si pas de place */
+  }
+
+  /* Ajustements pour le menu mobile */
+  .nav-divider {
+    display: none;
+  }
+
+  .nav-login-bubble {
+    background: transparent;
+    border: none;
+    padding: 10px 0 !important;
+    margin: 0;
+  }
 }
 
 .nav-links {

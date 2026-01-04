@@ -92,24 +92,28 @@
 
 <body>
     <header id="site-header" class="nav">
-        <div class="container nav-inner">
-            <a href="/admin/dashboard.html" class="brand">
-                <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
-                    height="88">
-            </a>
-            <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
-                <span class="nav-toggle-bar"></span>
-            </button>
-            <nav class="nav-links">
-                <a href="/accueil.html">Accueil</a>
-                <a href="/admin/dashboard.html" style="font-weight: 600;"
-                    onclick="switchAdminView('profiles'); return false;">Admin</a>
-                <a href="#" onclick="switchAdminView('leads'); return false;">Leads</a>
-                <a href="/admin/analytics.html">Analytics</a>
-                <a href="/dashboard.html">User View</a>
-                <button id="logout-btn" class="btn btn-ghost"
-                    style="border:none; background:transparent; font-size: 0.95rem; cursor:pointer;">Déconnexion</button>
-            </nav>
+        <div class="container nav-wrapper">
+            <div class="nav-inner">
+                <a href="/accueil.html" class="brand">
+                    <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
+                        height="88">
+                </a>
+                <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+                    <span class="nav-toggle-bar"></span>
+                </button>
+                <nav class="nav-links">
+                    <a href="/accueil.html">Accueil</a>
+                    <span class="nav-divider"></span>
+                    <a href="/admin/dashboard.html" style="font-weight: 600;"
+                        onclick="switchAdminView('profiles'); return false;">Admin</a>
+                    <a href="#" onclick="switchAdminView('leads'); return false;">Leads</a>
+                    <span class="nav-divider"></span>
+                    <a href="/admin/analytics.html">Analytics</a>
+                    <a href="/dashboard.html">User View</a>
+                    <button id="logout-btn" class="btn btn-ghost nav-login-bubble"
+                        style="border:none; cursor:pointer;">Déconnexion</button>
+                </nav>
+            </div>
         </div>
     </header>
 
