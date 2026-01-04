@@ -1619,3 +1619,26 @@ p {
 .info-block-padding {
   padding: 0 20px;
 }
+
+/* NAVBAR ICON ANIMATION */
+@keyframes floatSubtle {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.anim-float-subtle {
+  animation: floatSubtle 3s ease-in-out infinite;
+}
+
+.anim-float-subtle:hover {
+  animation-play-state: paused;
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
