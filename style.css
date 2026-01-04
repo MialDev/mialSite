@@ -1755,49 +1755,39 @@ p {
   /* Hauteur fixe pour alignement parfait */
 }
 
-/* La bulle de fond animée */
+/* FIX SWITCHER : Supprimer les styles parasites */
+.switcher-glass.switcher-tri::after {
+  display: none !important;
+  /* Cache l'ancienne bulle (pillule) */
+}
+
 .switcher-glass.switcher-tri::before {
+  /* Style unique pour la bulle carrée */
   content: '';
   position: absolute;
   top: 4px;
   bottom: 4px;
   left: 4px;
   width: calc(33.33% - 6px);
-  /* 1/3 moins le padding */
   background: white;
-  border-radius: 8px !important;
-  /* Force internal radius */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   z-index: 1;
+  display: block !important;
 }
 
-/* Cache l'ancienne bulle si elle traîne */
-.switcher-glass:not(.switcher-tri)::after {
-  display: none;
-}
-
-/* Force le style unique */
-.switcher-glass.switcher-tri {
-  overflow: visible;
-}
-
-/* Logique de déplacement de la bulle selon l'input coché */
-/* Si le 1er (Outlook) est coché (par défaut ::before est à gauche) */
-.switcher-glass:has(input[value="outlook"]:checked)::before {
+/* Déplacements */
+.switcher-glass.switcher-tri:has(input[value="outlook"]:checked)::before {
   transform: translateX(0%);
 }
 
-/* Si le 2ème (Gmail) est coché */
-.switcher-glass:has(input[value="gmail"]:checked)::before {
+.switcher-glass.switcher-tri:has(input[value="gmail"]:checked)::before {
   transform: translateX(100%) translateX(4px);
-  /* Décalage vers la 2ème colonne */
 }
 
-/* Si le 3ème (Autre) est coché */
-.switcher-glass:has(input[value="other"]:checked)::before {
+.switcher-glass.switcher-tri:has(input[value="other"]:checked)::before {
   transform: translateX(200%) translateX(8px);
-  /* Décalage vers la 3ème colonne */
 }
 
 /* Footer Responsive Mobile */

@@ -99,28 +99,19 @@
                         </div>
 
                         <!-- Special Contact Form for "Other" Provider -->
-                        <div id="instr-other-contact" class="instruction-block center mb-24" style="display: none;">
-                            <div class="mb-20">
-                                <p class="muted text-085rem">
-                                    Pour les fournisseurs IMAP spécifiques (OVH, Ionos, Hébergement privé...), nous
-                                    devons configurer l'accès manuellement pour garantir la sécurité.
-                                </p>
+                        <div id="instr-other-contact" style="display: none;">
+                            <div class="instruction-block instruction-block-styled mb-20">
+                                <strong>Fournisseur Hébergé (IMAP)</strong>
+                                <p class="mt-4">Pour garantir la sécurité, nous configurons ces accès manuellement.</p>
                             </div>
-
-                            <div class="form-group mb-4" style="text-align: left;">
-                                <label class="form-label">Votre email</label>
-                                <input type="email" id="other-email" class="w-full" placeholder="nom@entreprise.com"
-                                    style="padding: 10px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.6);">
+                            <div class="form-group mb-20">
+                                <label class="form-label">Votre adresse email</label>
+                                <input type="email" id="other-email" class="form-input w-full"
+                                    placeholder="vous@societe.com">
                             </div>
-
-                            <button type="button" id="btn-other-contact" class="btn btn-primary w-full mt-4">
-                                Demander l'intégration
-                            </button>
-
-                            <div id="other-success-msg" class="mt-4"
-                                style="display: none; color: #16a34a; font-weight: 600;">
-                                ✅ Demande envoyée !
-                            </div>
+                            <button type="button" id="btn-other-contact" class="btn btn-primary w-full mt-4">Demander
+                                l'intégration</button>
+                            <div id="other-msg" class="center mt-4 text-sm"></div>
                         </div>
 
                         <form id="onboarding-form" class="form">
@@ -205,25 +196,21 @@
 
         function updateUI() {
             const provider = getSelectedProvider();
+            // Cacher tout
+            document.getElementById('instr-outlook').style.display = 'none';
+            document.getElementById('instr-gmail').style.display = 'none';
+            document.getElementById('instr-other').style.display = 'none';
+            document.getElementById('instr-other-contact').style.display = 'none';
+            document.getElementById('manual-fields').style.display = 'none';
 
-            // Hide all instructions
-            instrOutlook.style.display = 'none';
-            instrGmail.style.display = 'none';
-            instrOther.style.display = 'none';
-            if (instrOtherContact) instrOtherContact.style.display = 'none';
-
-            // Reset common displays
-            manualFields.style.display = 'none';
-
-            // Setup form visibility
             if (provider === 'outlook') {
-                instrOutlook.style.display = 'block';
+                document.getElementById('instr-outlook').style.display = 'block';
             } else if (provider === 'gmail') {
-                instrGmail.style.display = 'block';
-                manualFields.style.display = 'block';
-            } else if (provider === 'other') {
-                // For 'other', we hide manual fields and show contact form
-                if (instrOtherContact) instrOtherContact.style.display = 'block';
+                document.getElementById('instr-gmail').style.display = 'block';
+                document.getElementById('manual-fields').style.display = 'block';
+            } else {
+                // Mode Autre : Contact form uniquement
+                document.getElementById('instr-other-contact').style.display = 'block';
             }
         }
 
@@ -336,56 +323,30 @@
         });
     </script>
     <script>
-        // --- OTHER PROVIDER CONTACT LOGIC ---
-        const btnOtherContact = document.getElementById('btn-other-contact');
-        if (btnOtherContact) {
-            btnOtherContact.addEventListener('click', async () => {
-                const emailInput = document.getElementById('other-email');
-                const msgDiv = document.getElementById('other-success-msg');
-                const email = emailInput.value.trim();
+        document.getElementById('btn-other-contact')?.addEventListener('click', async () => {
+            const email = document.getElementById('other-email').value;
+            const msgDiv = document.getElementById('other-msg');
+            if (!email) return alert("Email requis");
 
-                if (!email) {
-                    alert("Veuillez entrer votre email.");
-                    return;
-                }
-
-                // UI Feedback
-                const originalText = btnOtherContact.textContent;
-                btnOtherContact.textContent = "Envoi...";
-                btnOtherContact.disabled = true;
-
-                const payload = {
-                    name: "Demande Integration",
-                    email: email,
-                    company: "N/A",
-                    volume: "Autre",
-                    message: "Bonjour, je souhaite connecter une adresse email hébergée (Provider Autre). Merci de me contacter."
-                };
-
-                try {
-                    const res = await fetch(apiUrl('/contact'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (res.ok) {
-                        msgDiv.style.display = 'block';
-                        btnOtherContact.style.display = 'none'; // Hide button after success? Or just leave it disabled. User asked for "Afficher un message de succès à la place du formulaire" - vaguely implies replacing it, but replacing the button is good enough or the whole block.
-                        // Let's simplify: hide input and button, show success
-                        emailInput.style.display = 'none';
-                        btnOtherContact.style.display = 'none';
-                    } else {
-                        throw new Error("Erreur serveur");
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("Une erreur est survenue. Veuillez réessayer.");
-                    btnOtherContact.textContent = originalText;
-                    btnOtherContact.disabled = false;
-                }
-            });
-        }
+            msgDiv.textContent = "Envoi...";
+            try {
+                await fetch(apiUrl('/contact'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: "Lead Intégration",
+                        email: email,
+                        company: "N/A",
+                        volume: "Autre Provider",
+                        message: "Demande d'intégration manuelle pour: " + email
+                    })
+                });
+                msgDiv.innerHTML = "<span style='color:green'>Demande envoyée ! On vous recontacte.</span>";
+                document.getElementById('btn-other-contact').style.display = 'none';
+            } catch (e) {
+                msgDiv.textContent = "Erreur d'envoi.";
+            }
+        });
     </script>
 </body>
 
