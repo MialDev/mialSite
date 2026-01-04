@@ -825,74 +825,97 @@ window.deleteAdminProfile = async function (pId, mbId) {
   } catch (e) { alert(e.message); }
 };
 
-window.openAdminEditor = function (id) {
-  const p = ADMIN_PROFILES_BY_ID.get(id);
-  if (!p) return;
-  ADMIN_EDITOR_ID = id;
-  document.getElementById('admin-edit-title-id').textContent = id;
-  document.getElementById('admin-editor-error').style.display = 'none';
+window.openAdminEditor = async function (id) {
+  // UI Loading
+  const btn = document.querySelector(`button[onclick="openAdminEditor('${id}')"]`);
+  const originalText = btn ? btn.textContent : 'Éditer';
+  if (btn) btn.textContent = 'Chargement...';
 
-  // Debug
-  console.log("Admin Editor loaded:", p);
+  try {
+    // 1. FETCH FRESH DATA (C'est la clé du fix)
+    // On appelle l'endpoint de détails qui contient p.* (donc email_account_id inclus)
+    const res = await fetch(apiUrl(`/admin/api/recap-profiles/${id}`), { credentials: 'include' });
+    if (!res.ok) throw new Error("Impossible de charger le profil");
 
-  // 1. Populate Fields
-  const setVal = (eid, v) => { const el = document.getElementById(eid); if (el) el.value = v || ''; };
-  const setChk = (eid, v) => { const el = document.getElementById(eid); if (el) el.checked = !!v; };
-  const timeSub = (t) => (t && t.length >= 5) ? t.substring(0, 5) : (t || '00:00');
+    const p = await res.json();
+    console.log("Full Admin Profile Loaded:", p); // Debug pour vérifier l'ID
 
-  setVal('admin-f-recipient', p.recap_recipient);
-  setVal('admin-f-schedule', timeSub(p.schedule_time));
+    ADMIN_EDITOR_ID = id;
+    document.getElementById('admin-edit-title-id').textContent = id;
+    document.getElementById('admin-editor-error').style.display = 'none';
 
-  // Robust ID check
-  const accId = p.email_account_id || p.account_id || "";
-  const accInput = document.getElementById('admin-f-account');
-  if (accInput) accInput.value = accId;
+    // 2. Remplissage des champs
+    const setVal = (eid, v) => { const el = document.getElementById(eid); if (el) el.value = v || ''; };
+    const setChk = (eid, v) => { const el = document.getElementById(eid); if (el) el.checked = !!v; };
+    const timeSub = (t) => (t && t.length >= 5) ? t.substring(0, 5) : (t || '00:00');
 
-  setVal('admin-f-days-start', p.jours_arriere_start ?? 1);
-  setVal('admin-f-time-start', timeSub(p.heure_debut));
-  setVal('admin-f-days-end', p.jours_arriere_end ?? 0);
-  setVal('admin-f-time-end', timeSub(p.heure_fin));
+    // ID DU COMPTE (Le point critique)
+    // On cherche email_account_id (standard) ou account_id (fallback)
+    const accId = p.email_account_id || p.account_id || "";
+    document.getElementById('admin-f-account').value = accId;
 
-  setChk('admin-f-status', String(p.status).toLowerCase() === 'active');
-  setChk('admin-f-debug', p.debug_mode);
-  setVal('admin-f-sort', p.sort_mode || 'date_desc');
+    if (!accId) console.warn("ATTENTION: email_account_id est toujours vide dans la réponse API !");
 
-  // Filters (CSV Textareas)
-  const f = p.filters || {};
-  const toCsv = (a) => Array.isArray(a) ? a.join(', ') : '';
-  setVal('admin-f-filter-sender', toCsv(f.sender));
-  setVal('admin-f-filter-exclude', toCsv(f.exclude));
-  setVal('admin-f-filter-cc', toCsv(f.cc));
+    // Autres champs
+    setVal('admin-f-recipient', p.recap_recipient);
+    setVal('admin-f-schedule', timeSub(p.schedule_time));
+    setVal('admin-f-days-start', p.jours_arriere_start ?? 1);
+    setVal('admin-f-days-end', p.jours_arriere_end ?? 0);
+    setVal('admin-f-time-start', timeSub(p.heure_debut));
+    setVal('admin-f-time-end', timeSub(p.heure_fin));
 
-  setChk('admin-f-unread', p.only_unread);
+    setChk('admin-f-status', String(p.status).toLowerCase() === 'active');
+    setChk('admin-f-debug', p.debug_mode);
+    setVal('admin-f-sort', p.sort_mode || 'date_desc');
+    setChk('admin-f-unread', p.only_unread);
 
-  // Audio
-  setChk('admin-f-audio', p.audio_actif !== false); // default true
-  setVal('admin-f-voice', p.voice || 'alloy');
-  setVal('admin-f-speed', p.speed || 1.0);
-  setVal('admin-f-lang', p.language || 'fr');
-  setVal('admin-f-timezone', p.timezone || 'Europe/Paris');
+    // Audio / IA
+    setChk('admin-f-audio', p.audio_actif !== false);
+    setVal('admin-f-voice', p.voice || 'alloy');
+    setVal('admin-f-speed', p.speed || 1.0);
+    setVal('admin-f-lang', p.language || 'fr');
+    setVal('admin-f-timezone', p.timezone || 'Europe/Paris');
 
-  // Assignment logic
-  const assignInput = document.getElementById('admin-f-assign-email');
-  const btnAssign = document.getElementById('admin-btn-assign');
-  const btnUnassign = document.getElementById('admin-btn-unassign');
-  const statusDiv = document.getElementById('admin-assign-status');
+    // Filtres (Gère le format objet ou plat)
+    const f = p.filters || {};
+    // Si l'API renvoie les filtres à plat dans p (ex: p.filtre_sender), on les utilise aussi
+    const getArr = (key, altKey) => {
+      let val = f[key] || p[altKey];
+      return Array.isArray(val) ? val.join(', ') : '';
+    };
 
-  if (p.assigned_to_email) {
-    if (assignInput) assignInput.value = p.assigned_to_email;
-    if (btnAssign) btnAssign.style.display = 'none';
-    if (btnUnassign) btnUnassign.style.display = 'inline-block';
-    if (statusDiv) statusDiv.innerHTML = `Assigné à : <strong>${p.assigned_to_email}</strong>`;
-  } else {
-    if (assignInput) assignInput.value = '';
-    if (btnAssign) btnAssign.style.display = 'inline-block';
-    if (btnUnassign) btnUnassign.style.display = 'none';
-    if (statusDiv) statusDiv.textContent = 'Non assigné';
+    setVal('admin-f-filter-sender', getArr('sender', 'filtre_sender'));
+    setVal('admin-f-filter-exclude', getArr('exclude', 'exclude_sender'));
+    setVal('admin-f-filter-cc', getArr('cc', 'filtre_cc'));
+
+    // Assignation
+    const assignInput = document.getElementById('admin-f-assign-email');
+    const btnAssign = document.getElementById('admin-btn-assign');
+    const btnUnassign = document.getElementById('admin-btn-unassign');
+    const statusDiv = document.getElementById('admin-assign-status');
+
+    if (p.assigned_to_email) {
+      if (assignInput) assignInput.value = p.assigned_to_email;
+      if (btnAssign) btnAssign.style.display = 'none';
+      if (btnUnassign) btnUnassign.style.display = 'inline-block';
+      if (statusDiv) statusDiv.innerHTML = `Assigné à : <strong>${p.assigned_to_email}</strong>`;
+    } else {
+      if (assignInput) assignInput.value = '';
+      if (btnAssign) btnAssign.style.display = 'inline-block';
+      if (btnUnassign) btnUnassign.style.display = 'none';
+      if (statusDiv) statusDiv.textContent = 'Non assigné';
+    }
+
+    // Afficher la modale
+    const modal = document.getElementById('modal-admin-edit');
+    if (modal) modal.showModal();
+
+  } catch (e) {
+    alert("Erreur ouverture éditeur: " + e.message);
+    console.error(e);
+  } finally {
+    if (btn) btn.textContent = originalText;
   }
-
-  const modal = document.getElementById('modal-admin-edit');
-  if (modal) modal.showModal();
 };
 
 window.saveAdminProfile = async function () {
