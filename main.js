@@ -1107,32 +1107,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Mobile Nav
   // window.initMobileNav(); // Moved to loadComponents callback
 
-  // Component Loader
+  // Component Loader System
   window.loadComponents = async function () {
     const load = async (id, file) => {
       const el = document.getElementById(id);
       if (el) {
         try {
           const res = await fetch(file);
-          if (res.ok) el.innerHTML = await res.text();
-          // Re-init mobile nav if header was loaded
-          if (id.includes('header')) window.initMobileNav();
-          // Re-bind logout if present
-          if (file.includes('nav-app')) {
-            const btn = document.getElementById('logout-btn');
-            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); if (window.doLogout) window.doLogout(); });
+          if (res.ok) {
+            el.innerHTML = await res.text();
+            // Re-run scripts inside inserted HTML if any (rare for navs but good practice)
+            // Re-init Logic dependent on HTML
+            if (id.includes('header')) {
+              window.initMobileNav();
+              // Bind Logout if present
+              const btnLogout = document.getElementById('logout-btn');
+              if (btnLogout) {
+                btnLogout.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  if (window.doLogout) window.doLogout(); // Defined in api.js usually or below
+                  else {
+                    // Fallback logout logic if doLogout missing scope
+                    fetch(apiUrl('/auth/logout'), { method: 'POST' }).then(() => window.location.href = '/login.html');
+                  }
+                });
+              }
+            }
           }
         } catch (e) { console.error("Error loading component", file, e); }
       }
     };
 
-    // Detection: App vs Public
-    const isApp = window.location.pathname.includes('dashboard') || window.location.pathname.includes('account') || window.location.pathname.includes('/admin/');
-    // Admin uses specific logic usually, but let's stick to requested logic for now or specific admin header if needed. 
-    // The request said: "const navFile = isApp ? '/components/nav-app.html' : '/components/nav-public.html';"
-    // However, admin pages might need a different one? For now adhering to request.
-    const navFile = isApp ? '/components/nav-app.html' : '/components/nav-public.html';
+    // 1. Determine which Nav to load
+    let navFile = '/components/nav-public.html'; // Default
+    const path = window.location.pathname;
 
+    if (path.includes('/admin/')) {
+      navFile = '/components/nav-admin.html';
+    } else if (path.includes('dashboard') || path.includes('account') || path.includes('onboarding')) {
+      navFile = '/components/nav-app.html';
+    }
+
+    // 2. Load Header & Footer
     await Promise.all([
       load('header-placeholder', navFile),
       load('footer-placeholder', '/components/footer.html')

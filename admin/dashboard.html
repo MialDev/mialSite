@@ -92,29 +92,7 @@
 
 <body>
     <header id="site-header" class="nav">
-        <div class="container nav-wrapper">
-            <div class="nav-inner">
-                <a href="/accueil.html" class="brand">
-                    <img class="brand-logo" src="/assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88"
-                        height="88">
-                </a>
-                <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
-                    <span class="nav-toggle-bar"></span>
-                </button>
-                <nav class="nav-links">
-                    <a href="/accueil.html">Accueil</a>
-                    <span class="nav-divider"></span>
-                    <a href="/admin/dashboard.html" style="font-weight: 600;"
-                        onclick="switchAdminView('profiles'); return false;">Admin</a>
-                    <a href="#" onclick="switchAdminView('leads'); return false;">Leads</a>
-                    <span class="nav-divider"></span>
-                    <a href="/admin/analytics.html">Analytics</a>
-                    <a href="/dashboard.html">User View</a>
-                    <button id="logout-btn" class="btn btn-ghost nav-login-bubble"
-                        style="border:none; cursor:pointer;">Déconnexion</button>
-                </nav>
-            </div>
-        </div>
+        <div id="header-placeholder"></div>
     </header>
 
     <section class="section" style="padding-top: 140px;">
@@ -382,38 +360,7 @@
 
     <div id="toast" class="toast">Action effectuée</div>
 
-    <footer class="footer">
-        <div class="container footer-grid">
-            <div>
-                <div class="brand">
-                    <img class="brand-logo" src="/assets/logos/logo-mial-small-color.svg" alt="mial logo" width="28"
-                        height="28">
-                    <span class="brand-text">mial</span>
-                </div>
-                <p class="muted">Inbox IA pour PME — installation clé en main, supervision humaine, données privées.</p>
-            </div>
-            <div>
-                <h4>Produit</h4>
-                <ul>
-                    <li><a href="/accueil.html#how">Comment ça marche</a></li>
-                    <li><a href="/crm.html">Flow</a></li>
-                    <li><a href="/accueil.html#pricing">Tarifs</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Société</h4>
-                <ul>
-                    <li><a href="/security.html">Sécurité</a></li>
-                    <li><a href="/mentions-legales.html">Mentions Légales</a></li>
-                    <li><a href="/accueil.html#contact">Contact</a></li>
-                    <li class="muted">© <span id="year"></span> mial</li>
-                </ul>
-            </div>
-            <div class="right">
-                <span> <img src="/assets/logos/logo-mial-small-color.svg" alt="Logo mial"> </span>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 
     <script src="/main.js"></script>
     <script>
