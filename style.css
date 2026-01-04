@@ -1093,12 +1093,13 @@ p {
   position: relative;
   z-index: 2;
   flex: 1;
-  /* Occupe 50% de l'espace */
+  /* Occupe l'espace disponible de manière égale */
   padding: 10px 24px;
   /* Espace autour du texte */
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   cursor: pointer;
   border-radius: 999px;
 
