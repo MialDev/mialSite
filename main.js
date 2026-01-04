@@ -813,14 +813,10 @@ window.toggleAdminStatus = async function (id, currentStatus) {
   if (!confirm(`Basculer le statut de ${currentStatus} vers ${newStatus} ?`)) return;
 
   try {
-    const p = ADMIN_PROFILES_BY_ID.get(id);
-    // We reuse the update pattern but just for status
-    const payload = { ...p, status: newStatus };
+    // UPDATED: Send only status to dedicated endpoint
+    const payload = { status: newStatus };
 
-    // Ensure we send valid categories_filter if backend requires it (often 'ALL' or csv)
-    if (!payload.categories_filter) payload.categories_filter = 'ALL';
-
-    const res = await fetch(apiUrl(`/admin/api/recap-profiles/${id}`), {
+    const res = await fetch(apiUrl(`/admin/api/recap-profiles/${id}/status`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -829,7 +825,6 @@ window.toggleAdminStatus = async function (id, currentStatus) {
     if (!res.ok) throw new Error(await res.text());
 
     // Refresh
-    // We can just reload the dashboard to be safe and consistent
     window.initAdminDashboard();
   } catch (e) {
     alert("Erreur changement statut: " + e.message);

@@ -173,222 +173,220 @@
                     </div>
                 </div>
             </section>
+        </div>
+    </section>
 
+    <div id="footer-placeholder"></div>
 
+    <script src="main.js"></script>
+    <script src="/api.js"></script>
+    <script>
+        // Toggle Password
+        function togglePwd(id) {
+            const inp = document.getElementById(id);
+            if (inp.type === 'password') inp.type = 'text';
+            else inp.type = 'password';
+        }
 
+        // --- TABS LOGIC ---
+        const tabs = document.getElementsByName('providerTab');
+        const manualFields = document.getElementById('manual-fields');
+        const instrOutlook = document.getElementById('instr-outlook');
+        const instrGmail = document.getElementById('instr-gmail');
+        const instrOther = document.getElementById('instr-other');
 
+        const instrOtherContact = document.getElementById('instr-other-contact');
 
-            <div id="footer-placeholder"></div>
+        // Helper to get selected provider
+        function getSelectedProvider() {
+            for (const t of tabs) { if (t.checked) return t.value; }
+            return 'outlook';
+        }
 
-            <script src="main.js"></script>
-            <script src="/api.js"></script>
-            <script>
-                // Toggle Password
-                function togglePwd(id) {
-                    const inp = document.getElementById(id);
-                    if (inp.type === 'password') inp.type = 'text';
-                    else inp.type = 'password';
-                }
+        function updateUI() {
+            const provider = getSelectedProvider();
 
-                // --- TABS LOGIC ---
-                const tabs = document.getElementsByName('providerTab');
-                const manualFields = document.getElementById('manual-fields');
-                const instrOutlook = document.getElementById('instr-outlook');
-                const instrGmail = document.getElementById('instr-gmail');
-                const instrOther = document.getElementById('instr-other');
+            // Hide all instructions
+            instrOutlook.style.display = 'none';
+            instrGmail.style.display = 'none';
+            instrOther.style.display = 'none';
+            if (instrOtherContact) instrOtherContact.style.display = 'none';
 
-                const instrOtherContact = document.getElementById('instr-other-contact');
+            // Reset common displays
+            manualFields.style.display = 'none';
 
-                // Helper to get selected provider
-                function getSelectedProvider() {
-                    for (const t of tabs) { if (t.checked) return t.value; }
-                    return 'outlook';
-                }
+            // Setup form visibility
+            if (provider === 'outlook') {
+                instrOutlook.style.display = 'block';
+            } else if (provider === 'gmail') {
+                instrGmail.style.display = 'block';
+                manualFields.style.display = 'block';
+            } else if (provider === 'other') {
+                // For 'other', we hide manual fields and show contact form
+                if (instrOtherContact) instrOtherContact.style.display = 'block';
+            }
+        }
 
-                function updateUI() {
-                    const provider = getSelectedProvider();
+        // Attach listeners
+        for (const t of tabs) {
+            t.addEventListener('change', updateUI);
+        }
 
-                    // Hide all instructions
-                    instrOutlook.style.display = 'none';
-                    instrGmail.style.display = 'none';
-                    instrOther.style.display = 'none';
-                    if (instrOtherContact) instrOtherContact.style.display = 'none';
+        // Init
+        updateUI();
 
-                    // Reset common displays
-                    manualFields.style.display = 'none';
-
-                    // Setup form visibility
-                    if (provider === 'outlook') {
-                        instrOutlook.style.display = 'block';
-                    } else if (provider === 'gmail') {
-                        instrGmail.style.display = 'block';
-                        manualFields.style.display = 'block';
-                    } else if (provider === 'other') {
-                        // For 'other', we hide manual fields and show contact form
-                        if (instrOtherContact) instrOtherContact.style.display = 'block';
-                    }
-                }
-
-                // Attach listeners
-                for (const t of tabs) {
-                    t.addEventListener('change', updateUI);
-                }
-
-                // Init
-                updateUI();
-
-                // --- OAUTH LOGIC (Outlook) ---
-                const btnOutlook = document.getElementById('btn-outlook-auth');
-                if (btnOutlook) {
-                    btnOutlook.addEventListener('click', async () => {
-                        const err = document.getElementById('error-message');
-                        try {
-                            const redirectUri = window.location.origin + '/callback.html';
-                            const res = await fetch(apiUrl(`/auth/microsoft/url?redirect_uri=${encodeURIComponent(redirectUri)}`), {
-                                credentials: 'include'
-                            });
-                            if (!res.ok) throw new Error("Erreur lors de l'initiation OAuth");
-                            const data = await res.json();
-
-                            if (data.url) {
-                                window.location.href = data.url;
-                            } else {
-                                throw new Error("URL de redirection manquante");
-                            }
-                        } catch (e) {
-                            err.textContent = e.message;
-                            err.style.display = 'block';
-                        }
+        // --- OAUTH LOGIC (Outlook) ---
+        const btnOutlook = document.getElementById('btn-outlook-auth');
+        if (btnOutlook) {
+            btnOutlook.addEventListener('click', async () => {
+                const err = document.getElementById('error-message');
+                try {
+                    const redirectUri = window.location.origin + '/callback.html';
+                    const res = await fetch(apiUrl(`/auth/microsoft/url?redirect_uri=${encodeURIComponent(redirectUri)}`), {
+                        credentials: 'include'
                     });
+                    if (!res.ok) throw new Error("Erreur lors de l'initiation OAuth");
+                    const data = await res.json();
+
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error("URL de redirection manquante");
+                    }
+                } catch (e) {
+                    err.textContent = e.message;
+                    err.style.display = 'block';
                 }
+            });
+        }
 
-                // --- INPUT CLEANUP ---
-                const secretInput = document.getElementById('f-secret');
-                if (secretInput) {
-                    secretInput.addEventListener('blur', () => {
-                        // Remove leading/trailing spaces on blur for better UX
-                        secretInput.value = secretInput.value.trim();
-                    });
+        // --- INPUT CLEANUP ---
+        const secretInput = document.getElementById('f-secret');
+        if (secretInput) {
+            secretInput.addEventListener('blur', () => {
+                // Remove leading/trailing spaces on blur for better UX
+                secretInput.value = secretInput.value.trim();
+            });
+        }
+
+        // --- MANUAL SUBMIT LOGIC ---
+        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errDiv = document.getElementById('error-message');
+            errDiv.style.display = 'none';
+
+            const provider = getSelectedProvider();
+
+            // Should not happen for Outlook as fields are hidden, but safety check
+            if (provider === 'outlook') return;
+
+            const email = document.getElementById('f-email').value.trim();
+            let secret = document.getElementById('f-secret').value; // Don't trim yet, we'll do advanced cleaning
+
+            if (!email || !secret) {
+                errDiv.textContent = "Veuillez remplir tous les champs.";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            // Cleanup secret (remove all spaces internal/external)
+            const cleanSecret = secret.replace(/\s+/g, '');
+
+            // Validation Gmail (16 chars)
+            if (provider === 'gmail') {
+                if (cleanSecret.length !== 16) {
+                    errDiv.textContent = "Le mot de passe d'application Google doit faire exactement 16 caractères.";
+                    errDiv.style.display = 'block';
+                    return;
                 }
+            }
 
-                // --- MANUAL SUBMIT LOGIC ---
-                document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const errDiv = document.getElementById('error-message');
-                    errDiv.style.display = 'none';
+            const payload = {
+                provider: provider, // 'gmail' or 'other'
+                email: email,
+                secret: cleanSecret
+            };
 
-                    const provider = getSelectedProvider();
-
-                    // Should not happen for Outlook as fields are hidden, but safety check
-                    if (provider === 'outlook') return;
-
-                    const email = document.getElementById('f-email').value.trim();
-                    let secret = document.getElementById('f-secret').value; // Don't trim yet, we'll do advanced cleaning
-
-                    if (!email || !secret) {
-                        errDiv.textContent = "Veuillez remplir tous les champs.";
-                        errDiv.style.display = 'block';
-                        return;
-                    }
-
-                    // Cleanup secret (remove all spaces internal/external)
-                    const cleanSecret = secret.replace(/\s+/g, '');
-
-                    // Validation Gmail (16 chars)
-                    if (provider === 'gmail') {
-                        if (cleanSecret.length !== 16) {
-                            errDiv.textContent = "Le mot de passe d'application Google doit faire exactement 16 caractères.";
-                            errDiv.style.display = 'block';
-                            return;
-                        }
-                    }
-
-                    const payload = {
-                        provider: provider, // 'gmail' or 'other'
-                        email: email,
-                        secret: cleanSecret
-                    };
-
-                    try {
-                        const res = await fetch(apiUrl('/mailbox/connect'), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload),
-                            credentials: 'include'
-                        });
-
-                        const data = await res.json().catch(() => ({}));
-
-                        if (!res.ok) {
-                            if (res.status === 409) {
-                                throw new Error("Cette boîte est déjà connectée.");
-                            }
-                            const errorMsg = data.detail || "Erreur de connexion";
-                            throw new Error(errorMsg);
-                        }
-
-                        // Success
-                        window.location.href = 'dashboard.html';
-
-                    } catch (e) {
-                        console.error("Mailbox Connect Error:", e);
-                        errDiv.textContent = `Erreur : ${e.message}`;
-                        errDiv.style.display = 'block';
-                    }
+            try {
+                const res = await fetch(apiUrl('/mailbox/connect'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
                 });
-            </script>
-            <script>
-                // --- OTHER PROVIDER CONTACT LOGIC ---
-                const btnOtherContact = document.getElementById('btn-other-contact');
-                if (btnOtherContact) {
-                    btnOtherContact.addEventListener('click', async () => {
-                        const emailInput = document.getElementById('other-email');
-                        const msgDiv = document.getElementById('other-success-msg');
-                        const email = emailInput.value.trim();
 
-                        if (!email) {
-                            alert("Veuillez entrer votre email.");
-                            return;
-                        }
+                const data = await res.json().catch(() => ({}));
 
-                        // UI Feedback
-                        const originalText = btnOtherContact.textContent;
-                        btnOtherContact.textContent = "Envoi...";
-                        btnOtherContact.disabled = true;
-
-                        const payload = {
-                            name: "Demande Integration",
-                            email: email,
-                            company: "N/A",
-                            volume: "Autre",
-                            message: "Bonjour, je souhaite connecter une adresse email hébergée (Provider Autre). Merci de me contacter."
-                        };
-
-                        try {
-                            const res = await fetch(apiUrl('/contact'), {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
-
-                            if (res.ok) {
-                                msgDiv.style.display = 'block';
-                                btnOtherContact.style.display = 'none'; // Hide button after success? Or just leave it disabled. User asked for "Afficher un message de succès à la place du formulaire" - vaguely implies replacing it, but replacing the button is good enough or the whole block.
-                                // Let's simplify: hide input and button, show success
-                                emailInput.style.display = 'none';
-                                btnOtherContact.style.display = 'none';
-                            } else {
-                                throw new Error("Erreur serveur");
-                            }
-                        } catch (e) {
-                            console.error(e);
-                            alert("Une erreur est survenue. Veuillez réessayer.");
-                            btnOtherContact.textContent = originalText;
-                            btnOtherContact.disabled = false;
-                        }
-                    });
+                if (!res.ok) {
+                    if (res.status === 409) {
+                        throw new Error("Cette boîte est déjà connectée.");
+                    }
+                    const errorMsg = data.detail || "Erreur de connexion";
+                    throw new Error(errorMsg);
                 }
-            </script>
+
+                // Success
+                window.location.href = 'dashboard.html';
+
+            } catch (e) {
+                console.error("Mailbox Connect Error:", e);
+                errDiv.textContent = `Erreur : ${e.message}`;
+                errDiv.style.display = 'block';
+            }
+        });
+    </script>
+    <script>
+        // --- OTHER PROVIDER CONTACT LOGIC ---
+        const btnOtherContact = document.getElementById('btn-other-contact');
+        if (btnOtherContact) {
+            btnOtherContact.addEventListener('click', async () => {
+                const emailInput = document.getElementById('other-email');
+                const msgDiv = document.getElementById('other-success-msg');
+                const email = emailInput.value.trim();
+
+                if (!email) {
+                    alert("Veuillez entrer votre email.");
+                    return;
+                }
+
+                // UI Feedback
+                const originalText = btnOtherContact.textContent;
+                btnOtherContact.textContent = "Envoi...";
+                btnOtherContact.disabled = true;
+
+                const payload = {
+                    name: "Demande Integration",
+                    email: email,
+                    company: "N/A",
+                    volume: "Autre",
+                    message: "Bonjour, je souhaite connecter une adresse email hébergée (Provider Autre). Merci de me contacter."
+                };
+
+                try {
+                    const res = await fetch(apiUrl('/contact'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        msgDiv.style.display = 'block';
+                        btnOtherContact.style.display = 'none'; // Hide button after success? Or just leave it disabled. User asked for "Afficher un message de succès à la place du formulaire" - vaguely implies replacing it, but replacing the button is good enough or the whole block.
+                        // Let's simplify: hide input and button, show success
+                        emailInput.style.display = 'none';
+                        btnOtherContact.style.display = 'none';
+                    } else {
+                        throw new Error("Erreur serveur");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Une erreur est survenue. Veuillez réessayer.");
+                    btnOtherContact.textContent = originalText;
+                    btnOtherContact.disabled = false;
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
