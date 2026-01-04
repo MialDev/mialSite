@@ -28,7 +28,15 @@ const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox=
 // UTILS & HELPERS
 // =========================================================
 function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
-// apiUrl is REMOVED from here to avoid Main.js recursion. It is loaded from api.js.
+// Safe fallback for apiUrl if api.js is missing
+const apiUrl = (p) => {
+  if (window.apiUrl) return window.apiUrl(p);
+  // Fallback implementation
+  let path = String(p || '').trim();
+  if (!path.startsWith('/')) path = '/' + path;
+  if (path.startsWith('/portal-api')) return path;
+  return '/portal-api' + path;
+};
 
 window.onScroll = function () {
   const y = window.scrollY || 0;
@@ -142,7 +150,7 @@ window.initContactForm = function () {
       return;
     }
     try {
-      const path = apiUrl('/contact'); // Uses global api.js function
+      const path = apiUrl('/contact');
       const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       const json = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -1040,7 +1048,7 @@ function sendEvent(payload) {
   if (!hasConsented) return;
   const full = { ...payload, path: window.location.pathname, ts: Date.now(), page_id: PAGE_ID, referrer: document.referrer || null };
   if (DEBUG_ANALYTICS) console.log('[Analytics]', full);
-  fetch(apiUrl('/portal-api/a/collect'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(full), keepalive: true, credentials: 'include' }).catch(() => { });
+  fetch(apiUrl('/a/collect'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(full), keepalive: true, credentials: 'include' }).catch(() => { });
 }
 function trackPageview() { sendEvent({ event: 'pageview' }); }
 
