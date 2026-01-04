@@ -24,26 +24,30 @@
 <body>
 
   <header id="site-header" class="nav">
-    <div class="container nav-inner">
-      <a href="#home" class="brand">
-        <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88" height="88">
-      </a>
-
-      <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
-        <span class="nav-toggle-bar"></span>
-      </button>
-
-      <nav class="nav-links">
-        <a href="accueil.html">Accueil</a>
-        <a href="crm.html" class="active">CRM</a>
-        <a href="team.html">Équipe</a>
-        <a href="#how">Fonctionnement</a>
-        <a href="login.html" data-track="cta_login" data-analytics-click="cta_login">Connexion</a>
-        <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top"
-          data-analytics-click="cta_demo_top">Demander une démo</a>
-      </nav>
-      <a href="#contact" class="btn btn-primary desktop-cta" data-track="cta_demo_top"
-        data-analytics-click="cta_demo_top">Demander une démo</a>
+    <div class="container nav-wrapper">
+      <div class="nav-inner">
+        <a href="accueil.html" class="brand">
+          <img class="brand-logo" src="assets/logos/logo-mial-full-color.svg" alt="mial logo" width="88" height="88">
+        </a>
+        <button class="nav-toggle" type="button" aria-label="Ouvrir le menu">
+          <span class="nav-toggle-bar"></span>
+        </button>
+        <nav class="nav-links">
+          <a href="audio.html"><img src="assets/logos/instant.png" alt="mial Instant" class="anim-float-subtle"
+              style="height: 28px; vertical-align: middle;"></a>
+          <span class="nav-divider"></span>
+          <a href="crm.html"><img src="assets/logos/flow.png" alt="mial Flow" class="anim-float-subtle"
+              style="height: 28px; vertical-align: middle;"></a>
+          <span class="nav-divider"></span>
+          <a href="team.html">Équipe</a>
+          <a href="login.html" class="nav-login-bubble" data-track="cta_login"
+            data-analytics-click="cta_login">Connexion</a>
+          <a href="#contact" class="btn btn-primary mobile-cta" data-track="cta_demo_top"
+            data-analytics-click="cta_demo_top">Contactez-nous</a>
+        </nav>
+      </div>
+      <a href="#contact" class="btn btn-primary nav-external-btn" data-track="cta_demo_top"
+        data-analytics-click="cta_demo_top">Contactez-nous</a>
     </div>
   </header>
 
