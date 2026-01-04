@@ -1815,23 +1815,51 @@ p {
   color: #000;
 }
 
-/* STYLE INPUT "AUTRE" (Forme Pillule) */
+/* --- FIX SWITCHER (Force Pillule) --- */
+.switcher-glass.switcher-tri {
+  /* Forme Pillule forcée */
+  border-radius: 999px !important;
+  /* Nettoyage */
+  background-color: var(--glass-bg, rgba(255, 255, 255, 0.2));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.4));
+  overflow: hidden;
+  /* Important pour couper les bords */
+}
+
+/* La bulle blanche active */
+.switcher-glass.switcher-tri::before {
+  /* Forme Pillule forcée */
+  border-radius: 999px !important;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  /* S'assurer qu'elle est bien positionnée */
+  top: 4px;
+  bottom: 4px;
+  z-index: 1;
+}
+
+/* Cacher l'ancien fantôme si présent */
+.switcher-glass.switcher-tri::after {
+  display: none !important;
+}
+
+/* --- FIX INPUT AUTRE (Force Pillule) --- */
 #other-email {
-  border-radius: 999px;
-  /* Forme pillule */
-  padding: 12px 20px;
-  /* Padding confortable */
-  background: rgba(255, 255, 255, 0.6);
+  appearance: none;
+  /* Retire le style par défaut navigateur */
+  border-radius: 999px !important;
+  padding: 12px 24px;
   border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
+  outline: none;
   transition: all 0.2s ease;
 }
 
 #other-email:focus {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   border-color: var(--blue, #38bdf8);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
 }
 
 /* Footer Responsive Mobile */
