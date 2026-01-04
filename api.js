@@ -63,7 +63,7 @@ async function doLogout() {
     } catch (e) {
         console.warn('Logout fetch error', e);
     } finally {
-        window.location.href = '/login.html';
+        window.location.href = '/Connexion.html';
     }
 }
 window.doLogout = doLogout;

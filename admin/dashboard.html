@@ -15,7 +15,7 @@
             try {
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
                 if (!res.ok) {
-                    if (res.status === 401) window.location.replace('/login.html');
+                    if (res.status === 401) window.location.replace('/Connexion.html');
                     else window.location.replace('/dashboard.html');
                     return;
                 }
@@ -24,7 +24,7 @@
                     window.location.replace('/dashboard.html');
                 }
             } catch (e) {
-                window.location.replace('/login.html');
+                window.location.replace('/Connexion.html');
             }
         })();
     </script>
