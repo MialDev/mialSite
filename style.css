@@ -1730,3 +1730,68 @@ p {
   transform: scale(1.1);
   transition: transform 0.2s ease;
 }
+/* Style spécifique pour le switcher à 3 options */
+.switcher-glass.switcher-tri {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 colonnes égales */
+    padding: 4px;
+    gap: 0;
+    position: relative;
+    border-radius: 12px; /* Un peu plus carré que rond pour 3 items */
+}
+
+.switcher-glass__option {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 2;
+    cursor: pointer;
+    font-weight: 500;
+    height: 36px; /* Hauteur fixe pour alignement parfait */
+}
+
+/* La bulle de fond animée */
+.switcher-glass::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(33.33% - 6px); /* 1/3 moins le padding */
+    background: white;
+    border-radius: 8px;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    z-index: 1;
+}
+
+/* Logique de déplacement de la bulle selon l'input coché */
+/* Si le 1er (Outlook) est coché (par défaut ::before est à gauche) */
+.switcher-glass:has(input[value="outlook"]:checked)::before {
+    transform: translateX(0%);
+}
+/* Si le 2ème (Gmail) est coché */
+.switcher-glass:has(input[value="gmail"]:checked)::before {
+    transform: translateX(100%) translateX(4px); /* Décalage vers la 2ème colonne */
+}
+/* Si le 3ème (Autre) est coché */
+.switcher-glass:has(input[value="other"]:checked)::before {
+    transform: translateX(200%) translateX(8px); /* Décalage vers la 3ème colonne */
+}
+
+/* Footer Responsive Mobile */
+.footer-responsive .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px; /* Largeur standard du site */
+}
+@media (max-width: 600px) {
+    .footer-responsive .container {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+}
