@@ -29,14 +29,17 @@ const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox=
 // =========================================================
 function escapeHtml(s) { return String(s ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); }
 // Safe fallback for apiUrl if api.js is missing
-const apiUrl = (p) => {
-  if (window.apiUrl) return window.apiUrl(p);
-  // Fallback implementation
-  let path = String(p || '').trim();
-  if (!path.startsWith('/')) path = '/' + path;
-  if (path.startsWith('/portal-api')) return path;
-  return '/portal-api' + path;
-};
+// Safe fallback for apiUrl if api.js is missing
+if (typeof window.apiUrl === 'undefined') {
+  window.apiUrl = (p) => {
+    let path = String(p || '').trim();
+    if (!path.startsWith('/')) path = '/' + path;
+    if (path.startsWith('/portal-api')) return path;
+    return '/portal-api' + path;
+  };
+}
+// Alias local pour compatibilité si nécessaire, mais sans 'const'
+var apiUrl = window.apiUrl;
 
 window.onScroll = function () {
   const y = window.scrollY || 0;
