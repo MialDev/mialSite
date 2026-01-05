@@ -101,6 +101,23 @@
             color: #3bdbda;
             font-weight: bold;
         }
+
+        /* Override specific to Vocal page */
+        .brief-layout {
+            grid-template-columns: 360px 1fr !important;
+            gap: 40px;
+        }
+
+        .brief-copy h1 {
+            font-size: 3rem !important;
+            line-height: 1.1;
+        }
+
+        @media (max-width: 960px) {
+            .brief-layout {
+                grid-template-columns: 1fr !important;
+            }
+        }
     </style>
 </head>
 
