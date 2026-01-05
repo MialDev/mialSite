@@ -148,20 +148,84 @@
             </div>
           </a>
 
-          <!-- Card Flow -->
+          <!-- Card ERP (same spirit as Vocal: custom abstract background, no image) -->
           <a href="Assistant.html" class="card card-hover"
             style="text-decoration:none; display:block; padding:0; overflow:hidden;">
             <div
-              style="height:200px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1)); display:flex; align-items:center; justify-content:center; position:relative;">
-              <!-- Visual Abstract Flow -->
-              <div class="flow-arrow-icon"
-                style="width:80px; height:80px; background:white; position:absolute; box-shadow:0 20px 40px rgba(56,189,248,0.2);">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
+              style="height:200px; position:relative; overflow:hidden; padding:12px; background:white; display:flex; align-items:center; justify-content:center;">
+
+              <!-- Background "ERP" representation (same color theme: use your blue/purple) -->
+              <div
+                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(129, 140, 248, 0.08));">
+              </div>
+              <div
+                style="position:absolute; inset:12px; border-radius:12px; background:rgba(56, 189, 248, 0.05); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.18);">
+              </div>
+
+              <!-- Soft blobs -->
+              <div
+                style="position:absolute; width:280px; height:280px; border-radius:50%; background:rgba(129, 140, 248, 0.18); filter:blur(30px); top:-140px; right:-90px;">
+              </div>
+              <div
+                style="position:absolute; width:240px; height:240px; border-radius:50%; background:rgba(56, 189, 248, 0.18); filter:blur(30px); bottom:-140px; left:-90px;">
+              </div>
+
+              <!-- "Dashboard" mini UI mock (simple, clean) -->
+              <div
+                style="position:relative; z-index:2; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:0 18px;">
+                <div
+                  style="width:100%; max-width:420px; border-radius:14px; background:rgba(255,255,255,0.72); box-shadow:0 16px 40px rgba(0,0,0,0.10); border:1px solid rgba(148,163,184,0.25); overflow:hidden;">
+                  <div
+                    style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:rgba(56,189,248,0.08); border-bottom:1px solid rgba(148,163,184,0.18);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="width:10px; height:10px; border-radius:50%; background:rgba(56,189,248,0.9);"></span>
+                      <span style="font-size:0.8rem; font-weight:800; color:#1f2937; letter-spacing:0.02em;">MIAL
+                        ERP</span>
+                    </div>
+                    <span style="font-size:0.75rem; color:#64748b;">Inbox → CRM</span>
+                  </div>
+
+                  <div style="padding:12px 14px; display:grid; grid-template-columns: 1fr; gap:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.78rem; color:#475569; font-weight:700;">Nouveaux leads</span>
+                      <span style="font-size:0.78rem; color:#0ea5e9; font-weight:800;">+12</span>
+                    </div>
+
+                    <div style="height:8px; background:rgba(0,0,0,0.08); border-radius:999px; overflow:hidden;">
+                      <div
+                        style="height:100%; width:55%; background:linear-gradient(90deg, rgba(56,189,248,0.95), rgba(129,140,248,0.95));">
+                      </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                      <div
+                        style="padding:10px; border-radius:12px; background:rgba(56,189,248,0.10); border:1px solid rgba(56,189,248,0.16);">
+                        <div style="font-size:0.72rem; color:#475569; font-weight:700; margin-bottom:6px;">Statut</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                          <span
+                            style="font-size:0.7rem; padding:4px 10px; border-radius:999px; background:rgba(56,189,248,0.18); color:#0369a1; font-weight:800;">À
+                            traiter</span>
+                          <span
+                            style="font-size:0.7rem; padding:4px 10px; border-radius:999px; background:rgba(129,140,248,0.18); color:#4338ca; font-weight:800;">Devis</span>
+                        </div>
+                      </div>
+
+                      <div
+                        style="padding:10px; border-radius:12px; background:rgba(129,140,248,0.10); border:1px solid rgba(129,140,248,0.16);">
+                        <div style="font-size:0.72rem; color:#475569; font-weight:700; margin-bottom:6px;">Actions</div>
+                        <div style="font-size:0.75rem; color:#334155; font-weight:800;">Tri · réponses · suivi</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subtle top highlight -->
+              <div
+                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.0)); pointer-events:none; z-index:3;">
               </div>
             </div>
+
             <div style="padding:32px;">
               <h3 style="font-size:1.8rem; margin-bottom:12px;">MIAL ERP (soon)</h3>
               <p class="muted" style="margin-bottom:24px;">
@@ -257,7 +321,6 @@
                 <div class="review-stars">★★★★★</div><span class="review-source">Interne</span>
               </div>
             </article>
-
 
             <article class="review-card glass-jelly card-hover">
               <h3 class="sr-only">Avis de Fentra (2)</h3>
