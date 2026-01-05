@@ -1128,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   if (window.doLogout) window.doLogout(); // Defined in api.js usually or below
                   else {
                     // Fallback logout logic if doLogout missing scope
-                    fetch(apiUrl('/auth/logout'), { method: 'POST' }).then(() => window.location.href = '/login.html');
+                    fetch(apiUrl('/auth/logout'), { method: 'POST' }).then(() => window.location.href = '/Connexion.html');
                   }
                 });
               }
