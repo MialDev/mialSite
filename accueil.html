@@ -88,17 +88,56 @@
 
         <!-- Product Cards -->
         <div class="grid-2" style="gap:32px; text-align:left;">
-          <!-- Card Instant -->
+          <!-- Card Vocal -->
           <a href="Vocal.html" class="card card-hover"
             style="text-decoration:none; display:block; padding:0; overflow:hidden;">
             <div
               style="height:200px; position:relative; overflow:hidden; padding:12px; background:white; display:flex; align-items:center; justify-content:center;">
+
+              <!-- Background "vocal" representation (same color theme) -->
               <div
-                style="position:absolute; inset:12px; background:rgba(59, 219, 218, 0.1); z-index:1; mix-blend-mode:multiply; border-radius:12px; pointer-events:none;">
+                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(135deg, rgba(59, 219, 218, 0.14), rgba(59, 219, 218, 0.05));">
               </div>
-              <img src="assets/Photos/Vocal_minimage.png" alt="Mial Vocal"
-                style="width:100%; height:100%; object-fit:cover; object-position:center; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+              <div
+                style="position:absolute; inset:12px; border-radius:12px; background:rgba(59, 219, 218, 0.06); box-shadow: inset 0 0 0 1px rgba(59, 219, 218, 0.18);">
+              </div>
+
+              <!-- Soft blobs -->
+              <div
+                style="position:absolute; width:260px; height:260px; border-radius:50%; background:rgba(59, 219, 218, 0.18); filter:blur(28px); top:-120px; left:-80px;">
+              </div>
+              <div
+                style="position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(59, 219, 218, 0.14); filter:blur(28px); bottom:-120px; right:-80px;">
+              </div>
+
+              <!-- Waveform bars -->
+              <div
+                style="position:relative; z-index:2; width:100%; height:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:0 28px;">
+                <span style="width:10px; height:34px; border-radius:999px; background:rgba(59,219,218,0.55);"></span>
+                <span style="width:10px; height:52px; border-radius:999px; background:rgba(59,219,218,0.70);"></span>
+                <span style="width:10px; height:26px; border-radius:999px; background:rgba(59,219,218,0.45);"></span>
+                <span style="width:10px; height:68px; border-radius:999px; background:rgba(59,219,218,0.78);"></span>
+                <span style="width:10px; height:40px; border-radius:999px; background:rgba(59,219,218,0.62);"></span>
+
+                <!-- Play bubble -->
+                <div
+                  style="width:62px; height:62px; border-radius:50%; background:#3bdbda; color:white; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 18px 40px rgba(0,0,0,0.12); margin:0 10px;">
+                  ▶
+                </div>
+
+                <span style="width:10px; height:46px; border-radius:999px; background:rgba(59,219,218,0.65);"></span>
+                <span style="width:10px; height:70px; border-radius:999px; background:rgba(59,219,218,0.80);"></span>
+                <span style="width:10px; height:30px; border-radius:999px; background:rgba(59,219,218,0.50);"></span>
+                <span style="width:10px; height:58px; border-radius:999px; background:rgba(59,219,218,0.74);"></span>
+                <span style="width:10px; height:36px; border-radius:999px; background:rgba(59,219,218,0.56);"></span>
+              </div>
+
+              <!-- Subtle top highlight -->
+              <div
+                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.0)); pointer-events:none; z-index:3;">
+              </div>
             </div>
+
             <div style="padding:32px;">
               <h3 style="font-size:1.8rem; margin-bottom:12px;">Mial Vocal</h3>
               <p class="muted" style="margin-bottom:24px;">
