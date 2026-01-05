@@ -1,0 +1,522 @@
+﻿<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mial Resum — mial</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#1fb6ff">
+
+    <style>
+        .audio-section {
+            padding-top: 140px;
+        }
+
+        .audio-intro {
+            max-width: 100%;
+            margin: 0 auto 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .audio-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .audio-feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .audio-card {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .audio-card h3 {
+            font-size: 1.5rem;
+            color: var(--ink);
+        }
+
+        .audio-demo-player {
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .play-btn-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #3bdbda;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+        }
+
+        .play-btn-circle:hover {
+            transform: scale(1.05);
+        }
+
+        .check-list,
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 16px;
+        }
+
+        .check-list li,
+        .checklist li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .check-list li::before,
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #3bdbda;
+            font-weight: bold;
+        }
+
+        /* Override specific to Vocal page */
+        .brief-layout {
+            grid-template-columns: 360px 1fr !important;
+            gap: 40px;
+        }
+
+        .brief-copy h1 {
+            font-size: 3rem !important;
+            line-height: 1.1;
+        }
+
+        /* Visual Dashboard Preview Styles */
+        .db-preview {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            text-align: left;
+        }
+
+        .db-preview-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .db-preview-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .db-preview-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .sim-input,
+        .sim-select {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--ink);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sim-select::after {
+            content: "▼";
+            font-size: 0.7rem;
+            opacity: 0.5;
+        }
+
+        .sim-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .sim-chip {
+            background: #e0f2fe;
+            color: #0284c7;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sim-toggle {
+            width: 44px;
+            height: 24px;
+            background: #22c55e;
+            border-radius: 99px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sim-toggle::before {
+            content: "";
+            position: absolute;
+            right: 2px;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 960px) {
+            .brief-layout {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header id="site-header" class="nav">
+        <div id="header-placeholder"></div>
+    </header>
+
+    <section class="section audio-section">
+        <div class="container" style="max-width: 1400px;">
+            <div class="audio-intro glass-static">
+                <div class="badge badge-client glass-static"
+                    style="display:inline-block; margin-bottom:16px; color:#3bdbda; background:rgba(59, 219, 218, 0.1); padding: 6px 16px; border-radius: 99px; font-weight: 600; font-size: 0.9rem;">
+                    ✨ Nouveauté
+                </div>
+                <h1>
+                    Transformez votre inbox en
+                    <span
+                        style="background: linear-gradient(45deg, #3bdbda, #3bdbda); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Podcast</span>
+                </h1>
+                <p class="lead">
+                    Chaque matin, mial analyse vos <strong>emails non lus et non traités</strong> pour vous
+                    préparer un résumé audio clair et actionnable.
+                </p>
+
+                <ul
+                    style="list-style: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; color: var(--muted); font-size: 1.05rem; margin-top: 24px;">
+                    <li style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color:#3bdbda; font-weight:bold;">✓</span>
+                        Synthèse intelligente
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color:#3bdbda; font-weight:bold;">✓</span>
+                        Voix ultra-réalistes
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color:#3bdbda; font-weight:bold;">✓</span>
+                        Gain de temps
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- User Snippet (Inserted 'Tel Quel' with branding adjustments) -->
+    <section id="home" class="section section-brief" style="padding-top: 0;">
+        <div class="container brief-layout" style="max-width: 1400px;">
+            <div class="brief-visual">
+                <!-- Reusing the exact visual from the Brief section -->
+                <div class="brief-card glass-jelly card-hover">
+                    <div class="tile-kicker">Version vocale</div>
+                    <div class="brief-pill">Résumé du matin · 07h45</div>
+                    <div class="brief-email-list">
+                        <div class="brief-email">
+                            <span class="badge badge-client">Client</span>
+                            <div class="brief-email-text">
+                                <strong>Chantier Rue des Lilas</strong>
+                                <span>3 nouveaux messages, 1 date à confirmer</span>
+                            </div>
+                        </div>
+                        <div class="brief-email">
+                            <span class="badge badge-sav">SAV</span>
+                            <div class="brief-email-text">
+                                <strong>Suivi SAV fenêtres alu</strong>
+                                <span>Dernière réponse client à vérifier</span>
+                            </div>
+                        </div>
+                        <div class="brief-email">
+                            <span class="badge badge-fournisseur">Fournisseur</span>
+                            <div class="brief-email-text">
+                                <strong>Commande profilés & grue</strong>
+                                <span>Confirmation de livraison manquante</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="brief-audio">
+                        <div class="audio-badge" id="brief-audio-button" style="background:#3bdbda;">
+                            <span class="audio-icon" id="brief-audio-icon" style="color:#3bdbda;">▶</span>
+                            <div class="audio-text">
+                                <strong>Lecture du brief</strong>
+                                <span>2 min · résumé de vos emails</span>
+                            </div>
+                        </div>
+                        <p class="audio-caption">
+                            “Aujourd’hui : 5 chantiers à confirmer, 2 SAV prioritaires et 1 fournisseur en attente.”
+                        </p>
+                        <audio id="brief-audio" src="assets/audio/demo-brief.mp3"></audio>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brief-copy glass-static">
+                <div class="tile-kicker">Version écrite</div>
+                <h1>Commencez la journée avec un résumé, pas une boîte mail</h1>
+                <p>
+                    Chaque matin, mial prépare pour vous un <strong>résumé des emails importants</strong>
+                    et vous envoie un <strong>message vocal</strong> que vous pouvez écouter en voiture,
+                    en marchant ou pendant le café.
+                </p>
+                <ul class="brief-list">
+                    <li>Résumé des nouveaux emails filtrés selon vos règles (clients, urgences, projets…)</li>
+                    <li>Regroupement par client ou par dossier pour savoir <strong>qui attendre / qui relancer</strong>
+                    </li>
+                    <li>Message audio envoyé sur WhatsApp, Telegram ou par email pour être à jour avant d’ouvrir Outlook
+                    </li>
+                </ul>
+                <div class="brief-note">
+                    Vous choisissez l’heure, le canal, et ce que le résumé doit couvrir. Mial Resum s’adapte à votre
+                    manière
+                    de
+                    travailler.
+                </div>
+                <div class="cta-row" style="margin-top: 2rem;">
+                    <a href="mailto:contact@mial.be" class="btn btn-primary" data-track="cta_demo_mid"
+                        style="background:#3bdbda; border-color:#3bdbda;">Demander une démo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="padding-bottom: 0;">
+        <div class="container" style="max-width: 1400px;">
+
+
+            <div class="glass-static reveal-fx" style="padding:40px; text-align:center; margin-bottom: 80px;">
+                <h2>Des voix ultra-réalistes</h2>
+                <p class="muted" style="max-width:600px; margin:16px auto 32px;">
+                    Choisissez la voix qui vous accompagne. mial utilise les dernières technologies de synthèse vocale
+                    pour un rendu indiscernable d'une voix humaine.
+                </p>
+
+                <div style="display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="alloy">🔊 Alloy</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="echo">🔊 Echo</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="fable">🔊 Fable</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="onyx">🔊 Onyx</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="nova">🔊 Nova</button>
+                    </div>
+                    <div class="voice-sample">
+                        <button class="btn btn-ghost btn-small voice-btn" data-voice="shimmer">🔊 Shimmer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audio-feature-grid">
+                <!-- "Le Résumé Matinal" removed -->
+
+                <article class="audio-card glass-jelly reveal-fx">
+                    <h3>⚙️ Pilotage Intuitif</h3>
+                    <p class="muted" style="margin-bottom: 24px;">
+                        Gardez le contrôle total sur votre assistant via votre <strong>Espace Client</strong>.
+                    </p>
+
+                    <div class="db-preview">
+                        <div class="db-preview-header">
+                            <span style="color: #3bdbda;">●</span> Dashboard mial
+                        </div>
+
+                        <div class="db-preview-row">
+                            <div class="db-preview-field">
+                                <label>Heure d'envoi</label>
+                                <div class="sim-input">07:45</div>
+                            </div>
+                            <div class="db-preview-field">
+                                <label>Voix IA</label>
+                                <div class="sim-select">Alloy (Neutre)</div>
+                            </div>
+                        </div>
+
+                        <div class="db-preview-field" style="margin-bottom: 20px;">
+                            <label>Whitelist (Priorités)</label>
+                            <div class="sim-chips">
+                                <span class="sim-chip">Clients</span>
+                                <span class="sim-chip">Urgences</span>
+                                <span class="sim-chip"
+                                    style="background:transparent; color:#94a3b8; border:1px solid #e2e8f0;">+
+                                    Ajouter</span>
+                            </div>
+                        </div>
+
+                        <div class="db-preview-field"
+                            style="display: flex; justify-content: space-between; align-items: center; background: rgba(59, 219, 218, 0.05); padding: 12px; border-radius: 12px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 0.9rem;">Générer Podcast Audio</div>
+                                <div class="muted" style="font-size: 0.75rem;">Activé pour WhatsApp & Mail</div>
+                            </div>
+                            <div class="sim-toggle"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <a href="Connexion.html" class="btn btn-ghost w-full" style="font-size:0.9rem;">Accéder au
+                            dashboard →</a>
+                    </div>
+                </article>
+            </div>
+
+
+        </div>
+        </div>
+    </section>
+
+
+    <section class="section" id="pricing" style="padding-top: 0;">
+        <div class="container center" style="max-width: 1400px;">
+            <div class="pricing-switch-wrapper">
+                <fieldset class="switcher-glass">
+                    <label class="switcher-glass__option">
+                        <input class="switcher-glass__input" type="radio" name="billing" value="monthly" checked />
+                        <span class="switcher-glass__text">Mensuel</span>
+                    </label>
+                    <label class="switcher-glass__option">
+                        <input class="switcher-glass__input" type="radio" name="billing" value="yearly" />
+                        <span class="switcher-glass__text">Annuel</span>
+                    </label>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="container grid-3" style="margin-top:40px; max-width: 1400px;">
+
+            <article class="card glass-static card-hover pricing-card">
+                <div class="plan-head">
+                    <h3>Mial Brief</h3>
+                </div>
+                <div class="price" data-monthly="59.90" data-yearly="47.99">€59.90 <span>/mo</span> <span
+                        class="discount-badge"></span></div>
+                <p class="muted" style="font-size:0.9rem; margin-bottom:12px">L'essentiel pour rester à jour.</p>
+                <ul class="checklist">
+                    <li>1 adresse email connectée</li>
+                    <li>Tri & réponses automatiques</li>
+                    <li>Résumé quotidien (texte)</li>
+                    <li><strong>Brief audio vocal</strong></li>
+                </ul>
+                <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Brief"
+                    data-track="cta_choose_offer_basic" data-analytics-click="cta_choose_offer_basic"
+                    data-analytics-conversion="pricing_click_basic">Choisir</a>
+            </article>
+
+            <article class="card glass-static card-hover pricing-card">
+                <div class="plan-head">
+                    <h3>Mial Gestion</h3><span class="pill">Automation</span>
+                </div>
+                <div class="price" data-monthly="159.90" data-yearly="127.15">€159.90 <span>/mo</span> <span
+                        class="discount-badge"></span></div>
+                <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Votre admin en pilote automatique.</p>
+                <ul class="checklist">
+                    <li>1 adresse email connectée</li>
+                    <li>Liaison Excel / Google Sheets</li>
+                    <li>Automatisation sur mesure</li>
+                    <li>Extraction de données</li>
+                </ul>
+                <p style="font-size:0.75rem; color:#64748b; margin-top:12px;">* Coût de développement initial non
+                    inclus.</p>
+                <a href="#contact" class="btn btn-primary w-full select-plan-btn" data-plan="Mial Gestion"
+                    data-track="cta_choose_offer_pro" data-analytics-click="cta_choose_offer_pro"
+                    data-analytics-conversion="pricing_click_pro">Choisir</a>
+            </article>
+
+            <article class="card glass-static card-hover pricing-card">
+                <div class="plan-head">
+                    <h3>Entreprise</h3>
+                </div>
+                <div class="price" style="font-size:1.8rem; padding: 6px 0;">Sur devis</div>
+                <p class="muted" style="font-size:0.9rem; margin-bottom:12px">Architecture complexe & multi-comptes.</p>
+                <ul class="checklist">
+                    <li>Module intégrateur tableur</li>
+                    <li>Multi-boîtes mails</li>
+                    <li>Connexions API spécifiques</li>
+                    <li>Déploiement sur serveur dédié</li>
+                </ul>
+                <a href="#contact" class="btn btn-primary w-full select-plan-btn"
+                    data-plan="Offre Entreprise Sur Mesure">Nous
+                    contacter</a>
+            </article>
+
+        </div>
+    </section>
+    <!-- Contact Callout (Restored) -->
+    <section class="section" id="contact">
+        <div class="container center" style="max-width: 1400px;">
+            <div class="glass-jelly" style="max-width:600px; margin:0 auto; padding:40px;">
+                <h2>Une question ?</h2>
+                <p class="muted" style="margin-bottom:24px;">Notre équipe est là pour vous aider à choisir la solution
+                    la plus
+                    adaptée.</p>
+                <a href="mailto:contact@mial.be" class="btn btn-ghost">Nous contacter</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="api.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
