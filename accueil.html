@@ -88,15 +88,15 @@
 
         <!-- Product Cards -->
         <div class="grid-2" style="gap:32px; text-align:left;">
-          <!-- Card Vocal -->
+          <!-- Card Vocal (same spirit as ERP: custom abstract background, no waveform) -->
           <a href="Vocal.html" class="card card-hover"
             style="text-decoration:none; display:block; padding:0; overflow:hidden;">
             <div
               style="height:200px; position:relative; overflow:hidden; padding:12px; background:white; display:flex; align-items:center; justify-content:center;">
 
-              <!-- Background "vocal" representation (same color theme) -->
+              <!-- Background "Vocal" representation (same color theme: teal) -->
               <div
-                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(135deg, rgba(59, 219, 218, 0.14), rgba(59, 219, 218, 0.05));">
+                style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(135deg, rgba(59, 219, 218, 0.16), rgba(59, 219, 218, 0.06));">
               </div>
               <div
                 style="position:absolute; inset:12px; border-radius:12px; background:rgba(59, 219, 218, 0.06); box-shadow: inset 0 0 0 1px rgba(59, 219, 218, 0.18);">
@@ -104,32 +104,64 @@
 
               <!-- Soft blobs -->
               <div
-                style="position:absolute; width:260px; height:260px; border-radius:50%; background:rgba(59, 219, 218, 0.18); filter:blur(28px); top:-120px; left:-80px;">
+                style="position:absolute; width:280px; height:280px; border-radius:50%; background:rgba(59, 219, 218, 0.20); filter:blur(30px); top:-140px; right:-90px;">
               </div>
               <div
-                style="position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(59, 219, 218, 0.14); filter:blur(28px); bottom:-120px; right:-80px;">
+                style="position:absolute; width:240px; height:240px; border-radius:50%; background:rgba(59, 219, 218, 0.16); filter:blur(30px); bottom:-140px; left:-90px;">
               </div>
 
-              <!-- Waveform bars -->
+              <!-- Mini "audio card" UI mock (simple, clean like ERP) -->
               <div
-                style="position:relative; z-index:2; width:100%; height:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:0 28px;">
-                <span style="width:10px; height:34px; border-radius:999px; background:rgba(59,219,218,0.55);"></span>
-                <span style="width:10px; height:52px; border-radius:999px; background:rgba(59,219,218,0.70);"></span>
-                <span style="width:10px; height:26px; border-radius:999px; background:rgba(59,219,218,0.45);"></span>
-                <span style="width:10px; height:68px; border-radius:999px; background:rgba(59,219,218,0.78);"></span>
-                <span style="width:10px; height:40px; border-radius:999px; background:rgba(59,219,218,0.62);"></span>
-
-                <!-- Play bubble -->
+                style="position:relative; z-index:2; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:0 18px;">
                 <div
-                  style="width:62px; height:62px; border-radius:50%; background:#3bdbda; color:white; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 18px 40px rgba(0,0,0,0.12); margin:0 10px;">
-                  ▶
-                </div>
+                  style="width:100%; max-width:420px; border-radius:14px; background:rgba(255,255,255,0.72); box-shadow:0 16px 40px rgba(0,0,0,0.10); border:1px solid rgba(148,163,184,0.25); overflow:hidden;">
 
-                <span style="width:10px; height:46px; border-radius:999px; background:rgba(59,219,218,0.65);"></span>
-                <span style="width:10px; height:70px; border-radius:999px; background:rgba(59,219,218,0.80);"></span>
-                <span style="width:10px; height:30px; border-radius:999px; background:rgba(59,219,218,0.50);"></span>
-                <span style="width:10px; height:58px; border-radius:999px; background:rgba(59,219,218,0.74);"></span>
-                <span style="width:10px; height:36px; border-radius:999px; background:rgba(59,219,218,0.56);"></span>
+                  <div
+                    style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:rgba(59,219,218,0.10); border-bottom:1px solid rgba(148,163,184,0.18);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span
+                        style="width:10px; height:10px; border-radius:50%; background:rgba(59,219,218,0.95);"></span>
+                      <span style="font-size:0.8rem; font-weight:800; color:#1f2937; letter-spacing:0.02em;">Mial
+                        Vocal</span>
+                    </div>
+                    <span style="font-size:0.75rem; color:#64748b;">Brief du matin</span>
+                  </div>
+
+                  <div style="padding:12px 14px; display:grid; grid-template-columns: 1fr; gap:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:0.78rem; color:#475569; font-weight:700;">À écouter</span>
+                      <span style="font-size:0.78rem; color:#0f766e; font-weight:800;">02:36</span>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div style="height:8px; background:rgba(0,0,0,0.08); border-radius:999px; overflow:hidden;">
+                      <div
+                        style="height:100%; width:42%; background:linear-gradient(90deg, rgba(59,219,218,0.95), rgba(59,219,218,0.65));">
+                      </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                      <div style="display:flex; align-items:center; gap:10px;">
+                        <div
+                          style="width:46px; height:46px; border-radius:50%; background:#3bdbda; color:white; display:flex; align-items:center; justify-content:center; font-size:1rem; box-shadow:0 14px 30px rgba(0,0,0,0.12);">
+                          ▶
+                        </div>
+                        <div>
+                          <div style="font-size:0.78rem; font-weight:800; color:#334155;">Résumé vocal</div>
+                          <div style="font-size:0.72rem; color:#64748b;">Priorités · relances · urgences</div>
+                        </div>
+                      </div>
+
+                      <!-- Chips -->
+                      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+                        <span
+                          style="font-size:0.7rem; padding:4px 10px; border-radius:999px; background:rgba(59,219,218,0.18); color:#0f766e; font-weight:800;">Clients</span>
+                        <span
+                          style="font-size:0.7rem; padding:4px 10px; border-radius:999px; background:rgba(59,219,218,0.12); color:#0f766e; font-weight:800;">SAV</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Subtle top highlight -->
@@ -148,13 +180,12 @@
             </div>
           </a>
 
-          <!-- Card ERP (same spirit as Vocal: custom abstract background, no image) -->
+          <!-- Card ERP (unchanged) -->
           <a href="Assistant.html" class="card card-hover"
             style="text-decoration:none; display:block; padding:0; overflow:hidden;">
             <div
               style="height:200px; position:relative; overflow:hidden; padding:12px; background:white; display:flex; align-items:center; justify-content:center;">
 
-              <!-- Background "ERP" representation (same color theme: use your blue/purple) -->
               <div
                 style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(129, 140, 248, 0.08));">
               </div>
@@ -162,7 +193,6 @@
                 style="position:absolute; inset:12px; border-radius:12px; background:rgba(56, 189, 248, 0.05); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.18);">
               </div>
 
-              <!-- Soft blobs -->
               <div
                 style="position:absolute; width:280px; height:280px; border-radius:50%; background:rgba(129, 140, 248, 0.18); filter:blur(30px); top:-140px; right:-90px;">
               </div>
@@ -170,7 +200,6 @@
                 style="position:absolute; width:240px; height:240px; border-radius:50%; background:rgba(56, 189, 248, 0.18); filter:blur(30px); bottom:-140px; left:-90px;">
               </div>
 
-              <!-- "Dashboard" mini UI mock (simple, clean) -->
               <div
                 style="position:relative; z-index:2; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:0 18px;">
                 <div
@@ -220,7 +249,6 @@
                 </div>
               </div>
 
-              <!-- Subtle top highlight -->
               <div
                 style="position:absolute; inset:12px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.0)); pointer-events:none; z-index:3;">
               </div>
