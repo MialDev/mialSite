@@ -138,6 +138,9 @@ p {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+
+  /* ✅ AJOUT: assure que les cartes s'étirent à la même hauteur */
+  align-items: stretch;
 }
 
 /* Pour tablette/mobile */
@@ -1033,6 +1036,16 @@ p {
 /* Par défaut, toutes les cartes pricing sont neutres (glass-static) */
 .pricing-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+
+  /* ✅ AJOUT: permet de coller le bouton en bas */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ✅ AJOUT: pousse le CTA en bas de la carte */
+.pricing-card .select-plan-btn {
+  margin-top: auto;
 }
 
 /* AU SURVOL UNIQUEMENT : Apparition de l'effet "Featured" (Bleu) */
