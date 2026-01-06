@@ -14,55 +14,65 @@
 
   <!-- Promo video tile (responsive) -->
   <style>
-    .promo-video-tile {
-      border-radius: 32px;
-      overflow: hidden;
-      position: relative;
+    /* Full-bleed wrapper */
+    .promo-bleed {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      padding: 0 22px;
+    }
+
+    .promo-bleed-inner {
+      max-width: 1400px;
+      margin: 0 auto 80px;
+    }
+
+    .promo-title {
+      font-size: 2.2rem;
+      line-height: 1.15;
+      margin: 0 0 16px;
       text-align: left;
-      display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      align-items: stretch;
-      gap: 0;
     }
 
-    .promo-video-copy {
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .promo-video-side {
-      min-height: 360px;
-      position: relative;
+    /* Tuile vidéo seule */
+    .promo-video-tile {
+      border-radius: 36px;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(15, 23, 42, 0.02);
+      position: relative;
+
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: 0 30px 90px rgba(2, 6, 23, 0.18);
     }
 
-    .promo-video-side video {
+    .promo-video-tile video {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
       display: block;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: rgba(15, 23, 42, 0.04);
     }
 
     @media (max-width: 900px) {
+      .promo-bleed {
+        padding: 0 14px;
+      }
+
+      .promo-title {
+        font-size: 1.75rem;
+        margin-bottom: 12px;
+      }
+
       .promo-video-tile {
-        grid-template-columns: 1fr;
+        border-radius: 28px;
       }
 
-      .promo-video-side {
-        min-height: 260px;
-      }
-
-      .promo-video-copy {
-        padding: 28px;
+      .promo-video-tile video {
+        aspect-ratio: 9 / 16;
+        /* meilleur rendu vertical sur mobile si ta vidéo le supporte */
       }
     }
   </style>
+
 </head>
 
 <body>
@@ -128,42 +138,22 @@
       </div>
     </div>
 
-    <!-- ✅ NEW: Promo video tile (below the first tile) -->
-    <div class="container" style="max-width:1400px; margin-bottom:80px;">
-      <div class="glass-jelly promo-video-tile">
-        <div class="promo-video-copy">
-          <div class="badge badge-client glass-static"
-            style="display:inline-block; margin-bottom:16px; color:#fb7185; background:rgba(251, 113, 133, 0.12);">
-            🎬 Démo
-          </div>
+    <!-- ✅ Promo video tile (video only + title above) -->
+    <div class="promo-bleed">
+      <div class="promo-bleed-inner">
 
-          <h2 style="font-size:2.2rem; line-height:1.15; margin:0 0 14px;">
-            Découvrez Mial en vidéo
-          </h2>
+        <h2 class="promo-title">Découvrez Mial en vidéo</h2>
 
-          <p class="lead" style="font-size:1.05rem; margin:0 0 22px; color:var(--ink); max-width:56ch;">
-            Une courte vidéo pour comprendre notre objectif chez Mial.
-          </p>
-
-          <div class="glass-static"
-            style="padding:14px 16px; border-radius:16px; display:flex; align-items:center; gap:12px; max-width:520px;">
-            <div
-              style="width:44px; height:44px; border-radius:12px; background:rgba(251, 113, 133, 0.14); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              🔊
-            </div>
-            <div style="font-size:0.95rem; color:var(--muted);">
-              Astuce : lancez la lecture → le son est inclus (les navigateurs bloquent l’autoplay sonore).
-            </div>
-          </div>
-        </div>
-
-        <div class="promo-video-side">
-          <video src="assets/Vidéo/Promo.mp4" controls playsinline preload="metadata">
+        <div class="glass-jelly promo-video-tile">
+          <video src="assets/video/Promo.mp4" poster="assets/Photos/Pub_Vocal.png" controls playsinline
+            preload="metadata">
             Votre navigateur ne supporte pas la lecture vidéo.
           </video>
         </div>
+
       </div>
     </div>
+
 
     <!-- Product Grid Section -->
     <div class="container hero-inner"
