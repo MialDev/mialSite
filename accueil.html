@@ -215,16 +215,14 @@
       </div>
 
       <div class="promo-video-wrapper glass-jelly">
-        <div class="promo-video-tile"
-          onclick="const v = this.querySelector('video'); if(v.paused) { v.play(); this.classList.add('is-playing'); } else { v.pause(); this.classList.remove('is-playing'); }">
+        <div class="promo-video-tile">
           <div class="promo-video-overlay">
             <div class="play-button-outer">
               <div class="play-button-inner"></div>
             </div>
           </div>
-          <video src="assets/Vidéo/Promo.mp4" poster="assets/logos/logo-mial-small-color-modified.png" playsinline
-            preload="metadata" loop>
-            Votre navigateur ne supporte pas la lecture vidéo.
+          <video id="promoVideo" src="assets/video/promo.mp4" poster="assets/logos/logo-mial-small-color-modified.png"
+            playsinline preload="metadata">
           </video>
         </div>
       </div>
@@ -810,6 +808,34 @@
   <div id="footer-placeholder"></div>
 
   <script src="main.js"></script>
+  <script>
+    (function () {
+      const tile = document.querySelector('.promo-video-tile');
+      const v = document.getElementById('promoVideo');
+      if (!tile || !v) return;
+
+      // Ton toggle play/pause (au lieu de l'onclick inline)
+      tile.addEventListener('click', () => {
+        if (v.paused) {
+          v.play();
+          tile.classList.add('is-playing');
+        } else {
+          v.pause();
+          tile.classList.remove('is-playing');
+        }
+      });
+
+      // Quand la vidéo se termine: rester sur la dernière image
+      v.addEventListener('ended', () => {
+        // Certains navigateurs laissent déjà la dernière frame.
+        // On force quand même un "freeze" propre.
+        v.pause();
+        v.currentTime = Math.max(0, v.duration - 0.05); // petite marge pour éviter un reset à 0
+        tile.classList.remove('is-playing');
+      });
+    })();
+  </script>
+
 </body>
 
 </html>
