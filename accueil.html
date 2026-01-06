@@ -814,8 +814,15 @@
       const v = document.getElementById('promoVideo');
       if (!tile || !v) return;
 
-      // Ton toggle play/pause (au lieu de l'onclick inline)
+      let hasEnded = false;
+
       tile.addEventListener('click', () => {
+        // Si la vidéo est terminée, on repart du début
+        if (hasEnded || v.ended || (v.duration && v.currentTime >= v.duration - 0.08)) {
+          v.currentTime = 0;
+          hasEnded = false;
+        }
+
         if (v.paused) {
           v.play();
           tile.classList.add('is-playing');
@@ -825,16 +832,29 @@
         }
       });
 
-      // Quand la vidéo se termine: rester sur la dernière image
+      // Quand la vidéo se termine: rester sur la dernière image + overlay visible
       v.addEventListener('ended', () => {
-        // Certains navigateurs laissent déjà la dernière frame.
-        // On force quand même un "freeze" propre.
-        v.pause();
-        v.currentTime = Math.max(0, v.duration - 0.05); // petite marge pour éviter un reset à 0
+        hasEnded = true;
+
+        // Freeze sur dernière frame (petite marge anti-bug)
+        try {
+          v.pause();
+          v.currentTime = Math.max(0, v.duration - 0.05);
+        } catch (e) { }
+
         tile.classList.remove('is-playing');
+      });
+
+      // Si l'utilisateur relance via contrôles natifs (si un jour tu les ajoutes)
+      v.addEventListener('play', () => {
+        tile.classList.add('is-playing');
+      });
+      v.addEventListener('pause', () => {
+        if (!v.ended) tile.classList.remove('is-playing');
       });
     })();
   </script>
+
 
 </body>
 
