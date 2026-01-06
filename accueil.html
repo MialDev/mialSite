@@ -11,6 +11,58 @@
 
   <link rel="stylesheet" href="style.css">
   <meta name="theme-color" content="#1fb6ff">
+
+  <!-- Promo video tile (responsive) -->
+  <style>
+    .promo-video-tile {
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+      text-align: left;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .promo-video-copy {
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .promo-video-side {
+      min-height: 360px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.02);
+    }
+
+    .promo-video-side video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .promo-video-tile {
+        grid-template-columns: 1fr;
+      }
+
+      .promo-video-side {
+        min-height: 260px;
+      }
+
+      .promo-video-copy {
+        padding: 28px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -73,6 +125,43 @@
             style="width:100%; height:100%; object-fit:cover; object-position:center;">
         </div>
 
+      </div>
+    </div>
+
+    <!-- ✅ NEW: Promo video tile (below the first tile) -->
+    <div class="container" style="max-width:1400px; margin-bottom:80px;">
+      <div class="glass-jelly promo-video-tile">
+        <div class="promo-video-copy">
+          <div class="badge badge-client glass-static"
+            style="display:inline-block; margin-bottom:16px; color:#fb7185; background:rgba(251, 113, 133, 0.12);">
+            🎬 Démo
+          </div>
+
+          <h2 style="font-size:2.2rem; line-height:1.15; margin:0 0 14px;">
+            Découvrez Mial en vidéo
+          </h2>
+
+          <p class="lead" style="font-size:1.05rem; margin:0 0 22px; color:var(--ink); max-width:56ch;">
+            Une courte vidéo pour comprendre notre objectif chez Mial.
+          </p>
+
+          <div class="glass-static"
+            style="padding:14px 16px; border-radius:16px; display:flex; align-items:center; gap:12px; max-width:520px;">
+            <div
+              style="width:44px; height:44px; border-radius:12px; background:rgba(251, 113, 133, 0.14); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              🔊
+            </div>
+            <div style="font-size:0.95rem; color:var(--muted);">
+              Astuce : lancez la lecture → le son est inclus (les navigateurs bloquent l’autoplay sonore).
+            </div>
+          </div>
+        </div>
+
+        <div class="promo-video-side">
+          <video src="assets/Vidéo/Promo.mp4" controls playsinline preload="metadata">
+            Votre navigateur ne supporte pas la lecture vidéo.
+          </video>
+        </div>
       </div>
     </div>
 
