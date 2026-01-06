@@ -101,7 +101,7 @@ window.initPricingSwitch = function () {
           if (!amount) return;
           priceEl.style.opacity = '0';
           setTimeout(() => {
-            priceEl.innerHTML = `€${amount} <span>/mo</span> <span class="discount-badge"></span>`;
+            priceEl.innerHTML = `€${amount} <span>mois</span> <span class="discount-badge"></span>`;
             const newBadge = priceEl.querySelector('.discount-badge');
             newBadge.textContent = (e.target.value === 'yearly') ? '(-20%)' : '';
             priceEl.style.opacity = '1';
