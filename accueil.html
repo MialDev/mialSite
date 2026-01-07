@@ -5,7 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>mial — Inbox IA pour PME</title>
+  <!-- Favicon: compat maximale -->
 
+  <link rel="icon" href="/logo-mial-small-color.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
   <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
 
@@ -830,7 +832,7 @@
           v.pause();
           tile.classList.remove('is-playing');
         }
-      });
+      })
 
       // Quand la vidéo se termine: rester sur la dernière image + overlay visible
       v.addEventListener('ended', () => {
