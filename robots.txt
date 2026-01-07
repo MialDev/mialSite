@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mial.be/sitemap.xml
