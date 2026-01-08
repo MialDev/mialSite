@@ -277,6 +277,7 @@ window.editProfile = async function (id) {
   document.getElementById('f-time-end').value = sub(p.heure_fin);
   document.getElementById('f-unread').checked = !!p.only_unread;
   document.getElementById('f-spam').checked = (p.filter_spam !== false); // True par défaut
+  document.getElementById('f-marketing').checked = (p.filter_marketing !== false); // True par défaut
   document.getElementById('f-sort').value = p.sort_mode || 'date_desc';
 
   window.toggleCategoryUI();
@@ -317,6 +318,7 @@ window.saveProfile = async function () {
     heure_fin: fixTime(document.getElementById('f-time-end').value),
     only_unread: document.getElementById('f-unread').checked,
     filter_spam: document.getElementById('f-spam').checked,
+    filter_marketing: document.getElementById('f-marketing').checked,
     sort_mode: document.getElementById('f-sort').value,
     filters: {
       sender: parseCsv(document.getElementById('f-filtre-sender').value),
@@ -387,6 +389,7 @@ window.showEditor = async function (isEdit) {
     document.getElementById('f-days-end').value = 0;
     document.getElementById('f-time-end').value = "23:59";
     document.getElementById('f-spam').checked = true; // Default true for new
+    document.getElementById('f-marketing').checked = true; // Default true for new
     window.toggleCategoryUI();
     renderCategories();
   }
@@ -909,6 +912,7 @@ window.openAdminEditor = async function (id) {
     setVal('admin-f-sort', p.sort_mode || 'date_desc');
     setChk('admin-f-unread', p.only_unread);
     setChk('admin-f-spam', p.filter_spam !== false);
+    setChk('admin-f-marketing', p.filter_marketing !== false);
 
     // Audio / IA
     setChk('admin-f-audio', p.audio_actif !== false);
@@ -993,6 +997,7 @@ window.saveAdminProfile = async function () {
       },
       only_unread: getChk('admin-f-unread'),
       filter_spam: getChk('admin-f-spam'),
+      filter_marketing: getChk('admin-f-marketing'),
       audio_actif: getChk('admin-f-audio'),
       voice: getVal('admin-f-voice'),
       speed: parseFloat(getVal('admin-f-speed')),
