@@ -27,14 +27,15 @@
     <section class="section" style="padding-top: 140px; min-height: 100vh;">
         <div class="container">
             <div class="card glass-static" style="padding: 0; overflow: hidden; height: 75vh; position: relative;">
-                <!-- Iframe pointing to the local python server running vocal.py -->
-                <iframe src="http://localhost:8000" class="vocal-frame" title="Interface Vocal"></iframe>
+                <!-- Iframe pointing to the local python server running vocal.py via Nginx Proxy -->
+                <iframe src="/vocal-api/" class="vocal-frame" title="Interface Vocal"></iframe>
 
                 <!-- Fallback / Helper message overlay (visible if iframe fails or is empty initially) -->
                 <div id="iframe-helper"
                     style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; z-index:-1; width:80%;">
-                    <p class="muted">Chargement de l'interface vocale (http://localhost:8000)...</p>
-                    <p style="font-size:0.8rem; color:#94a3b8;">Assurez-vous que <code>vocal.py</code> est lancé.</p>
+                    <p class="muted">Chargement de l'interface vocale...</p>
+                    <p style="font-size:0.8rem; color:#94a3b8;">Si rien ne s'affiche, vérifiez que le service
+                        <code>mial-vocal</code> tourne et que Nginx est configuré pour <code>/vocal-api/</code>.</p>
                 </div>
             </div>
         </div>
