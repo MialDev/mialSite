@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (path.includes('/admin/')) {
       navFile = '/components/nav-admin.html';
-    } else if (path.includes('dashboard') || path.includes('account') || path.includes('onboarding') || path.includes('Vocal')) {
+    } else if (path.includes('dashboard') || path.includes('account') || path.includes('onboarding') || path.includes('Vocal') || path.includes('VocalUser')) {
       navFile = '/components/nav-app.html';
     }
 
