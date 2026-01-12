@@ -44,9 +44,32 @@
     </section>
 
     <div id="footer-placeholder"></div>
-
     <script src="api.js"></script>
     <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Fetch User Session from Main Portal API
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (res.status === 401) {
+                    window.location.href = '/Connexion.html';
+                    return;
+                }
+                const user = await res.json();
+                console.log("Mial Vocal User detected:", user.email);
+
+                // Update Iframe Source with Email Context
+                const iframe = document.querySelector('iframe.vocal-frame');
+                if (iframe && user.email) {
+                    // Pass email as query param so vocal.py can render it
+                    iframe.src = `/vocal-api/?email=${encodeURIComponent(user.email)}`;
+                }
+            } catch (e) {
+                console.error("Error checking session:", e);
+                // Fallback: let iframe load default (it might show login button)
+            }
+        });
+    </script>
 </body>
 
 </html>
