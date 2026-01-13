@@ -28,14 +28,15 @@
         <div class="container">
             <div class="card glass-static" style="padding: 0; overflow: hidden; height: 75vh; position: relative;">
                 <!-- Iframe pointing to the local python server running vocal.py via Nginx Proxy -->
-                <iframe src="/vocal-api/" class="vocal-frame" title="Interface Vocal"></iframe>
+                <iframe src="about:blank" class="vocal-frame" title="Interface Vocal" allow="microphone"></iframe>
 
                 <!-- Fallback / Helper message overlay (visible if iframe fails or is empty initially) -->
                 <div id="iframe-helper"
                     style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; z-index:-1; width:80%;">
                     <p class="muted">Chargement de l'interface vocale...</p>
                     <p style="font-size:0.8rem; color:#94a3b8;">Si le chargement est bloqué (logo stop),
-                        <a href="/vocal-api/" target="_blank" style="text-decoration:underline; color:#94a3b8;">cliquez
+                        <a id="fallback-link" href="#" target="_blank"
+                            style="text-decoration:underline; color:#94a3b8;">cliquez
                             ici pour ouvrir dans un nouvel onglet</a>.
                     </p>
                 </div>
@@ -48,6 +49,13 @@
     <script src="main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            const iframe = document.querySelector('iframe.vocal-frame');
+            const fallbackLink = document.getElementById('fallback-link');
+            const vocalBase = (window.API_HOST || '') + '/vocal-api/';
+
+            // Set initial/fallback URLs
+            if (fallbackLink) fallbackLink.href = vocalBase;
+
             try {
                 // Fetch User Session from Main Portal API
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
@@ -59,14 +67,16 @@
                 console.log("Mial Vocal User detected:", user.email);
 
                 // Update Iframe Source with Email Context
-                const iframe = document.querySelector('iframe.vocal-frame');
                 if (iframe && user.email) {
                     // Pass email as query param so vocal.py can render it
-                    iframe.src = `/vocal-api/?email=${encodeURIComponent(user.email)}`;
+                    iframe.src = `${vocalBase}?email=${encodeURIComponent(user.email)}`;
+                } else if (iframe) {
+                    iframe.src = vocalBase;
                 }
             } catch (e) {
                 console.error("Error checking session:", e);
                 // Fallback: let iframe load default (it might show login button)
+                if (iframe) iframe.src = vocalBase;
             }
         });
     </script>

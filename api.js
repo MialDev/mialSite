@@ -3,7 +3,10 @@
  * Ensures consistent API paths and prevents double prefixes.
  */
 
-const API_BASE = "/portal-api";
+const isApp = window.location.protocol === 'file:' || window.location.protocol === 'capacitor:' || window.location.hostname === 'localhost';
+const API_HOST = isApp ? "https://mial.be" : "";
+const API_BASE = API_HOST + "/portal-api";
+window.API_HOST = API_HOST;
 
 /**
  * Constructs a normalized API URL.
