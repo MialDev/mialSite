@@ -455,6 +455,7 @@ window.loadProfiles = async function () {
                 <td style="font-weight:600; color:var(--ink);">${sub(p.schedule_time)}</td>
                 <td>${statusPill}</td>
                 <td style="text-align:right;">
+                    <button id="btn-run-${p.id}" class="action-btn" style="margin-right:8px; color:var(--blue); border-color:var(--blue-light);" onclick="triggerInstantRun('${p.id}')">▶ Lancer</button>
                     <button class="btn-icon" title="Modifier" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
                     <button class="btn-icon delete" title="Supprimer" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
                 </td>
@@ -1224,3 +1225,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 window.addEventListener('scroll', window.onScroll, { passive: true });
 window.addEventListener('scroll', () => { /* simplistic scroll track */ }, { passive: true });
+
+window.triggerInstantRun = async function (id) {
+  const btn = document.getElementById(`btn-run-${id}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spin">↻</span> ...`;
+  }
+
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${id}/run-now`), {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error("Erreur serveur");
+
+    alert("Analyse lancée ! Vous recevrez le résultat dans quelques instants.");
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `▶ Lancer`;
+    }
+  }
+};
