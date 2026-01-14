@@ -37,6 +37,15 @@
                     </button>
 
                     <div id="status-display" class="vocal-status">Appuyez pour parler</div>
+                    <div id="actionFeedback" style="
+                        margin-top: 10px; 
+                        font-size: 0.95rem; 
+                        color: #0ea5e9; 
+                        font-weight: 600; 
+                        height: 20px; 
+                        opacity: 0;
+                        transition: opacity 0.3s;">
+                    </div>
                     <div id="transcript-display" style="color:var(--muted); min-height:1.2em;"></div>
                 </div>
 
@@ -301,6 +310,13 @@
                 });
 
                 if (res.headers.get("X-Action") === "stop") {
+                    // Feedback final si stop
+                    const fbText = res.headers.get("X-Action-Feedback");
+                    if (fbText) {
+                        const fbDiv = document.getElementById("actionFeedback");
+                        if (fbDiv) { fbDiv.innerText = fbText; fbDiv.style.opacity = 1; }
+                    }
+
                     const blob = await res.blob();
                     await playAudio(blob);
                     resetUI("Session terminée.");
@@ -308,6 +324,17 @@
                 }
 
                 CURRENT_EMAIL_ID = res.headers.get("X-Current-Email-ID");
+
+                // --- FEEDBACK VISUEL ---
+                const fbText = res.headers.get("X-Action-Feedback");
+                const fbDiv = document.getElementById("actionFeedback");
+                if (fbText && fbDiv) {
+                    // Decode header if needed or raw
+                    try { fbDiv.innerText = decodeURIComponent(escape(fbText)); } catch (e) { fbDiv.innerText = fbText; }
+                    fbDiv.style.opacity = 1;
+                    setTimeout(() => { fbDiv.style.opacity = 0; }, 5000);
+                }
+                // -----------------------
 
                 updateUI('playing', "Mial parle...");
                 const audioBlob = await res.blob();
