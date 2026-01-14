@@ -4,33 +4,223 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mial Vocal — mial</title>
+    <title>Mial Vocal — Assistant Interactif</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .vocal-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .mic-btn.idle {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .mic-btn.recording {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-btn.playing {
+            background: #10b981;
+            pointer-events: none;
+        }
+
+        .mic-btn.processing {
+            background: #f59e0b;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        #status-display {
+            margin-top: 24px;
+            font-size: 1.2rem;
+            color: #475569;
+            font-weight: 500;
+            min-height: 1.5em;
+        }
+
+        #transcript-display {
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 
 <body>
     <header id="site-header" class="nav">
         <div id="header-placeholder"></div>
     </header>
-    <section class="section" style="padding-top: 140px; min-height: 80vh;">
-        <div class="container center">
-            <div class="card glass-static" style="padding: 48px; max-width: 600px; margin: 0 auto;">
-                <h1 style="font-size: 2rem; margin-bottom: 16px; color: #3bdbda;">Mial Vocal</h1>
-                <p class="muted" style="margin-bottom: 32px; font-size: 1.1rem;">Nouveau produit en cours de
-                    développement.</p>
-                <div style="margin-bottom: 32px;">
-                    <p>Découvrez bientôt notre nouvelle solution Vocal.</p>
-                </div>
-                <a href="mailto:contact@mial.be" class="btn btn-primary"
-                    style="background: #3bdbda; border-color: #3bdbda;">Être notifié du lancement</a>
+
+    <section class="section" style="padding-top: 100px;">
+        <div class="container vocal-container">
+            <h1 style="margin-bottom: 40px;">Assistant Vocal</h1>
+
+            <button id="main-mic" class="mic-btn idle" onclick="toggleVocalSession()">
+                🎙️
+            </button>
+
+            <div id="status-display">Appuyez pour démarrer</div>
+            <div id="transcript-display"></div>
+
+            <div style="margin-top: 40px; display:none;" id="debug-area">
+                <button class="btn btn-ghost" onclick="stopVocal()">Arrêter</button>
             </div>
         </div>
     </section>
-    <div id="footer-placeholder"></div>
+
     <script src="api.js"></script>
-    <script src="main.js"></script>
+    <script>
+        // --- CONFIG & STATE ---
+        let SESSION_ACTIVE = false;
+        let CURRENT_PROFILE_ID = null; // Will define load strategy logic or prompt
+        let currentEmailId = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        async function toggleVocalSession() {
+            if (SESSION_ACTIVE) return; // Ignore clicks while active
+
+            // 1. Get Profile
+            // Pour l'instant on prend le premier profil dispo (ou prompt simple comme dashboard)
+            // Nécessite que main.js a chargé les profils ou on le fait ici
+            // On va faire un fetch rapide des profils
+            try {
+                const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
+                const profiles = await res.json();
+                if (!profiles || profiles.length === 0) { alert("Aucun profil"); return; }
+                CURRENT_PROFILE_ID = profiles[0].id; // Simple
+            } catch (e) {
+                alert("Erreur connexion: " + e.message); return;
+            }
+
+            SESSION_ACTIVE = true;
+            document.getElementById('main-mic').className = 'mic-btn processing';
+            startVocalLoop('start');
+        }
+
+        async function startVocalLoop(state, userAudioBlob = null) {
+            const statusFn = (txt) => document.getElementById('status-display').textContent = txt;
+            const btn = document.getElementById('main-mic');
+
+            try {
+                statusFn(state === 'start' ? "Connexion..." : "Réflexion...");
+                btn.className = 'mic-btn processing';
+
+                let fd = new FormData();
+                if (CURRENT_PROFILE_ID) fd.append('profile_id', CURRENT_PROFILE_ID);
+                fd.append('state', state);
+                if (currentEmailId) fd.append('current_email_id', currentEmailId);
+                if (userAudioBlob) fd.append('file', userAudioBlob, 'input.webm');
+
+                // CALL API
+                const res = await fetch(apiUrl('/vocal/interact'), {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'include'
+                });
+
+                if (!res.ok) throw new Error("API Error");
+
+                // ACTION CHECK
+                if (res.headers.get("X-Action") === "stop") {
+                    statusFn("Session terminée.");
+                    const blob = await res.blob();
+                    await playAudio(blob);
+                    resetUI();
+                    return;
+                }
+
+                currentEmailId = res.headers.get("X-Current-Email-ID");
+
+                // PLAY BOT AUDIO
+                statusFn("Mial parle...");
+                btn.className = 'mic-btn playing';
+                const audioBlob = await res.blob();
+                await playAudio(audioBlob);
+
+                // RECORD USER
+                statusFn("À vous (Parlez)...");
+                btn.className = 'mic-btn recording';
+                const userRec = await recordUserAudio(4000); // 4s
+
+                // LOOP
+                await startVocalLoop('listening', userRec);
+
+            } catch (e) {
+                console.error(e);
+                statusFn("Erreur : " + e.message);
+                resetUI();
+            }
+        }
+
+        function playAudio(blob) {
+            return new Promise((resolve) => {
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.onended = resolve;
+                audio.play();
+            });
+        }
+
+        function recordUserAudio(durationMs) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                    const chunks = [];
+
+                    recorder.ondataavailable = e => chunks.push(e.data);
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
+
+                    recorder.start();
+                    setTimeout(() => recorder.stop(), durationMs);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
+
+        function resetUI() {
+            SESSION_ACTIVE = false;
+            document.getElementById('main-mic').className = 'mic-btn idle';
+            document.getElementById('status-display').textContent = "Appuyez pour démarrer";
+        }
+    </script>
 </body>
 
 </html>
