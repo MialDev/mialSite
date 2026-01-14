@@ -344,13 +344,29 @@
             return new Promise(async (resolve) => {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const rec = new MediaRecorder(stream);
+                    // On force WebM qui est bien supporté
+                    const rec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                     const chunks = [];
                     rec.ondataavailable = e => chunks.push(e.data);
-                    rec.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
+
+                    rec.onstop = () => {
+                        const blob = new Blob(chunks, { type: 'audio/webm' });
+                        resolve(blob);
+                        try { stream.getTracks().forEach(track => track.stop()); } catch (e) { }
+                    };
+
                     rec.start();
-                    setTimeout(() => rec.stop(), ms);
-                } catch (e) { resolve(null); }
+
+                    // DURÉE ÉTENDUE À 8 SECONDES
+                    // Pour laisser le temps de dicter une réponse complète
+                    setTimeout(() => {
+                        if (rec.state === "recording") rec.stop();
+                    }, 8000);
+
+                } catch (e) {
+                    console.error(e);
+                    resolve(null);
+                }
             });
         }
 
