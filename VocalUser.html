@@ -4,95 +4,107 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mial Vocal</title>
+    <title>Mial Vocal — Assistant</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#1fb6ff">
+    <meta name="theme-color" content="#38bdf8">
 </head>
 
 <body>
+
     <header id="site-header" class="nav">
         <div class="container nav-container">
-            <a href="dashboard.html" class="nav-logo"
-                style="text-decoration:none; display:flex; align-items:center; gap:8px;">
-                <span style="font-size:1.2rem;">✕</span>
-                <span style="font-weight:700;">Mial Vocal</span>
+            <a href="dashboard.html" class="nav-logo">
+                <img src="assets/logos/logo-mial-small-color.svg" alt="Mial Logo" width="32" height="32">
+                <span style="font-weight:700; color:var(--ink);">Mial</span>
             </a>
-
-            <div class="vocal-header-actions">
-                <button class="btn btn-ghost btn-icon" onclick="openSettings()" title="Paramètres">
-                    ⚙️
-                </button>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <a href="dashboard.html" class="btn btn-ghost">Tableau de bord</a>
+                <button class="btn btn-ghost" onclick="doLogout()" style="color:#ef4444;">Déconnexion</button>
             </div>
         </div>
     </header>
 
-    <section class="section" style="padding-top: 100px; min-height: 100vh; display:flex; align-items:center;">
+    <section class="section" style="padding-top: 100px; min-height: 85vh; display:flex; align-items:center;">
         <div class="container">
-            <div class="card glass-static"
-                style="padding: 40px 20px; min-height: 60vh; display:flex; flex-direction:column; justify-content:center;">
 
-                <div id="native-interface" class="vocal-container">
-                    <button id="main-mic" class="mic-btn idle" onclick="toggleVocalSession()">
-                        🎙️
-                    </button>
-                    <div id="status-display" class="vocal-status">Appuyez pour démarrer</div>
-                    <div id="transcript-display" class="vocal-transcript"></div>
+            <div class="card glass-static" style="padding: 24px; max-width: 600px; margin: 0 auto;">
+
+                <div class="vocal-card-content">
+
+                    <div class="vocal-top-bar">
+                        <div class="user-badge" id="user-info-display">
+                            <span style="font-size:1.2rem;">👤</span>
+                            <span id="user-email">Chargement...</span>
+                        </div>
+                        <button class="btn-circle-ghost" onclick="openSettings()" title="Paramètres Vocal">
+                            ⚙️
+                        </button>
+                    </div>
+
+                    <div class="vocal-center-stage">
+                        <button id="main-mic" class="mic-btn-large" onclick="toggleVocalSession()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+
+                        <div style="text-align:center;">
+                            <div id="status-display" class="vocal-status-text">Prêt</div>
+                            <div id="transcript-display" class="vocal-subtext">Appuyez sur le micro pour parler à votre
+                                assistant.</div>
+                        </div>
+                    </div>
+
                 </div>
-
             </div>
+
         </div>
     </section>
 
     <div id="settings-modal"
         style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:200; align-items:center; justify-content:center;">
         <div class="card"
-            style="width:90%; max-width:600px; max-height:90vh; overflow-y:auto; padding:0; background:#fff;">
+            style="width:90%; max-width:600px; max-height:90vh; overflow-y:auto; padding:0; background:#fff; border-radius:16px;">
 
             <div
                 style="padding:20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:10;">
-                <h3 style="margin:0;">Configuration Vocal</h3>
+                <h3 style="margin:0; color:var(--ink);">Paramètres Vocal</h3>
                 <button class="btn btn-ghost" onclick="closeSettings()" style="color:#ef4444;">Fermer</button>
             </div>
 
             <div style="padding:24px;">
                 <form id="form-vocal-config">
                     <div class="editor-section">
-                        <h4 class="editor-title">📅 Période</h4>
-                        <label class="form-label">Analyser depuis (Heures)</label>
+                        <h4 class="editor-title">📅 Période à analyser</h4>
+                        <label class="form-label">Remonter de combien d'heures ?</label>
                         <select id="v-hours" class="form-select" style="width:100%;">
                             <option value="12">12 heures</option>
-                            <option value="24" selected>24 heures</option>
-                            <option value="48">48 heures</option>
-                            <option value="72">3 jours</option>
+                            <option value="24" selected>24 heures (1 jour)</option>
+                            <option value="48">48 heures (2 jours)</option>
+                            <option value="72">72 heures (3 jours)</option>
                         </select>
                     </div>
 
                     <div class="editor-section">
                         <h4 class="editor-title">🧠 Filtres</h4>
-
                         <div style="margin-bottom:16px;">
-                            <label class="form-label">Mode de Tri</label>
+                            <label class="form-label">Ordre de lecture</label>
                             <select id="v-sort" class="form-select" style="width:100%;">
                                 <option value="priority">Priorité IA (Urgent d'abord)</option>
-                                <option value="date_desc">Chronologique</option>
+                                <option value="date_desc">Chronologique (Plus récent d'abord)</option>
                             </select>
                         </div>
-
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-bottom:10px;">
                             <div><strong>Ignorer les pubs</strong></div>
                             <label class="toggle-wrapper">
                                 <input type="checkbox" id="v-marketing" class="toggle-input" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
-                            <div><strong>Seulement non-lus</strong></div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="v-unread" class="toggle-input">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -123,118 +135,111 @@
                 </form>
             </div>
 
-            <div style="padding:20px; border-top:1px solid #e2e8f0; text-align:right; background:#f8fafc;">
+            <div
+                style="padding:20px; border-top:1px solid #e2e8f0; text-align:right; background:#f8fafc; border-radius:0 0 16px 16px;">
                 <button class="btn btn-primary" onclick="closeSettings()">Valider</button>
             </div>
         </div>
     </div>
 
-    <script src="api.js"></script>
-    <script>
-        // --- LOGIQUE JS ---
+    <div id="footer-placeholder"></div>
 
+    <script src="api.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // --- LOGIQUE VOCAL AGENT ---
         let SESSION_ACTIVE = false;
         let PROFILE_ID = null;
         let CURRENT_EMAIL_ID = null;
 
-        // 1. Initialisation
+        // 1. Initialisation & User Check
         document.addEventListener('DOMContentLoaded', async () => {
-            // Charger le profil par défaut
             try {
-                const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
-                if (res.status === 401) window.location.href = 'Connexion.html';
-                const profiles = await res.json();
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (res.status === 401) { window.location.href = 'Connexion.html'; return; }
+                const user = await res.json();
+                document.getElementById('user-email').textContent = user.email;
+
+                // Charger le profil par défaut
+                const resProf = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
+                const profiles = await resProf.json();
                 if (profiles.length > 0) PROFILE_ID = profiles[0].id;
+                else document.getElementById('transcript-display').textContent = "⚠️ Aucun profil configuré.";
             } catch (e) { console.error(e); }
         });
 
-        // 2. Gestion Paramètres
+        // 2. UI Helpers
         function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
 
-        // 3. Lancer la Session
+        // 3. Démarrage Session
         async function toggleVocalSession() {
-            if (SESSION_ACTIVE) return; // Stop logic later
+            if (SESSION_ACTIVE) return; // Éviter double clic
             if (!PROFILE_ID) { alert("Profil introuvable."); return; }
 
             SESSION_ACTIVE = true;
-            const btn = document.getElementById('main-mic');
-            const status = document.getElementById('status-display');
+            updateUI('processing', "Analyse de vos emails...");
 
-            // État: Analyse en cours
-            btn.className = 'mic-btn processing';
-            status.textContent = "Analyse de vos emails...";
-
-            // Récupérer la config du formulaire
+            // Config
             const config = {
                 hours_back: document.getElementById('v-hours').value,
                 voice: document.getElementById('v-voice').value,
                 speed: document.getElementById('v-speed').value,
-                // On pourrait envoyer plus de filtres ici
+                sort: document.getElementById('v-sort').value,
+                filter_marketing: document.getElementById('v-marketing').checked,
                 state: 'start',
                 profile_id: PROFILE_ID
             };
 
-            // Démarrer la boucle (Start -> Analyse -> Intro Audio)
-            startLoop(config);
+            await startLoop(config);
         }
 
+        // 4. Boucle de Conversation
         async function startLoop(data) {
-            const status = document.getElementById('status-display');
-            const btn = document.getElementById('main-mic');
-
             try {
-                // Préparer FormData (pour envoyer fichier audio + json)
                 let fd = new FormData();
                 for (let key in data) fd.append(key, data[key]);
 
-                // Appel API
+                // Appel API Backend
                 const res = await fetch(apiUrl('/vocal/interact'), {
                     method: 'POST', body: fd, credentials: 'include'
                 });
 
                 if (res.headers.get("X-Action") === "stop") {
-                    // Fin de session
                     const blob = await res.blob();
                     await playAudio(blob);
-                    resetUI();
-                    status.textContent = "Terminé.";
+                    resetUI("Session terminée.");
                     return;
                 }
 
-                // ID du mail en cours
+                // ID email en cours
                 CURRENT_EMAIL_ID = res.headers.get("X-Current-Email-ID");
 
-                // 1. JOUER L'AUDIO (IA Parle)
-                btn.className = 'mic-btn playing';
-                status.textContent = "Mial parle...";
+                // A. Mial Parle
+                updateUI('playing', "Mial parle...");
                 const audioBlob = await res.blob();
                 await playAudio(audioBlob);
 
-                // 2. ÉCOUTER (Micro on)
-                btn.className = 'mic-btn recording';
-                status.textContent = "À vous...";
+                // B. Écoute Utilisateur
+                updateUI('recording', "À vous (Parlez)...");
                 const userAudio = await recordAudio(4000); // 4 sec d'écoute
 
-                // 3. BOUCLER
-                btn.className = 'mic-btn processing';
-                status.textContent = "Réflexion...";
-
-                startLoop({
+                // C. Traitement & Boucle
+                updateUI('processing', "Réflexion...");
+                await startLoop({
                     profile_id: PROFILE_ID,
                     state: 'listening_action',
                     current_email_id: CURRENT_EMAIL_ID,
-                    file: userAudio // Le fichier sera géré par FormData
+                    file: userAudio
                 });
 
             } catch (e) {
                 console.error(e);
-                status.textContent = "Erreur: " + e.message;
-                resetUI();
+                resetUI("Erreur : " + e.message);
             }
         }
 
-        // --- HELPERS AUDIO ---
+        // --- Fonctions Audio ---
         function playAudio(blob) {
             return new Promise(resolve => {
                 const url = URL.createObjectURL(blob);
@@ -255,16 +260,22 @@
                     rec.start();
                     setTimeout(() => rec.stop(), ms);
                 } catch (e) {
-                    alert("Micro requis !");
+                    alert("Microphone requis !");
                     resolve(null);
                 }
             });
         }
 
-        function resetUI() {
+        function updateUI(state, text) {
+            const btn = document.getElementById('main-mic');
+            btn.className = `mic-btn-large ${state}`;
+            document.getElementById('status-display').textContent = text;
+        }
+
+        function resetUI(msg = "Prêt") {
             SESSION_ACTIVE = false;
-            document.getElementById('main-mic').className = 'mic-btn idle';
-            document.getElementById('status-display').textContent = "Appuyez pour démarrer";
+            document.getElementById('main-mic').className = 'mic-btn-large';
+            document.getElementById('status-display').textContent = msg;
         }
     </script>
 </body>
