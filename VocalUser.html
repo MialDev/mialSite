@@ -4,258 +4,239 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mial Vocal — mial</title>
+    <title>Mial Vocal</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
-    <style>
-        .vocal-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            min-height: 75vh;
-            display: block;
-        }
-
-        /* NEW STYLES FOR NATIVE VOCAL INTERFACE */
-        .native-vocal-ui {
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .mic-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            font-size: 2rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 24px;
-        }
-
-        .mic-btn.idle {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .mic-btn.recording {
-            background: #ef4444;
-            animation: pulse 1.5s infinite;
-        }
-
-        .mic-btn.playing {
-            background: #10b981;
-            pointer-events: none;
-        }
-
-        .mic-btn.processing {
-            background: #f59e0b;
-            opacity: 0.8;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-
-            70% {
-                transform: scale(1.1);
-                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-
-        #status-display {
-            margin-top: 10px;
-            font-size: 1.2rem;
-            color: #475569;
-            font-weight: 500;
-            min-height: 1.5em;
-        }
-
-        #transcript-display {
-            margin-top: 10px;
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-    </style>
 </head>
 
 <body>
     <header id="site-header" class="nav">
-        <div id="header-placeholder"></div>
+        <div class="container nav-container">
+            <a href="dashboard.html" class="nav-logo"
+                style="text-decoration:none; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">✕</span>
+                <span style="font-weight:700;">Mial Vocal</span>
+            </a>
+
+            <div class="vocal-header-actions">
+                <button class="btn btn-ghost btn-icon" onclick="openSettings()" title="Paramètres">
+                    ⚙️
+                </button>
+            </div>
+        </div>
     </header>
 
-    <section class="section" style="padding-top: 140px; min-height: 100vh;">
+    <section class="section" style="padding-top: 100px; min-height: 100vh; display:flex; align-items:center;">
         <div class="container">
-            <div class="card glass-static" style="padding: 0; overflow: hidden; height: 75vh; position: relative;">
+            <div class="card glass-static"
+                style="padding: 40px 20px; min-height: 60vh; display:flex; flex-direction:column; justify-content:center;">
 
-                <!-- NEW NATIVE INTERFACE (Active by Default) -->
-                <div id="native-interface" class="native-vocal-ui">
-                    <h2 style="margin-bottom: 30px; color: #1e293b;">Assistant Vocal Intelligent</h2>
+                <div id="native-interface" class="vocal-container">
                     <button id="main-mic" class="mic-btn idle" onclick="toggleVocalSession()">
                         🎙️
                     </button>
-                    <div id="status-display">Appuyez pour démarrer</div>
-                    <div id="transcript-display"></div>
-                </div>
-
-                <!-- OLD IFRAME (Hidden backup, kept as requested) -->
-                <div id="legacy-interface" style="display:none; height:100%;">
-                    <!-- Iframe pointing to the local python server running vocal.py via Nginx Proxy -->
-                    <iframe src="about:blank" class="vocal-frame" title="Interface Vocal" allow="microphone"></iframe>
-                    <!-- Fallback / Helper message overlay -->
-                    <div id="iframe-helper"
-                        style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; z-index:-1; width:80%;">
-                        <p class="muted">Chargement de l'interface vocale...</p>
-                        <p style="font-size:0.8rem; color:#94a3b8;">Si le chargement est bloqué (logo stop),
-                            <a id="fallback-link" href="#" target="_blank"
-                                style="text-decoration:underline; color:#94a3b8;">cliquez
-                                ici pour ouvrir dans un nouvel onglet</a>.
-                        </p>
-                    </div>
+                    <div id="status-display" class="vocal-status">Appuyez pour démarrer</div>
+                    <div id="transcript-display" class="vocal-transcript"></div>
                 </div>
 
             </div>
         </div>
     </section>
 
-    <div id="footer-placeholder"></div>
+    <div id="settings-modal"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:200; align-items:center; justify-content:center;">
+        <div class="card"
+            style="width:90%; max-width:600px; max-height:90vh; overflow-y:auto; padding:0; background:#fff;">
+
+            <div
+                style="padding:20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:10;">
+                <h3 style="margin:0;">Configuration Vocal</h3>
+                <button class="btn btn-ghost" onclick="closeSettings()" style="color:#ef4444;">Fermer</button>
+            </div>
+
+            <div style="padding:24px;">
+                <form id="form-vocal-config">
+                    <div class="editor-section">
+                        <h4 class="editor-title">📅 Période</h4>
+                        <label class="form-label">Analyser depuis (Heures)</label>
+                        <select id="v-hours" class="form-select" style="width:100%;">
+                            <option value="12">12 heures</option>
+                            <option value="24" selected>24 heures</option>
+                            <option value="48">48 heures</option>
+                            <option value="72">3 jours</option>
+                        </select>
+                    </div>
+
+                    <div class="editor-section">
+                        <h4 class="editor-title">🧠 Filtres</h4>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Mode de Tri</label>
+                            <select id="v-sort" class="form-select" style="width:100%;">
+                                <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                <option value="date_desc">Chronologique</option>
+                            </select>
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-bottom:10px;">
+                            <div><strong>Ignorer les pubs</strong></div>
+                            <label class="toggle-wrapper">
+                                <input type="checkbox" id="v-marketing" class="toggle-input" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
+                            <div><strong>Seulement non-lus</strong></div>
+                            <label class="toggle-wrapper">
+                                <input type="checkbox" id="v-unread" class="toggle-input">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h4 class="editor-title">🗣️ Voix</h4>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div>
+                                <label class="form-label">Voix IA</label>
+                                <select id="v-voice" class="form-select" style="width:100%;">
+                                    <option value="nova" selected>Nova (Femme)</option>
+                                    <option value="onyx">Onyx (Homme)</option>
+                                    <option value="alloy">Alloy (Neutre)</option>
+                                    <option value="shimmer">Shimmer (Calme)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Vitesse</label>
+                                <select id="v-speed" class="form-select" style="width:100%;">
+                                    <option value="1.0">1.0x</option>
+                                    <option value="1.1">1.1x</option>
+                                    <option value="1.2">1.2x</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div style="padding:20px; border-top:1px solid #e2e8f0; text-align:right; background:#f8fafc;">
+                <button class="btn btn-primary" onclick="closeSettings()">Valider</button>
+            </div>
+        </div>
+    </div>
+
     <script src="api.js"></script>
-    <script src="main.js"></script>
     <script>
-        // --- 1. LEGACY AUTH CHECK & CONFIG ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const iframe = document.querySelector('iframe.vocal-frame');
-            const fallbackLink = document.getElementById('fallback-link');
-            const vocalBase = (window.API_HOST || '') + '/vocal-api/';
+        // --- LOGIQUE JS ---
 
-            // Set initial/fallback URLs
-            if (fallbackLink) fallbackLink.href = vocalBase;
-
-            try {
-                // Fetch User Session from Main Portal API
-                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
-                if (res.status === 401) {
-                    window.location.href = '/Connexion.html';
-                    return;
-                }
-                const user = await res.json();
-                console.log("Mial Vocal User detected:", user.email);
-
-                // Initialize Native Session State with User Profile if needed
-                // (We'll load profiles here to get ID for the Native Runner)
-                await loadProfilesForNative();
-
-                // Update Iframe Source (Legacy) - Just in case user wants it
-                if (iframe && user.email) {
-                    iframe.src = `${vocalBase}?email=${encodeURIComponent(user.email)}`;
-                } else if (iframe) {
-                    iframe.src = vocalBase;
-                }
-            } catch (e) {
-                console.error("Error checking session:", e);
-                // Fallback: let iframe load default
-                if (iframe) iframe.src = vocalBase;
-            }
-        });
-
-        // --- 2. NEW NATIVE LOGIC ---
         let SESSION_ACTIVE = false;
-        let CURRENT_PROFILE_ID = null;
-        let currentEmailId = null;
+        let PROFILE_ID = null;
+        let CURRENT_EMAIL_ID = null;
 
-        async function loadProfilesForNative() {
+        // 1. Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Charger le profil par défaut
             try {
                 const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
+                if (res.status === 401) window.location.href = 'Connexion.html';
                 const profiles = await res.json();
-                if (profiles && profiles.length > 0) {
-                    CURRENT_PROFILE_ID = profiles[0].id; // Default to first
-                }
-            } catch (e) { console.error("Profile load error", e); }
-        }
+                if (profiles.length > 0) PROFILE_ID = profiles[0].id;
+            } catch (e) { console.error(e); }
+        });
 
+        // 2. Gestion Paramètres
+        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+        // 3. Lancer la Session
         async function toggleVocalSession() {
-            // Switch to Native if not already visible (it is default now, but logic robust)
-            if (SESSION_ACTIVE) return;
-
-            if (!CURRENT_PROFILE_ID) {
-                alert("Impossible de charger votre profil. Veuillez réessayer.");
-                await loadProfilesForNative();
-                return;
-            }
+            if (SESSION_ACTIVE) return; // Stop logic later
+            if (!PROFILE_ID) { alert("Profil introuvable."); return; }
 
             SESSION_ACTIVE = true;
-            document.getElementById('main-mic').className = 'mic-btn processing';
-            startVocalLoop('start');
+            const btn = document.getElementById('main-mic');
+            const status = document.getElementById('status-display');
+
+            // État: Analyse en cours
+            btn.className = 'mic-btn processing';
+            status.textContent = "Analyse de vos emails...";
+
+            // Récupérer la config du formulaire
+            const config = {
+                hours_back: document.getElementById('v-hours').value,
+                voice: document.getElementById('v-voice').value,
+                speed: document.getElementById('v-speed').value,
+                // On pourrait envoyer plus de filtres ici
+                state: 'start',
+                profile_id: PROFILE_ID
+            };
+
+            // Démarrer la boucle (Start -> Analyse -> Intro Audio)
+            startLoop(config);
         }
 
-        async function startVocalLoop(state, userAudioBlob = null) {
-            const statusFn = (txt) => document.getElementById('status-display').textContent = txt;
+        async function startLoop(data) {
+            const status = document.getElementById('status-display');
             const btn = document.getElementById('main-mic');
 
             try {
-                statusFn(state === 'start' ? "Connexion..." : "Réflexion...");
-                btn.className = 'mic-btn processing';
-
+                // Préparer FormData (pour envoyer fichier audio + json)
                 let fd = new FormData();
-                if (CURRENT_PROFILE_ID) fd.append('profile_id', CURRENT_PROFILE_ID);
-                fd.append('state', state);
-                if (currentEmailId) fd.append('current_email_id', currentEmailId);
-                if (userAudioBlob) fd.append('file', userAudioBlob, 'input.webm');
+                for (let key in data) fd.append(key, data[key]);
 
-                // CALL API
+                // Appel API
                 const res = await fetch(apiUrl('/vocal/interact'), {
-                    method: 'POST',
-                    body: fd,
-                    credentials: 'include'
+                    method: 'POST', body: fd, credentials: 'include'
                 });
 
-                if (!res.ok) throw new Error("API Error");
-
-                // ACTION CHECK
                 if (res.headers.get("X-Action") === "stop") {
-                    statusFn("Session terminée.");
+                    // Fin de session
                     const blob = await res.blob();
                     await playAudio(blob);
                     resetUI();
+                    status.textContent = "Terminé.";
                     return;
                 }
 
-                currentEmailId = res.headers.get("X-Current-Email-ID");
+                // ID du mail en cours
+                CURRENT_EMAIL_ID = res.headers.get("X-Current-Email-ID");
 
-                // PLAY BOT AUDIO
-                statusFn("Mial parle...");
+                // 1. JOUER L'AUDIO (IA Parle)
                 btn.className = 'mic-btn playing';
+                status.textContent = "Mial parle...";
                 const audioBlob = await res.blob();
                 await playAudio(audioBlob);
 
-                // RECORD USER
-                statusFn("À vous (Parlez)...");
+                // 2. ÉCOUTER (Micro on)
                 btn.className = 'mic-btn recording';
-                const userRec = await recordUserAudio(4000); // 4s
+                status.textContent = "À vous...";
+                const userAudio = await recordAudio(4000); // 4 sec d'écoute
 
-                // LOOP
-                await startVocalLoop('listening', userRec);
+                // 3. BOUCLER
+                btn.className = 'mic-btn processing';
+                status.textContent = "Réflexion...";
+
+                startLoop({
+                    profile_id: PROFILE_ID,
+                    state: 'listening_action',
+                    current_email_id: CURRENT_EMAIL_ID,
+                    file: userAudio // Le fichier sera géré par FormData
+                });
 
             } catch (e) {
                 console.error(e);
-                statusFn("Erreur : " + e.message);
+                status.textContent = "Erreur: " + e.message;
                 resetUI();
             }
         }
 
+        // --- HELPERS AUDIO ---
         function playAudio(blob) {
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const url = URL.createObjectURL(blob);
                 const audio = new Audio(url);
                 audio.onended = resolve;
@@ -263,17 +244,20 @@
             });
         }
 
-        function recordUserAudio(durationMs) {
-            return new Promise(async (resolve, reject) => {
+        function recordAudio(ms) {
+            return new Promise(async (resolve) => {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                    const rec = new MediaRecorder(stream);
                     const chunks = [];
-                    recorder.ondataavailable = e => chunks.push(e.data);
-                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
-                    recorder.start();
-                    setTimeout(() => recorder.stop(), durationMs);
-                } catch (e) { reject(e); }
+                    rec.ondataavailable = e => chunks.push(e.data);
+                    rec.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
+                    rec.start();
+                    setTimeout(() => rec.stop(), ms);
+                } catch (e) {
+                    alert("Micro requis !");
+                    resolve(null);
+                }
             });
         }
 
