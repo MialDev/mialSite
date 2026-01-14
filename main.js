@@ -1252,11 +1252,21 @@ window.triggerInstantRun = async function (id) {
   }
 };
 
+// --- GESTION VUE RECAP ---
 window.viewRecapText = async function (id) {
-  const modal = document.getElementById('modal-view-recap');
+  // 1. Switch View
+  const mainDash = document.getElementById('dashboard-main');
+  const fullView = document.getElementById('view-recap-fullscreen');
+
+  if (mainDash) mainDash.style.display = 'none';
+  if (fullView) fullView.style.display = 'block';
+
   const content = document.getElementById('view-recap-content');
-  if (modal) modal.showModal();
-  if (content) content.innerHTML = '<div style="text-align:center; color:#64748b;">Chargement...</div>';
+  if (content) content.innerHTML = '<div style="text-align:center; color:#64748b; padding:40px;">Chargement du récapitulatif...</div>';
+
+  // Reset Audio
+  const audContainer = document.getElementById('audio-player-container');
+  if (audContainer) audContainer.style.display = 'none';
 
   try {
     const res = await fetch(apiUrl(`/my/profiles/${id}/buffer`), { credentials: 'include' });
@@ -1264,40 +1274,66 @@ window.viewRecapText = async function (id) {
     const items = await res.json();
 
     if (!items || items.length === 0) {
-      content.innerHTML = '<div style="text-align:center; padding:20px;">Aucun email dans le dernier récap.</div>';
+      content.innerHTML = '<div style="text-align:center; padding:40px;">📭 Aucun email dans le dernier récap.</div>';
       return;
     }
 
     let html = '';
     items.forEach(item => {
-      // Couleurs basées sur priorité/catégorie
-      let borderCol = '#cbd5e1'; // Gris défaut
+      // Couleurs
+      let borderCol = '#cbd5e1';
       let bgCol = '#fff';
+      let badge = '';
 
-      if (item.priority >= 4 || item.category === 'ACTION') { borderCol = '#ef4444'; bgCol = '#fef2f2'; } // Rouge
-      else if (item.category === 'MEETING') { borderCol = '#f59e0b'; bgCol = '#fffbeb'; } // Orange
-      else if (item.category === 'INFO') { borderCol = '#3b82f6'; bgCol = '#eff6ff'; } // Bleu
+      if (item.category === 'ACTION' || item.priority >= 4) {
+        borderCol = '#ef4444'; bgCol = '#fef2f2'; badge = '🔥 IMPORTANT';
+      } else if (item.category === 'MEETING') {
+        borderCol = '#f59e0b'; bgCol = '#fffbeb'; badge = '📅 REUNION';
+      } else if (item.category === 'INFO') {
+        borderCol = '#3b82f6'; bgCol = '#eff6ff'; badge = 'ℹ️ INFO';
+      }
 
       html += `
-            <div style="border-left:4px solid ${borderCol}; background:${bgCol}; padding:12px; margin-bottom:12px; border-radius:4px;">
-                <div style="font-weight:700; color:#1e293b; margin-bottom:4px;">
-                    [${item.category}] ${escapeHtml(item.subject)}
+            <div style="border-left:4px solid ${borderCol}; background:${bgCol}; padding:20px; margin-bottom:16px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <strong style="color:#1e293b; font-size:1.1rem;">${escapeHtml(item.subject)}</strong>
+                    ${badge ? `<span style="font-size:0.75rem; font-weight:700; color:${borderCol}; background:#fff; padding:2px 8px; border-radius:12px; border:1px solid ${borderCol};">${badge}</span>` : ''}
                 </div>
-                <div style="font-size:0.85rem; color:#64748b; margin-bottom:8px;">De: ${escapeHtml(item.sender)}</div>
-                <div style="color:#334155;">${escapeHtml(item.summary)}</div>
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:12px;">
+                    De: <strong>${escapeHtml(item.sender)}</strong>
+                </div>
+                <div style="color:#334155; line-height:1.6;">${escapeHtml(item.summary)}</div>
             </div>`;
     });
     content.innerHTML = html;
 
   } catch (e) {
-    if (content) content.innerHTML = `<div style="color:red; text-align:center;">${e.message}</div>`;
+    if (content) content.innerHTML = `<div style="color:#ef4444; text-align:center; padding:40px;">Erreur : ${e.message}</div>`;
   }
 };
 
-window.playRecapAudio = function (id) {
-  // On suppose que l'audio est accessible via une route statique ou API
-  // Pour l'instant, alert placeholder
-  alert("Lecture audio bientôt disponible (nécessite le stockage du chemin MP3 en DB)");
+window.closeRecapView = function () {
+  document.getElementById('view-recap-fullscreen').style.display = 'none';
+  document.getElementById('dashboard-main').style.display = 'block';
+  // Stop audio if playing
+  const player = document.getElementById('recap-audio-player');
+  if (player) { player.pause(); player.currentTime = 0; }
+};
+
+window.playRecapAudio = async function (id) {
+  // On ouvre la vue recap ET on lance l'audio
+  await viewRecapText(id);
+
+  const container = document.getElementById('audio-player-container');
+  const player = document.getElementById('recap-audio-player');
+
+  // Construire URL audio (Route à créer côté backend)
+  // On ajoute un timestamp pour éviter le cache navigateur
+  const audioUrl = apiUrl(`/my/profiles/${id}/audio.mp3`) + '?t=' + new Date().getTime();
+
+  player.src = audioUrl;
+  container.style.display = 'flex';
+  player.play().catch(e => alert("Impossible de lancer l'audio (Fichier manquant ?)"));
 };
 
 window.openInstantRunModal = function () {

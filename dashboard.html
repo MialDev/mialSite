@@ -481,262 +481,267 @@
     <section class="section" style="padding-top: 140px;">
         <div class="container">
 
-            <div class="card glass-static" style="margin-bottom: 32px; padding: 20px 32px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h1 style="font-size: 1.8rem; margin-bottom: 4px;">Tableau de bord</h1>
-                        <p class="muted" style="margin:0;">Bienvenue, <span id="user-email"
-                                style="font-weight:600; color:var(--ink);">...</span></p>
-                    </div>
-                    <div style="display:flex; gap:12px;">
-                        <button class="btn btn-secondary btn-small" onclick="openInstantRunModal()">⚡ Lancer
-                            maintenant</button>
-                        <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un nouveau
-                            récap</button>
-                        <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
+            <div id="dashboard-main">
+                <div class="card glass-static" style="margin-bottom: 32px; padding: 20px 32px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h1 style="font-size: 1.8rem; margin-bottom: 4px;">Tableau de bord</h1>
+                            <p class="muted" style="margin:0;">Bienvenue, <span id="user-email"
+                                    style="font-weight:600; color:var(--ink);">...</span></p>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn btn-secondary btn-small" onclick="openInstantRunModal()">⚡ Lancer
+                                maintenant</button>
+                            <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un
+                                nouveau
+                                récap</button>
+                            <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW LIST -->
-            <div id="view-list">
-                <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
-                    <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
-                        <h2 style="font-size: 1.8rem; margin:0;">Vos Profils de Récap</h2>
-                    </div>
-                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                        <table class="dashboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Source</th>
-                                    <th>Destinataire</th>
-                                    <th>Plage horaire</th>
-                                    <th>Envoi</th>
-                                    <th>Status</th>
-                                    <th style="min-width:100px; text-align:right;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="profiles-body">
-                                <tr>
-                                    <td colspan="6" style="text-align:center; padding: 40px;" class="muted">
-                                        Chargement...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- VIEW LIST -->
+                <div id="view-list">
+                    <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
+                        <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
+                            <h2 style="font-size: 1.8rem; margin:0;">Vos Profils de Récap</h2>
+                        </div>
+                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Destinataire</th>
+                                        <th>Plage horaire</th>
+                                        <th>Envoi</th>
+                                        <th>Status</th>
+                                        <th style="min-width:100px; text-align:right;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="profiles-body">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding: 40px;" class="muted">
+                                            Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW EDITOR (Exhaustive) -->
-            <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
+                <!-- VIEW EDITOR (Exhaustive) -->
+                <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                    <h2 style="margin:0;" id="editor-main-title">...</h2>
-                    <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
-                </div>
-
-                <form id="form-editor">
-                    <input type="hidden" id="f-account">
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">1. Informations Principales</h3>
-                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div>
-                                <label class="form-label">Destinataire du récap</label>
-                                <input type="email" id="f-recipient" class="form-input" required
-                                    placeholder="votre@email.com">
-                                <div class="form-helper">L'adresse qui recevra le résumé.</div>
-                            </div>
-                            <div>
-                                <label class="form-label">Heure d'envoi</label>
-                                <input type="time" id="f-schedule" class="form-input" required>
-                                <div class="form-helper">Quand voulez-vous recevoir l'email ?</div>
-                            </div>
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                        <h2 style="margin:0;" id="editor-main-title">...</h2>
+                        <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
                     </div>
 
-                    <div class="editor-section">
-                        <h3 class="editor-title">2. Période Analysée</h3>
-                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div class="time-block">
-                                <h4>DÉBUT (De quand ?)</h4>
-                                <div style="display:flex; gap:12px;">
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
-                                        <input type="number" id="f-days-start" class="form-input" value="1" min="0"
-                                            max="30">
+                    <form id="form-editor">
+                        <input type="hidden" id="f-account">
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">1. Informations Principales</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div>
+                                    <label class="form-label">Destinataire du récap</label>
+                                    <input type="email" id="f-recipient" class="form-input" required
+                                        placeholder="votre@email.com">
+                                    <div class="form-helper">L'adresse qui recevra le résumé.</div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Heure d'envoi</label>
+                                    <input type="time" id="f-schedule" class="form-input" required>
+                                    <div class="form-helper">Quand voulez-vous recevoir l'email ?</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">2. Période Analysée</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div class="time-block">
+                                    <h4>DÉBUT (De quand ?)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                            <input type="number" id="f-days-start" class="form-input" value="1" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="f-time-start" class="form-input" value="00:00">
+                                        </div>
                                     </div>
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                        <input type="time" id="f-time-start" class="form-input" value="00:00">
-                                    </div>
                                 </div>
-                            </div>
-                            <div class="time-block">
-                                <h4>FIN (Jusqu'à quand ?)</h4>
-                                <div style="display:flex; gap:12px;">
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
-                                        <input type="number" id="f-days-end" class="form-input" value="0" min="0"
-                                            max="30">
-                                    </div>
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                        <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                <div class="time-block">
+                                    <h4>FIN (Jusqu'à quand ?)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                            <input type="number" id="f-days-end" class="form-input" value="0" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="editor-section">
-                        <h3 class="editor-title">3. Filtres & Intelligence</h3>
+                        <div class="editor-section">
+                            <h3 class="editor-title">3. Filtres & Intelligence</h3>
 
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                            <label class="form-label" style="margin:0;">Mode de Tri</label>
-                            <select id="f-sort" class="form-select" style="width:220px;" onchange="toggleCategoryUI()">
-                                <option value="date_desc">Chronologique (Classique)</option>
-                                <option value="priority">Priorité IA (Urgent d'abord)</option>
-                                <option value="category">Par Catégorie (Sujet)</option>
-                            </select>
-                        </div>
-
-                        <div id="ui-categories" class="category-manager" style="display:none; margin-bottom:24px;">
-                            <label class="form-label">Catégories actives</label>
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <div id="chips-categories" style="display:flex; gap:8px;">
-                                </div>
-                                <div class="add-cat-btn" onclick="alert('Fonctionnalité Bientôt Disponible')">＋</div>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-sender">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-filtre-sender" style="display:none;"></textarea>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-exclude">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-exclude-sender" style="display:none;"></textarea>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-cc">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-filtre-cc" style="display:none;"></textarea>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
-                                <div class="muted" style="font-size:0.8rem;">Seuls les non-lus seront résumés.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-unread" class="toggle-input">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Marquer comme "Lu"</div>
-                                <div class="muted" style="font-size:0.8rem;">Une fois traité par l'IA.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-mark-read" class="toggle-input">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Anti-Spam (Microsoft Focused)</div>
-                                <div class="muted" style="font-size:0.8rem;">Filtrage de base des spams.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-spam" class="toggle-input" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Cacher les Pubs & Newsletters (IA)
-                                </div>
-                                <div class="muted" style="font-size:0.8rem;">Filtrage intelligent des publicités.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-marketing" class="toggle-input" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">4. Audio & Synthèse</h3>
-                        <div class="grid-2"
-                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-                            <div>
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                    <span class="form-label" style="margin:0;">Générer Podcast Audio</span>
-                                    <label class="toggle-wrapper">
-                                        <input type="checkbox" id="f-audio" class="toggle-input" checked>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                                <label class="form-label">Voix IA</label>
-                                <select id="f-voice" class="form-select">
-                                    <option value="alloy">Alloy (Neutre & Polyvalent)</option>
-                                    <option value="echo">Echo (Masculin & Doux)</option>
-                                    <option value="fable">Fable (Masculin & Narratif)</option>
-                                    <option value="onyx">Onyx (Masculin & Profond)</option>
-                                    <option value="nova">Nova (Féminin & Énergique)</option>
-                                    <option value="shimmer">Shimmer (Féminin & Calme)</option>
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <label class="form-label" style="margin:0;">Mode de Tri</label>
+                                <select id="f-sort" class="form-select" style="width:220px;"
+                                    onchange="toggleCategoryUI()">
+                                    <option value="date_desc">Chronologique (Classique)</option>
+                                    <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                    <option value="category">Par Catégorie (Sujet)</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="form-label">Vitesse : <span id="speed-val"
-                                        style="color:var(--blue)">1.0x</span></label>
-                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
-                                    style="margin-bottom:16px;">
 
-                                <label class="form-label">Langue du résumé</label>
-                                <select id="f-lang" class="form-select">
-                                    <option value="fr">Français</option>
-                                    <option value="en">Anglais</option>
-                                    <option value="auto">Détection Auto</option>
-                                </select>
+                            <div id="ui-categories" class="category-manager" style="display:none; margin-bottom:24px;">
+                                <label class="form-label">Catégories actives</label>
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <div id="chips-categories" style="display:flex; gap:8px;">
+                                    </div>
+                                    <div class="add-cat-btn" onclick="alert('Fonctionnalité Bientôt Disponible')">＋
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-sender">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-filtre-sender" style="display:none;"></textarea>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-exclude">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-exclude-sender" style="display:none;"></textarea>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-cc">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-filtre-cc" style="display:none;"></textarea>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
+                                    <div class="muted" style="font-size:0.8rem;">Seuls les non-lus seront résumés.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-unread" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Marquer comme "Lu"</div>
+                                    <div class="muted" style="font-size:0.8rem;">Une fois traité par l'IA.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-mark-read" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Anti-Spam (Microsoft Focused)</div>
+                                    <div class="muted" style="font-size:0.8rem;">Filtrage de base des spams.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-spam" class="toggle-input" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Cacher les Pubs & Newsletters (IA)
+                                    </div>
+                                    <div class="muted" style="font-size:0.8rem;">Filtrage intelligent des publicités.
+                                    </div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-marketing" class="toggle-input" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
-                    </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
-                        <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
-                        <button type="button" class="btn btn-primary" id="btn-save"
-                            onclick="saveProfile()">ENREGISTRER</button>
-                    </div>
-                </form>
+                        <div class="editor-section">
+                            <h3 class="editor-title">4. Audio & Synthèse</h3>
+                            <div class="grid-2"
+                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+                                <div>
+                                    <div
+                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                        <span class="form-label" style="margin:0;">Générer Podcast Audio</span>
+                                        <label class="toggle-wrapper">
+                                            <input type="checkbox" id="f-audio" class="toggle-input" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <label class="form-label">Voix IA</label>
+                                    <select id="f-voice" class="form-select">
+                                        <option value="alloy">Alloy (Neutre & Polyvalent)</option>
+                                        <option value="echo">Echo (Masculin & Doux)</option>
+                                        <option value="fable">Fable (Masculin & Narratif)</option>
+                                        <option value="onyx">Onyx (Masculin & Profond)</option>
+                                        <option value="nova">Nova (Féminin & Énergique)</option>
+                                        <option value="shimmer">Shimmer (Féminin & Calme)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Vitesse : <span id="speed-val"
+                                            style="color:var(--blue)">1.0x</span></label>
+                                    <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                        oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
+                                        style="margin-bottom:16px;">
+
+                                    <label class="form-label">Langue du résumé</label>
+                                    <select id="f-lang" class="form-select">
+                                        <option value="fr">Français</option>
+                                        <option value="en">Anglais</option>
+                                        <option value="auto">Détection Auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                            <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
+                            <button type="button" class="btn btn-primary" id="btn-save"
+                                onclick="saveProfile()">ENREGISTRER</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
-
-        </div>
     </section>
 
 
@@ -752,24 +757,7 @@
         </div>
     </div>
 
-    <!-- MODAL VIEW RECAP -->
-    <dialog id="modal-view-recap"
-        style="border:none; border-radius:16px; padding:0; width:100%; max-width:600px; box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1);">
-        <div
-            style="padding:24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0; font-size:1.2rem; color:#1e293b;">Dernier Récapitulatif</h3>
-            <button onclick="document.getElementById('modal-view-recap').close()"
-                style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
-        </div>
-        <div id="view-recap-content"
-            style="padding:24px; max-height:70vh; overflow-y:auto; font-family:sans-serif; line-height:1.6; color:#334155;">
-            Chargement...
-        </div>
-        <div style="padding:16px 24px; background:#f8fafc; border-top:1px solid #e2e8f0; text-align:right;">
-            <button class="btn btn-primary"
-                onclick="document.getElementById('modal-view-recap').close()">Fermer</button>
-        </div>
-    </dialog>
+
 
     <div id="footer-placeholder"></div>
 
