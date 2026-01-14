@@ -1271,3 +1271,32 @@ window.playRecapAudio = function (id) {
   // Pour l'instant, alert placeholder
   alert("Lecture audio bientôt disponible (nécessite le stockage du chemin MP3 en DB)");
 };
+
+window.openInstantRunModal = function () {
+  if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
+    alert("Aucun profil configuré.");
+    return;
+  }
+  if (window.PROFILES_BY_ID.size === 1) {
+    // Un seul profil -> Lancement direct
+    const pid = window.PROFILES_BY_ID.keys().next().value;
+    if (confirm("Lancer l'analyse maintenant pour ce profil ?")) {
+      window.triggerInstantRun(pid);
+    }
+  } else {
+    // Plusieurs profils -> Modale simplifiée (reuse account-select logic or native prompt)
+    // Pour faire simple et robuste sans nouveau HTML :
+    let msg = "Quel profil lancer ?\n";
+    const pArray = Array.from(window.PROFILES_BY_ID.values());
+    pArray.forEach((p, index) => {
+      msg += `[${index + 1}] ${p.recap_recipient} (${p.heure_debut}-${p.heure_fin})\n`;
+    });
+    const choice = prompt(msg + "\nEntrez le numéro :");
+    if (choice) {
+      const idx = parseInt(choice) - 1;
+      if (pArray[idx]) {
+        window.triggerInstantRun(pArray[idx].id);
+      }
+    }
+  }
+};
