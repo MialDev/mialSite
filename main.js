@@ -455,7 +455,8 @@ window.loadProfiles = async function () {
                 <td style="font-weight:600; color:var(--ink);">${sub(p.schedule_time)}</td>
                 <td>${statusPill}</td>
                 <td style="text-align:right;">
-                    <button id="btn-run-${p.id}" class="action-btn" style="margin-right:8px; color:var(--blue); border-color:var(--blue-light);" onclick="triggerInstantRun('${p.id}')">▶ Lancer</button>
+                    <button class="action-btn" title="Voir le texte" style="margin-right:4px;" onclick="viewRecapText('${p.id}')">👁️</button>
+                    <button class="action-btn" title="Écouter" style="margin-right:8px;" onclick="playRecapAudio('${p.id}')">🔈</button>
                     <button class="btn-icon" title="Modifier" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
                     <button class="btn-icon delete" title="Supprimer" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
                 </td>
@@ -1249,4 +1250,24 @@ window.triggerInstantRun = async function (id) {
       btn.innerHTML = `▶ Lancer`;
     }
   }
+};
+
+window.viewRecapText = async function (id) {
+  // Appel API pour récupérer le contenu du buffer
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${id}/buffer`), { credentials: 'include' });
+    if (!res.ok) throw new Error("Pas de récap disponible");
+    const items = await res.json();
+
+    // Affichage simple (alert pour l'instant ou modale custom)
+    let text = items.map(i => `• ${i.subject} (${i.category})\n${i.summary}`).join('\n\n');
+    if (!text) text = "Aucun email dans le dernier récap.";
+    alert(text);
+  } catch (e) { alert(e.message); }
+};
+
+window.playRecapAudio = function (id) {
+  // On suppose que l'audio est accessible via une route statique ou API
+  // Pour l'instant, alert placeholder
+  alert("Lecture audio bientôt disponible (nécessite le stockage du chemin MP3 en DB)");
 };
