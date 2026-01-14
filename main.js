@@ -1339,41 +1339,64 @@ window.playRecapAudio = async function (id) {
   player.play().catch(e => alert("Impossible de lancer l'audio (Fichier manquant ?)"));
 };
 
-window.openInstantRunModal = async function () {
-  // Tentative de rechargement si vide
-  if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
-    if (window.loadProfiles) {
-      // Petit feedback visuel ou console
-      console.log("Loading profiles for instant run...");
-      await window.loadProfiles();
-    }
-  }
+// --- GESTION INSTANT RUN ---
+let SELECTED_PROFILE_FOR_RUN = null;
 
+// 1. Ouvre la modale
+window.openInstantRunModal = async function () {
+  // Charge les profils si pas fait
   if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
-    alert("Aucun profil configuré. Veuillez en créer un d'abord.");
-    return;
+    if (window.loadProfiles) await window.loadProfiles();
   }
 
   const profiles = Array.from(window.PROFILES_BY_ID.values());
+  if (profiles.length === 0) { alert("Créez d'abord un profil !"); return; }
 
-  if (profiles.length === 1) {
-    const p = profiles[0];
-    if (confirm(`Lancer l'analyse maintenant pour ${p.recap_recipient} ?`)) {
-      window.triggerInstantRun(p.id);
-    }
+  // Si plusieurs profils, on demande lequel (simple prompt pour l'instant)
+  if (profiles.length > 1) {
+    let msg = "Quel profil utiliser ?\n";
+    profiles.forEach((p, i) => msg += `${i + 1}. ${p.recap_recipient}\n`);
+    let choice = prompt(msg);
+    if (!choice) return;
+    SELECTED_PROFILE_FOR_RUN = profiles[parseInt(choice) - 1]?.id;
   } else {
-    // Menu de sélection simple et efficace
-    let msg = "Choisissez le profil à lancer :\n";
-    profiles.forEach((p, idx) => {
-      msg += `${idx + 1}. ${p.recap_recipient} (${p.heure_debut}-${p.heure_fin})\n`;
+    SELECTED_PROFILE_FOR_RUN = profiles[0].id;
+  }
+
+  if (SELECTED_PROFILE_FOR_RUN) {
+    document.getElementById('modal-run-options').style.display = 'flex';
+  }
+};
+
+// 2. Confirme et envoie les paramètres au Backend
+window.confirmInstantRun = async function () {
+  const hours = document.getElementById('run-hours').value;
+  const lang = document.getElementById('run-lang').value;
+  const modal = document.getElementById('modal-run-options');
+
+  // Feedback visuel
+  const btn = document.querySelector('#modal-run-options .btn-primary');
+  btn.innerHTML = "Lancement...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${SELECTED_PROFILE_FOR_RUN}/run-now`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hours_back: parseInt(hours), language: lang }),
+      credentials: 'include'
     });
-    const choice = prompt(msg + "\nEntrez le numéro :");
-    if (choice) {
-      const index = parseInt(choice) - 1;
-      if (profiles[index]) {
-        window.triggerInstantRun(profiles[index].id);
-      }
-    }
+
+    if (!res.ok) throw new Error("Erreur serveur");
+
+    alert(`✅ C'est parti ! Analyse des dernières ${hours}h lancée.`);
+    modal.style.display = 'none';
+
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  } finally {
+    btn.innerHTML = "🚀 LANCER";
+    btn.disabled = false;
   }
 };
 

@@ -782,6 +782,34 @@
 
     <div id="footer-placeholder"></div>
 
+    <div id="modal-run-options"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
+        <div class="card" style="width:100%; max-width:400px; padding:24px; background:white; border-radius:12px;">
+            <h3 style="margin-top:0;">⚡ Lancer un Récap</h3>
+
+            <label class="form-label" style="margin-top:16px;">Analyser depuis...</label>
+            <select id="run-hours" class="form-select" style="width:100%; padding:10px;">
+                <option value="12">Les dernières 12 heures</option>
+                <option value="24" selected>Les dernières 24 heures</option>
+                <option value="48">Les dernières 48 heures</option>
+                <option value="72">Les derniers 3 jours</option>
+            </select>
+
+            <label class="form-label" style="margin-top:16px;">Langue</label>
+            <select id="run-lang" class="form-select" style="width:100%; padding:10px;">
+                <option value="Français">Français</option>
+                <option value="Anglais">Anglais</option>
+            </select>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+                <button class="btn btn-ghost"
+                    onclick="document.getElementById('modal-run-options').style.display='none'">Annuler</button>
+                <button class="btn btn-primary" onclick="confirmInstantRun()">🚀 LANCER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="/api.js"></script>
     <script src="main.js"></script>
 
