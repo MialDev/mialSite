@@ -314,7 +314,10 @@
                     const fbText = res.headers.get("X-Action-Feedback");
                     if (fbText) {
                         const fbDiv = document.getElementById("actionFeedback");
-                        if (fbDiv) { fbDiv.innerText = fbText; fbDiv.style.opacity = 1; }
+                        if (fbDiv) {
+                            try { fbDiv.innerText = decodeURIComponent(fbText); } catch (e) { fbDiv.innerText = fbText; }
+                            fbDiv.style.opacity = 1;
+                        }
                     }
 
                     const blob = await res.blob();
@@ -329,8 +332,7 @@
                 const fbText = res.headers.get("X-Action-Feedback");
                 const fbDiv = document.getElementById("actionFeedback");
                 if (fbText && fbDiv) {
-                    // Decode header if needed or raw
-                    try { fbDiv.innerText = decodeURIComponent(escape(fbText)); } catch (e) { fbDiv.innerText = fbText; }
+                    try { fbDiv.innerText = decodeURIComponent(fbText); } catch (e) { fbDiv.innerText = fbText; }
                     fbDiv.style.opacity = 1;
                     setTimeout(() => { fbDiv.style.opacity = 0; }, 5000);
                 }
