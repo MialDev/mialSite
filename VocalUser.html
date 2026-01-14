@@ -4,17 +4,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mial Vocal — Assistant Interactif</title>
+    <title>Mial Vocal — mial</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#1fb6ff">
     <style>
-        .vocal-container {
+        .vocal-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            min-height: 75vh;
+            display: block;
+        }
+
+        /* NEW STYLES FOR NATIVE VOCAL INTERFACE */
+        .native-vocal-ui {
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            text-align: center;
         }
 
         .mic-btn {
@@ -26,6 +34,7 @@
             font-size: 2rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
         }
 
         .mic-btn.idle {
@@ -66,7 +75,7 @@
         }
 
         #status-display {
-            margin-top: 24px;
+            margin-top: 10px;
             font-size: 1.2rem;
             color: #475569;
             font-weight: 500;
@@ -86,46 +95,103 @@
         <div id="header-placeholder"></div>
     </header>
 
-    <section class="section" style="padding-top: 100px;">
-        <div class="container vocal-container">
-            <h1 style="margin-bottom: 40px;">Assistant Vocal</h1>
+    <section class="section" style="padding-top: 140px; min-height: 100vh;">
+        <div class="container">
+            <div class="card glass-static" style="padding: 0; overflow: hidden; height: 75vh; position: relative;">
 
-            <button id="main-mic" class="mic-btn idle" onclick="toggleVocalSession()">
-                🎙️
-            </button>
+                <!-- NEW NATIVE INTERFACE (Active by Default) -->
+                <div id="native-interface" class="native-vocal-ui">
+                    <h2 style="margin-bottom: 30px; color: #1e293b;">Assistant Vocal Intelligent</h2>
+                    <button id="main-mic" class="mic-btn idle" onclick="toggleVocalSession()">
+                        🎙️
+                    </button>
+                    <div id="status-display">Appuyez pour démarrer</div>
+                    <div id="transcript-display"></div>
+                </div>
 
-            <div id="status-display">Appuyez pour démarrer</div>
-            <div id="transcript-display"></div>
+                <!-- OLD IFRAME (Hidden backup, kept as requested) -->
+                <div id="legacy-interface" style="display:none; height:100%;">
+                    <!-- Iframe pointing to the local python server running vocal.py via Nginx Proxy -->
+                    <iframe src="about:blank" class="vocal-frame" title="Interface Vocal" allow="microphone"></iframe>
+                    <!-- Fallback / Helper message overlay -->
+                    <div id="iframe-helper"
+                        style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; z-index:-1; width:80%;">
+                        <p class="muted">Chargement de l'interface vocale...</p>
+                        <p style="font-size:0.8rem; color:#94a3b8;">Si le chargement est bloqué (logo stop),
+                            <a id="fallback-link" href="#" target="_blank"
+                                style="text-decoration:underline; color:#94a3b8;">cliquez
+                                ici pour ouvrir dans un nouvel onglet</a>.
+                        </p>
+                    </div>
+                </div>
 
-            <div style="margin-top: 40px; display:none;" id="debug-area">
-                <button class="btn btn-ghost" onclick="stopVocal()">Arrêter</button>
             </div>
         </div>
     </section>
 
+    <div id="footer-placeholder"></div>
     <script src="api.js"></script>
+    <script src="main.js"></script>
     <script>
-        // --- CONFIG & STATE ---
+        // --- 1. LEGACY AUTH CHECK & CONFIG ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const iframe = document.querySelector('iframe.vocal-frame');
+            const fallbackLink = document.getElementById('fallback-link');
+            const vocalBase = (window.API_HOST || '') + '/vocal-api/';
+
+            // Set initial/fallback URLs
+            if (fallbackLink) fallbackLink.href = vocalBase;
+
+            try {
+                // Fetch User Session from Main Portal API
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (res.status === 401) {
+                    window.location.href = '/Connexion.html';
+                    return;
+                }
+                const user = await res.json();
+                console.log("Mial Vocal User detected:", user.email);
+
+                // Initialize Native Session State with User Profile if needed
+                // (We'll load profiles here to get ID for the Native Runner)
+                await loadProfilesForNative();
+
+                // Update Iframe Source (Legacy) - Just in case user wants it
+                if (iframe && user.email) {
+                    iframe.src = `${vocalBase}?email=${encodeURIComponent(user.email)}`;
+                } else if (iframe) {
+                    iframe.src = vocalBase;
+                }
+            } catch (e) {
+                console.error("Error checking session:", e);
+                // Fallback: let iframe load default
+                if (iframe) iframe.src = vocalBase;
+            }
+        });
+
+        // --- 2. NEW NATIVE LOGIC ---
         let SESSION_ACTIVE = false;
-        let CURRENT_PROFILE_ID = null; // Will define load strategy logic or prompt
+        let CURRENT_PROFILE_ID = null;
         let currentEmailId = null;
-        let mediaRecorder = null;
-        let audioChunks = [];
 
-        async function toggleVocalSession() {
-            if (SESSION_ACTIVE) return; // Ignore clicks while active
-
-            // 1. Get Profile
-            // Pour l'instant on prend le premier profil dispo (ou prompt simple comme dashboard)
-            // Nécessite que main.js a chargé les profils ou on le fait ici
-            // On va faire un fetch rapide des profils
+        async function loadProfilesForNative() {
             try {
                 const res = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
                 const profiles = await res.json();
-                if (!profiles || profiles.length === 0) { alert("Aucun profil"); return; }
-                CURRENT_PROFILE_ID = profiles[0].id; // Simple
-            } catch (e) {
-                alert("Erreur connexion: " + e.message); return;
+                if (profiles && profiles.length > 0) {
+                    CURRENT_PROFILE_ID = profiles[0].id; // Default to first
+                }
+            } catch (e) { console.error("Profile load error", e); }
+        }
+
+        async function toggleVocalSession() {
+            // Switch to Native if not already visible (it is default now, but logic robust)
+            if (SESSION_ACTIVE) return;
+
+            if (!CURRENT_PROFILE_ID) {
+                alert("Impossible de charger votre profil. Veuillez réessayer.");
+                await loadProfilesForNative();
+                return;
             }
 
             SESSION_ACTIVE = true;
@@ -203,15 +269,11 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                     const chunks = [];
-
                     recorder.ondataavailable = e => chunks.push(e.data);
                     recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
-
                     recorder.start();
                     setTimeout(() => recorder.stop(), durationMs);
-                } catch (e) {
-                    reject(e);
-                }
+                } catch (e) { reject(e); }
             });
         }
 
