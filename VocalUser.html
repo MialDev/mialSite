@@ -4,81 +4,366 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mial Vocal — mial</title>
+    <title>Assistant Vocal — mial</title>
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
-    <style>
-        .vocal-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            min-height: 75vh;
-            display: block;
-        }
-    </style>
 </head>
 
 <body>
+
     <header id="site-header" class="nav">
         <div id="header-placeholder"></div>
     </header>
 
-    <section class="section" style="padding-top: 140px; min-height: 100vh;">
+    <section class="section" style="padding-top: 100px; min-height: 85vh; display:flex; align-items:center;">
         <div class="container">
-            <div class="card glass-static" style="padding: 0; overflow: hidden; height: 75vh; position: relative;">
-                <!-- Iframe pointing to the local python server running vocal.py via Nginx Proxy -->
-                <iframe src="about:blank" class="vocal-frame" title="Interface Vocal" allow="microphone"></iframe>
 
-                <!-- Fallback / Helper message overlay (visible if iframe fails or is empty initially) -->
-                <div id="iframe-helper"
-                    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center; z-index:-1; width:80%;">
-                    <p class="muted">Chargement de l'interface vocale...</p>
-                    <p style="font-size:0.8rem; color:#94a3b8;">Si le chargement est bloqué (logo stop),
-                        <a id="fallback-link" href="#" target="_blank"
-                            style="text-decoration:underline; color:#94a3b8;">cliquez
-                            ici pour ouvrir dans un nouvel onglet</a>.
-                    </p>
+            <div class="card glass-static" style="padding: 40px; max-width: 600px; margin: 0 auto; text-align:center;">
+
+                <div style="margin-bottom: 30px;">
+                    <span class="vocal-user-info" id="user-display">Chargement...</span>
                 </div>
+
+                <div class="vocal-container" style="min-height:auto;">
+                    <button id="main-mic" class="mic-btn-large" onclick="toggleVocalSession()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+
+                    <div id="status-display" class="vocal-status">Appuyez pour parler</div>
+                    <div id="transcript-display" style="color:var(--muted); min-height:1.2em;"></div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <button class="btn btn-secondary" onclick="openSettings()">
+                        ⚙️ Paramètres du Vocal
+                    </button>
+                </div>
+
             </div>
         </div>
     </section>
 
+    <div id="settings-modal"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:200; align-items:center; justify-content:center;">
+
+        <div
+            style="width:100%; max-width:900px; max-height:95vh; overflow-y:auto; background:#fff; border-radius:16px; margin:20px;">
+
+            <div
+                style="padding:24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:10;">
+                <h2 style="margin:0;">Configuration Vocal</h2>
+                <button class="btn btn-ghost" onclick="closeSettings()" style="color:#ef4444;">Fermer</button>
+            </div>
+
+            <div style="padding:24px;">
+                <form id="form-editor">
+                    <input type="hidden" id="f-account">
+
+                    <div class="editor-section" style="display:none;">
+                        <h3 class="editor-title">1. Informations Principales</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div>
+                                <label class="form-label">Destinataire</label>
+                                <input type="email" id="f-recipient" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">Heure</label>
+                                <input type="time" id="f-schedule" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3 class="editor-title">2. Période Analysée</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div class="time-block">
+                                <h4>DÉBUT (De quand ?)</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                        <input type="number" id="f-days-start" class="form-input" value="1" min="0"
+                                            max="30">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="f-time-start" class="form-input" value="00:00">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="time-block" style="opacity:0.5; pointer-events:none;">
+                                <h4>FIN (Automatique : Maintenant)</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                        <input type="number" id="f-days-end" class="form-input" value="0" disabled>
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="f-time-end" class="form-input" value="23:59" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3 class="editor-title">3. Filtres & Intelligence</h3>
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <label class="form-label" style="margin:0;">Mode de Tri</label>
+                            <select id="f-sort" class="form-select" style="width:220px;">
+                                <option value="date_desc">Chronologique (Classique)</option>
+                                <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                <option value="category">Par Catégorie (Sujet)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Whitelist (De qui ?)</label>
+                            <div class="chip-container" id="container-sender">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                            </div>
+                            <textarea id="f-filtre-sender" style="display:none;"></textarea>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Blacklist (Ignorer)</label>
+                            <div class="chip-container" id="container-exclude">
+                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                            </div>
+                            <textarea id="f-exclude-sender" style="display:none;"></textarea>
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
+                            <div>
+                                <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
+                            </div>
+                            <label class="toggle-wrapper">
+                                <input type="checkbox" id="f-unread" class="toggle-input">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                            <div>
+                                <div style="font-weight:600; font-size:0.95rem;">Cacher les Pubs & Newsletters (IA)
+                                </div>
+                            </div>
+                            <label class="toggle-wrapper">
+                                <input type="checkbox" id="f-marketing" class="toggle-input" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3 class="editor-title">4. Audio & Synthèse</h3>
+                        <div class="grid-2"
+                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+                            <div>
+                                <label class="form-label">Voix IA</label>
+                                <select id="f-voice" class="form-select">
+                                    <option value="alloy">Alloy (Neutre)</option>
+                                    <option value="echo">Echo (Masculin Doux)</option>
+                                    <option value="fable">Fable (Narratif)</option>
+                                    <option value="onyx">Onyx (Masculin Profond)</option>
+                                    <option value="nova">Nova (Féminin Énergique)</option>
+                                    <option value="shimmer">Shimmer (Calme)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Vitesse</label>
+                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
+                                    style="margin-bottom:16px;">
+                                <div style="text-align:right; color:var(--blue);" id="speed-val">1.0x</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                        <button type="button" class="btn btn-ghost" onclick="closeSettings()">Fermer</button>
+                        <button type="button" class="btn btn-primary" onclick="applySettings()">Valider pour cette
+                            session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
+
     <script src="api.js"></script>
     <script src="main.js"></script>
     <script>
+        // --- LOGIQUE VOCAL USER ---
+
+        let SESSION_ACTIVE = false;
+        let PROFILE_ID = null;
+        let CURRENT_EMAIL_ID = null;
+
+        // Configuration temporaire (valeurs par défaut)
+        let VOCAL_CONFIG = {
+            days_start: 1,
+            time_start: "00:00",
+            sort: "priority",
+            whitelist: "",
+            blacklist: "",
+            unread: false,
+            marketing: true,
+            voice: "nova",
+            speed: 1.0
+        };
+
+        // 1. Init
         document.addEventListener('DOMContentLoaded', async () => {
-            const iframe = document.querySelector('iframe.vocal-frame');
-            const fallbackLink = document.getElementById('fallback-link');
-            const vocalBase = (window.API_HOST || '') + '/vocal-api/';
-
-            // Set initial/fallback URLs
-            if (fallbackLink) fallbackLink.href = vocalBase;
-
             try {
-                // Fetch User Session from Main Portal API
+                // Session Check
                 const res = await fetch(apiUrl('/me'), { credentials: 'include' });
-                if (res.status === 401) {
-                    window.location.href = '/Connexion.html';
+                if (res.status === 401) { window.location.href = 'Connexion.html'; return; }
+                const user = await res.json();
+                document.getElementById('user-display').textContent = `Connecté en tant que ${user.email}`;
+
+                // Load Profile ID (Default First)
+                const resProf = await fetch(apiUrl('/my/profiles'), { credentials: 'include' });
+                const profiles = await resProf.json();
+                if (profiles.length > 0) {
+                    PROFILE_ID = profiles[0].id;
+                    // TODO: Charger les valeurs du profil dans le formulaire pour pré-remplir
+                } else {
+                    alert("Veuillez créer un profil de récap d'abord.");
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        // 2. Settings UI
+        function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+        function applySettings() {
+            // On capture les valeurs du formulaire HTML complexe
+            VOCAL_CONFIG.days_start = document.getElementById('f-days-start').value;
+            VOCAL_CONFIG.time_start = document.getElementById('f-time-start').value;
+            VOCAL_CONFIG.sort = document.getElementById('f-sort').value;
+            VOCAL_CONFIG.whitelist = document.getElementById('f-filtre-sender').value; // Chip input hidden value
+            VOCAL_CONFIG.blacklist = document.getElementById('f-exclude-sender').value;
+            VOCAL_CONFIG.unread = document.getElementById('f-unread').checked;
+            VOCAL_CONFIG.marketing = document.getElementById('f-marketing').checked;
+            VOCAL_CONFIG.voice = document.getElementById('f-voice').value;
+            VOCAL_CONFIG.speed = document.getElementById('f-speed').value;
+
+            closeSettings();
+            alert("Paramètres appliqués pour le prochain lancement vocal.");
+        }
+
+        // 3. Start Session
+        async function toggleVocalSession() {
+            if (SESSION_ACTIVE) return;
+            if (!PROFILE_ID) return;
+
+            SESSION_ACTIVE = true;
+            updateUI('processing', "Analyse en cours...");
+
+            // Construction du Payload
+            let config = {
+                profile_id: PROFILE_ID,
+                state: 'start',
+                // Paramètres du formulaire
+                days_back: VOCAL_CONFIG.days_start, // Simplification pour le backend
+                voice: VOCAL_CONFIG.voice,
+                speed: VOCAL_CONFIG.speed,
+                sort: VOCAL_CONFIG.sort,
+                filter_marketing: VOCAL_CONFIG.marketing,
+                filter_sender: VOCAL_CONFIG.whitelist,
+                // FORCE TIME END = NOW
+                time_end: "NOW"
+            };
+
+            await startLoop(config);
+        }
+
+        async function startLoop(data) {
+            try {
+                let fd = new FormData();
+                for (let key in data) fd.append(key, data[key]);
+
+                const res = await fetch(apiUrl('/vocal/interact'), {
+                    method: 'POST', body: fd, credentials: 'include'
+                });
+
+                if (res.headers.get("X-Action") === "stop") {
+                    const blob = await res.blob();
+                    await playAudio(blob);
+                    resetUI("Session terminée.");
                     return;
                 }
-                const user = await res.json();
-                console.log("Mial Vocal User detected:", user.email);
 
-                // Update Iframe Source with Email Context
-                if (iframe && user.email) {
-                    // Pass email as query param so vocal.py can render it
-                    iframe.src = `${vocalBase}?email=${encodeURIComponent(user.email)}`;
-                } else if (iframe) {
-                    iframe.src = vocalBase;
-                }
+                CURRENT_EMAIL_ID = res.headers.get("X-Current-Email-ID");
+
+                updateUI('playing', "Mial parle...");
+                const audioBlob = await res.blob();
+                await playAudio(audioBlob);
+
+                updateUI('recording', "À vous...");
+                const userAudio = await recordAudio(4000);
+
+                updateUI('processing', "Réflexion...");
+                await startLoop({
+                    profile_id: PROFILE_ID,
+                    state: 'listening_action',
+                    current_email_id: CURRENT_EMAIL_ID,
+                    file: userAudio
+                });
+
             } catch (e) {
-                console.error("Error checking session:", e);
-                // Fallback: let iframe load default (it might show login button)
-                if (iframe) iframe.src = vocalBase;
+                console.error(e);
+                resetUI("Erreur : " + e.message);
             }
-        });
+        }
+
+        // --- Helpers Audio ---
+        function playAudio(blob) {
+            return new Promise(resolve => {
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.onended = resolve;
+                audio.play();
+            });
+        }
+
+        function recordAudio(ms) {
+            return new Promise(async (resolve) => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const rec = new MediaRecorder(stream);
+                    const chunks = [];
+                    rec.ondataavailable = e => chunks.push(e.data);
+                    rec.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' }));
+                    rec.start();
+                    setTimeout(() => rec.stop(), ms);
+                } catch (e) { resolve(null); }
+            });
+        }
+
+        function updateUI(cls, txt) {
+            document.getElementById('main-mic').className = `mic-btn-large ${cls}`;
+            document.getElementById('status-display').textContent = txt;
+        }
+
+        function resetUI(txt = "Prêt") {
+            SESSION_ACTIVE = false;
+            document.getElementById('main-mic').className = 'mic-btn-large';
+            document.getElementById('status-display').textContent = txt;
+        }
     </script>
 </body>
 

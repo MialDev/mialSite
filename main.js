@@ -455,6 +455,8 @@ window.loadProfiles = async function () {
                 <td style="font-weight:600; color:var(--ink);">${sub(p.schedule_time)}</td>
                 <td>${statusPill}</td>
                 <td style="text-align:right;">
+                    <button class="action-btn" title="Voir le texte" style="margin-right:4px;" onclick="viewRecapText('${p.id}')">👁️</button>
+                    <button class="action-btn" title="Écouter" style="margin-right:8px;" onclick="playRecapAudio('${p.id}')">🔈</button>
                     <button class="btn-icon" title="Modifier" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
                     <button class="btn-icon delete" title="Supprimer" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
                 </td>
@@ -1161,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (path.includes('/admin/')) {
       navFile = '/components/nav-admin.html';
-    } else if (path.includes('dashboard') || path.includes('account') || path.includes('onboarding') || path.includes('Vocal') || path.includes('VocalUser')) {
+    } else if (path.includes('dashboard') || path.includes('account') || path.includes('onboarding') || path.includes('VocalUser')) {
       navFile = '/components/nav-app.html';
     }
 
@@ -1224,3 +1226,186 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 window.addEventListener('scroll', window.onScroll, { passive: true });
 window.addEventListener('scroll', () => { /* simplistic scroll track */ }, { passive: true });
+
+window.triggerInstantRun = async function (id) {
+  const btn = document.getElementById(`btn-run-${id}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spin">↻</span> ...`;
+  }
+
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${id}/run-now`), {
+      method: 'POST',
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error("Erreur serveur");
+
+    alert("Analyse lancée ! Vous recevrez le résultat dans quelques instants.");
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `▶ Lancer`;
+    }
+  }
+};
+
+// --- GESTION VUE RECAP ---
+// --- GESTION VUE RECAP ---
+window.viewRecapText = async function (id) {
+  // Basculer l'affichage
+  const dash = document.getElementById('dashboard-main');
+  const view = document.getElementById('view-recap-fullscreen');
+
+  if (dash) dash.style.display = 'none';
+  if (view) view.style.display = 'block';
+
+  const content = document.getElementById('view-recap-content');
+  if (content) content.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Chargement des données...</div>';
+
+  // Reset Audio
+  const audContainer = document.getElementById('audio-player-container');
+  if (audContainer) audContainer.style.display = 'none';
+
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${id}/buffer`), { credentials: 'include' });
+    if (!res.ok) throw new Error("Impossible de récupérer le récap.");
+    const items = await res.json();
+
+    if (!items || items.length === 0) {
+      content.innerHTML = '<div style="text-align:center; padding:40px;">📭 Aucun email dans le dernier récapitulatif.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      // Logique de couleur (Tailwind-like colors)
+      let border = '4px solid #cbd5e1';
+      let bg = '#fff';
+      let badge = '';
+
+      if (item.category === 'ACTION' || item.priority >= 4) {
+        border = '4px solid #ef4444'; bg = '#fef2f2'; badge = '🔥 ACTION';
+      } else if (item.category === 'MEETING') {
+        border = '4px solid #f59e0b'; bg = '#fffbeb'; badge = '📅 RÉUNION';
+      } else if (item.category === 'INFO') {
+        border = '4px solid #3b82f6'; bg = '#eff6ff'; badge = 'ℹ️ INFO';
+      }
+
+      html += `
+            <div style="border-left:${border}; background:${bg}; padding:20px; margin-bottom:16px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                    <strong style="color:#0f172a; font-size:1.1rem;">${escapeHtml(item.subject || '(Sans objet)')}</strong>
+                    ${badge ? `<span style="background:#fff; border:1px solid currentColor; color:${border.split(' ')[2]}; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px;">${badge}</span>` : ''}
+                </div>
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:8px;">
+                    De: <strong>${escapeHtml(item.sender || 'Inconnu')}</strong>
+                </div>
+                <div style="color:#334155;">${escapeHtml(item.summary)}</div>
+            </div>`;
+    });
+    content.innerHTML = html;
+
+  } catch (e) {
+    if (content) content.innerHTML = `<div style="color:#ef4444; text-align:center; padding:40px;">Erreur : ${e.message}</div>`;
+  }
+};
+
+window.closeRecapView = function () {
+  document.getElementById('view-recap-fullscreen').style.display = 'none';
+  const dash = document.getElementById('dashboard-main');
+  if (dash) dash.style.display = 'block';
+
+  // Stop Audio
+  const player = document.getElementById('recap-audio-player');
+  if (player) { player.pause(); player.currentTime = 0; }
+};
+
+window.playRecapAudio = async function (id) {
+  // On ouvre la vue recap ET on lance l'audio
+  await viewRecapText(id);
+
+  const container = document.getElementById('audio-player-container');
+  const player = document.getElementById('recap-audio-player');
+
+  // Construire URL audio (Route à créer côté backend)
+  // On ajoute un timestamp pour éviter le cache navigateur
+  const audioUrl = apiUrl(`/my/profiles/${id}/audio.mp3`) + '?t=' + new Date().getTime();
+
+  player.src = audioUrl;
+  container.style.display = 'flex';
+  player.play().catch(e => alert("Impossible de lancer l'audio (Fichier manquant ?)"));
+};
+
+// --- GESTION INSTANT RUN ---
+let SELECTED_PROFILE_FOR_RUN = null;
+
+// 1. Ouvre la modale
+window.openInstantRunModal = async function () {
+  // Charge les profils si pas fait
+  if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
+    if (window.loadProfiles) await window.loadProfiles();
+  }
+
+  const profiles = Array.from(window.PROFILES_BY_ID.values());
+  if (profiles.length === 0) { alert("Créez d'abord un profil !"); return; }
+
+  // Si plusieurs profils, on demande lequel (simple prompt pour l'instant)
+  if (profiles.length > 1) {
+    let msg = "Quel profil utiliser ?\n";
+    profiles.forEach((p, i) => msg += `${i + 1}. ${p.recap_recipient}\n`);
+    let choice = prompt(msg);
+    if (!choice) return;
+    SELECTED_PROFILE_FOR_RUN = profiles[parseInt(choice) - 1]?.id;
+  } else {
+    SELECTED_PROFILE_FOR_RUN = profiles[0].id;
+  }
+
+  if (SELECTED_PROFILE_FOR_RUN) {
+    document.getElementById('modal-run-options').style.display = 'flex';
+  }
+};
+
+// 2. Confirme et envoie les paramètres au Backend
+window.confirmInstantRun = async function () {
+  const hours = document.getElementById('run-hours').value;
+  const lang = document.getElementById('run-lang').value;
+  const modal = document.getElementById('modal-run-options');
+
+  // Feedback visuel
+  const btn = document.querySelector('#modal-run-options .btn-primary');
+  btn.innerHTML = "Lancement...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(apiUrl(`/my/profiles/${SELECTED_PROFILE_FOR_RUN}/run-now`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hours_back: parseInt(hours), language: lang }),
+      credentials: 'include'
+    });
+
+    if (!res.ok) throw new Error("Erreur serveur");
+
+    alert(`✅ C'est parti ! Analyse des dernières ${hours}h lancée.`);
+    modal.style.display = 'none';
+
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  } finally {
+    btn.innerHTML = "🚀 LANCER";
+    btn.disabled = false;
+  }
+};
+
+function escapeHtml(text) {
+  if (!text) return text;
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}

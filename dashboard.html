@@ -8,468 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="assets/logos/logo-mial-small-color.svg">
     <link rel="stylesheet" href="style.css">
     <meta name="theme-color" content="#1fb6ff">
-    <style>
-        /* --- UI SYSTEM --- */
-        .editor-title {
-            font-size: 1.1rem;
-            color: #1e293b;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
 
-
-        /* BLOCS SÉPARÉS (Cards) */
-        .editor-section {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
-
-        /* CHIPS OUTLOOK (Saisie Emails) */
-        .chip-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            background: #f8fafc;
-            min-height: 46px;
-            transition: all 0.2s;
-        }
-
-        .chip-container:focus-within {
-            background: #fff;
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #e0f2fe;
-            color: #0284c7;
-            /* Style Outlook (Bleu clair) */
-            padding: 4px 10px;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .chip .remove {
-            cursor: pointer;
-            opacity: 0.6;
-            font-size: 1.1em;
-            line-height: 1;
-        }
-
-        .chip .remove:hover {
-            opacity: 1;
-            color: #ef4444;
-        }
-
-        .chip-input {
-            border: none;
-            background: transparent;
-            outline: none;
-            flex: 1;
-            font-size: 0.95rem;
-            min-width: 120px;
-        }
-
-        /* TOGGLE IOS (Vert) */
-        .toggle-wrapper {
-            position: relative;
-            width: 50px;
-            height: 28px;
-        }
-
-        .toggle-input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            border-radius: 34px;
-            transition: .3s;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: .3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .toggle-input:checked+.toggle-slider {
-            background-color: #22c55e;
-        }
-
-        .toggle-input:checked+.toggle-slider:before {
-            transform: translateX(22px);
-        }
-
-        /* CATEGORIES PILLS (Style Pastel) */
-        .cat-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: grab;
-            transition: all 0.2s;
-            margin-right: 8px;
-            margin-bottom: 8px;
-            border: 1px solid transparent;
-        }
-
-        .cat-pill:active {
-            cursor: grabbing;
-            transform: scale(0.95);
-        }
-
-        .cat-pill .remove {
-            cursor: pointer;
-            margin-left: 6px;
-            font-size: 1.1em;
-            line-height: 1;
-            opacity: 0.6;
-        }
-
-        .cat-pill .remove:hover {
-            opacity: 1;
-        }
-
-        /* Couleurs Pastel Spécifiques */
-        .cat-pill.meeting {
-            background: #f3e8ff;
-            color: #9333ea;
-            border-color: #d8b4fe;
-        }
-
-        /* Violet */
-        .cat-pill.action {
-            background: #ffedd5;
-            color: #ea580c;
-            border-color: #fdba74;
-        }
-
-        /* Orange */
-        .cat-pill.info {
-            background: #e0f2fe;
-            color: #0284c7;
-            border-color: #7dd3fc;
-        }
-
-        /* Bleu */
-        .cat-pill.pub {
-            background: #dcfce7;
-            color: #166534;
-            border-color: #86efac;
-        }
-
-        /* Vert */
-
-        .add-cat-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px dashed #cbd5e1;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-
-        .add-cat-btn:hover {
-            border-color: var(--blue);
-            color: var(--blue);
-            background: #f0f9ff;
-        }
-
-        /* OTHER UTILS */
-        .form-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #475569;
-            font-size: 0.95rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #cbd5e1;
-            font-size: 0.95rem;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            background: #fff;
-            border-color: var(--blue);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
-
-        .time-block {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .time-block h4 {
-            margin: 0 0 16px 0;
-            font-size: 0.85rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
-        }
-
-        input[type=range] {
-            width: 100%;
-            cursor: pointer;
-            accent-color: var(--blue);
-        }
-
-        /* DASHBOARD TABLE */
-        .dashboard-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-            white-space: nowrap;
-        }
-
-        .dashboard-table th {
-            padding: 12px 24px;
-            text-align: left;
-            font-weight: 700;
-            color: #64748b;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: none;
-        }
-
-        .dashboard-table tbody tr {
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .dashboard-table tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .dashboard-table td {
-            padding: 20px 24px;
-            vertical-align: middle;
-        }
-
-        .dashboard-table td:first-child {
-            border-top-left-radius: 16px;
-            border-bottom-left-radius: 16px;
-        }
-
-        .dashboard-table td:last-child {
-            border-top-right-radius: 16px;
-            border-bottom-right-radius: 16px;
-        }
-
-        /* STATUS PILL */
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .status-pill.active {
-            background: #dcfce7;
-            color: #166534;
-            border-color: #bbf7d0;
-        }
-
-        .status-pill.active::before {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-        }
-
-        .status-pill.inactive {
-            background: #f1f5f9;
-            color: #64748b;
-            border-color: #e2e8f0;
-        }
-
-        .status-pill.inactive::before {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 8px;
-            background: #94a3b8;
-            border-radius: 50%;
-        }
-
-        .status-pill:hover {
-            filter: brightness(0.95);
-            transform: scale(1.02);
-        }
-
-        .status-pill.loading {
-            opacity: 0.7;
-            cursor: wait;
-        }
-
-        /* ACTION ICONS & TOOLTIPS */
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
-            color: #64748b;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .btn-icon:hover {
-            background: #f1f5f9;
-            color: var(--blue);
-        }
-
-        .btn-icon.delete:hover {
-            background: #fee2e2;
-            color: #ef4444;
-        }
-
-        .btn-icon[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-8px);
-            background: #1e293b;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            animation: tooltipFade 0.2s forwards;
-        }
-
-        @keyframes tooltipFade {
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(-4px);
-            }
-        }
-
-        /* TOOLTIP HELPER (?) */
-        .icon-help {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            color: #64748b;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: help;
-            margin-left: 6px;
-            position: relative;
-        }
-
-        .icon-help:hover::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-5px);
-            background: #1e293b;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            width: max-content;
-            max-width: 250px;
-            text-align: center;
-            pointer-events: none;
-            z-index: 10;
-            font-weight: normal;
-        }
-
-        /* ACCOUNT MODAL */
-        .account-select-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            text-align: left;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .account-select-btn:hover {
-            border-color: var(--blue);
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
-        }
-    </style>
 </head>
 
 <body>
@@ -481,266 +20,290 @@
     <section class="section" style="padding-top: 140px;">
         <div class="container">
 
-            <div class="card glass-static" style="margin-bottom: 32px; padding: 20px 32px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h1 style="font-size: 1.8rem; margin-bottom: 4px;">Tableau de bord</h1>
-                        <p class="muted" style="margin:0;">Bienvenue, <span id="user-email"
-                                style="font-weight:600; color:var(--ink);">...</span></p>
-                    </div>
-                    <div style="display:flex; gap:12px;">
-                        <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un nouveau
-                            récap</button>
-                        <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
+            <div id="dashboard-main">
+                <div class="card glass-static" style="margin-bottom: 32px; padding: 20px 32px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h1 style="font-size: 1.8rem; margin-bottom: 4px;">Tableau de bord</h1>
+                            <p class="muted" style="margin:0;">Bienvenue, <span id="user-email"
+                                    style="font-weight:600; color:var(--ink);">...</span></p>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn btn-secondary btn-small" onclick="openInstantRunModal()">⚡ Lancer
+                                maintenant</button>
+                            <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un
+                                nouveau
+                                récap</button>
+                            <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW LIST -->
-            <div id="view-list">
-                <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
-                    <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
-                        <h2 style="font-size: 1.8rem; margin:0;">Vos Profils de Récap</h2>
-                    </div>
-                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                        <table class="dashboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Source</th>
-                                    <th>Destinataire</th>
-                                    <th>Plage horaire</th>
-                                    <th>Envoi</th>
-                                    <th>Status</th>
-                                    <th style="min-width:100px; text-align:right;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="profiles-body">
-                                <tr>
-                                    <td colspan="6" style="text-align:center; padding: 40px;" class="muted">
-                                        Chargement...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- VIEW LIST -->
+                <div id="view-list">
+                    <div class="card glass-static" style="padding: 0; overflow:hidden; min-height: 300px;">
+                        <div style="padding: 24px 24px 12px; border-bottom: 1px solid rgba(148,163,184,.3);">
+                            <h2 style="font-size: 1.8rem; margin:0;">Vos Profils de Récap</h2>
+                        </div>
+                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <table class="dashboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Destinataire</th>
+                                        <th>Plage horaire</th>
+                                        <th>Envoi</th>
+                                        <th>Status</th>
+                                        <th style="min-width:100px; text-align:right;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="profiles-body">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding: 40px;" class="muted">
+                                            Chargement...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW EDITOR (Exhaustive) -->
-            <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
+                <!-- VIEW EDITOR (Exhaustive) -->
+                <div id="view-editor" style="display:none; max-width:900px; margin:0 auto;">
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                    <h2 style="margin:0;" id="editor-main-title">...</h2>
-                    <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
-                </div>
-
-                <form id="form-editor">
-                    <input type="hidden" id="f-account">
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">1. Informations Principales</h3>
-                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div>
-                                <label class="form-label">Destinataire du récap</label>
-                                <input type="email" id="f-recipient" class="form-input" required
-                                    placeholder="votre@email.com">
-                                <div class="form-helper">L'adresse qui recevra le résumé.</div>
-                            </div>
-                            <div>
-                                <label class="form-label">Heure d'envoi</label>
-                                <input type="time" id="f-schedule" class="form-input" required>
-                                <div class="form-helper">Quand voulez-vous recevoir l'email ?</div>
-                            </div>
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                        <h2 style="margin:0;" id="editor-main-title">...</h2>
+                        <button class="btn btn-ghost" onclick="hideEditor()" style="color:#ef4444;">Annuler</button>
                     </div>
 
-                    <div class="editor-section">
-                        <h3 class="editor-title">2. Période Analysée</h3>
-                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                            <div class="time-block">
-                                <h4>DÉBUT (De quand ?)</h4>
-                                <div style="display:flex; gap:12px;">
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
-                                        <input type="number" id="f-days-start" class="form-input" value="1" min="0"
-                                            max="30">
+                    <form id="form-editor">
+                        <input type="hidden" id="f-account">
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">1. Informations Principales</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div>
+                                    <label class="form-label">Destinataire du récap</label>
+                                    <input type="email" id="f-recipient" class="form-input" required
+                                        placeholder="votre@email.com">
+                                    <div class="form-helper">L'adresse qui recevra le résumé.</div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Heure d'envoi</label>
+                                    <input type="time" id="f-schedule" class="form-input" required>
+                                    <div class="form-helper">Quand voulez-vous recevoir l'email ?</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="editor-section">
+                            <h3 class="editor-title">2. Période Analysée</h3>
+                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                                <div class="time-block">
+                                    <h4>DÉBUT (De quand ?)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                            <input type="number" id="f-days-start" class="form-input" value="1" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="f-time-start" class="form-input" value="00:00">
+                                        </div>
                                     </div>
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                        <input type="time" id="f-time-start" class="form-input" value="00:00">
-                                    </div>
                                 </div>
-                            </div>
-                            <div class="time-block">
-                                <h4>FIN (Jusqu'à quand ?)</h4>
-                                <div style="display:flex; gap:12px;">
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
-                                        <input type="number" id="f-days-end" class="form-input" value="0" min="0"
-                                            max="30">
-                                    </div>
-                                    <div style="flex:1">
-                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                        <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                <div class="time-block">
+                                    <h4>FIN (Jusqu'à quand ?)</h4>
+                                    <div style="display:flex; gap:12px;">
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Jours arrière</label>
+                                            <input type="number" id="f-days-end" class="form-input" value="0" min="0"
+                                                max="30">
+                                        </div>
+                                        <div style="flex:1">
+                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                            <input type="time" id="f-time-end" class="form-input" value="23:59">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="editor-section">
-                        <h3 class="editor-title">3. Filtres & Intelligence</h3>
+                        <div class="editor-section">
+                            <h3 class="editor-title">3. Filtres & Intelligence</h3>
 
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                            <label class="form-label" style="margin:0;">Mode de Tri</label>
-                            <select id="f-sort" class="form-select" style="width:220px;" onchange="toggleCategoryUI()">
-                                <option value="date_desc">Chronologique (Classique)</option>
-                                <option value="priority">Priorité IA (Urgent d'abord)</option>
-                                <option value="category">Par Catégorie (Sujet)</option>
-                            </select>
-                        </div>
-
-                        <div id="ui-categories" class="category-manager" style="display:none; margin-bottom:24px;">
-                            <label class="form-label">Catégories actives</label>
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <div id="chips-categories" style="display:flex; gap:8px;">
-                                </div>
-                                <div class="add-cat-btn" onclick="alert('Fonctionnalité Bientôt Disponible')">＋</div>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-sender">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-filtre-sender" style="display:none;"></textarea>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-exclude">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-exclude-sender" style="display:none;"></textarea>
-                        </div>
-
-                        <div style="margin-bottom:16px;">
-                            <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
-                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                            <div class="chip-container" id="container-cc">
-                                <input type="text" class="chip-input" placeholder="Ajouter un email...">
-                            </div>
-                            <textarea id="f-filtre-cc" style="display:none;"></textarea>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
-                                <div class="muted" style="font-size:0.8rem;">Seuls les non-lus seront résumés.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-unread" class="toggle-input">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Marquer comme "Lu"</div>
-                                <div class="muted" style="font-size:0.8rem;">Une fois traité par l'IA.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-mark-read" class="toggle-input">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Anti-Spam (Microsoft Focused)</div>
-                                <div class="muted" style="font-size:0.8rem;">Filtrage de base des spams.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-spam" class="toggle-input" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem;">Cacher les Pubs & Newsletters (IA)
-                                </div>
-                                <div class="muted" style="font-size:0.8rem;">Filtrage intelligent des publicités.</div>
-                            </div>
-                            <label class="toggle-wrapper">
-                                <input type="checkbox" id="f-marketing" class="toggle-input" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="editor-section">
-                        <h3 class="editor-title">4. Audio & Synthèse</h3>
-                        <div class="grid-2"
-                            style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-                            <div>
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                    <span class="form-label" style="margin:0;">Générer Podcast Audio</span>
-                                    <label class="toggle-wrapper">
-                                        <input type="checkbox" id="f-audio" class="toggle-input" checked>
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                                <label class="form-label">Voix IA</label>
-                                <select id="f-voice" class="form-select">
-                                    <option value="alloy">Alloy (Neutre & Polyvalent)</option>
-                                    <option value="echo">Echo (Masculin & Doux)</option>
-                                    <option value="fable">Fable (Masculin & Narratif)</option>
-                                    <option value="onyx">Onyx (Masculin & Profond)</option>
-                                    <option value="nova">Nova (Féminin & Énergique)</option>
-                                    <option value="shimmer">Shimmer (Féminin & Calme)</option>
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <label class="form-label" style="margin:0;">Mode de Tri</label>
+                                <select id="f-sort" class="form-select" style="width:220px;"
+                                    onchange="toggleCategoryUI()">
+                                    <option value="date_desc">Chronologique (Classique)</option>
+                                    <option value="priority">Priorité IA (Urgent d'abord)</option>
+                                    <option value="category">Par Catégorie (Sujet)</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="form-label">Vitesse : <span id="speed-val"
-                                        style="color:var(--blue)">1.0x</span></label>
-                                <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
-                                    oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
-                                    style="margin-bottom:16px;">
 
-                                <label class="form-label">Langue du résumé</label>
-                                <select id="f-lang" class="form-select">
-                                    <option value="fr">Français</option>
-                                    <option value="en">Anglais</option>
-                                    <option value="auto">Détection Auto</option>
-                                </select>
+                            <div id="ui-categories" class="category-manager" style="display:none; margin-bottom:24px;">
+                                <label class="form-label">Catégories actives</label>
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <div id="chips-categories" style="display:flex; gap:8px;">
+                                    </div>
+                                    <div class="add-cat-btn" onclick="alert('Fonctionnalité Bientôt Disponible')">＋
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Whitelist (De qui ?) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-sender">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-filtre-sender" style="display:none;"></textarea>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Blacklist (Ignorer) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-exclude">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-exclude-sender" style="display:none;"></textarea>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">Seulement si en Copie (CC) <span class="icon-help"
+                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                                <div class="chip-container" id="container-cc">
+                                    <input type="text" class="chip-input" placeholder="Ajouter un email...">
+                                </div>
+                                <textarea id="f-filtre-cc" style="display:none;"></textarea>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Ignorer les emails déjà lus</div>
+                                    <div class="muted" style="font-size:0.8rem;">Seuls les non-lus seront résumés.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-unread" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Marquer comme "Lu"</div>
+                                    <div class="muted" style="font-size:0.8rem;">Une fois traité par l'IA.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-mark-read" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Anti-Spam (Microsoft Focused)</div>
+                                    <div class="muted" style="font-size:0.8rem;">Filtrage de base des spams.</div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-spam" class="toggle-input" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8fafc; border-radius:10px; margin-top:12px;">
+                                <div>
+                                    <div style="font-weight:600; font-size:0.95rem;">Cacher les Pubs & Newsletters (IA)
+                                    </div>
+                                    <div class="muted" style="font-size:0.8rem;">Filtrage intelligent des publicités.
+                                    </div>
+                                </div>
+                                <label class="toggle-wrapper">
+                                    <input type="checkbox" id="f-marketing" class="toggle-input" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
-                    </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
-                        <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
-                        <button type="button" class="btn btn-primary" id="btn-save"
-                            onclick="saveProfile()">ENREGISTRER</button>
-                    </div>
-                </form>
+                        <div class="editor-section">
+                            <h3 class="editor-title">4. Audio & Synthèse</h3>
+                            <div class="grid-2"
+                                style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
+                                <div>
+                                    <div
+                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                        <span class="form-label" style="margin:0;">Générer Podcast Audio</span>
+                                        <label class="toggle-wrapper">
+                                            <input type="checkbox" id="f-audio" class="toggle-input" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <label class="form-label">Voix IA</label>
+                                    <select id="f-voice" class="form-select">
+                                        <option value="alloy">Alloy (Neutre & Polyvalent)</option>
+                                        <option value="echo">Echo (Masculin & Doux)</option>
+                                        <option value="fable">Fable (Masculin & Narratif)</option>
+                                        <option value="onyx">Onyx (Masculin & Profond)</option>
+                                        <option value="nova">Nova (Féminin & Énergique)</option>
+                                        <option value="shimmer">Shimmer (Féminin & Calme)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Vitesse : <span id="speed-val"
+                                            style="color:var(--blue)">1.0x</span></label>
+                                    <input type="range" id="f-speed" min="0.5" max="2.0" step="0.1" value="1.0"
+                                        oninput="document.getElementById('speed-val').innerText = this.value + 'x'"
+                                        style="margin-bottom:16px;">
+
+                                    <label class="form-label">Langue du résumé</label>
+                                    <select id="f-lang" class="form-select">
+                                        <option value="fr">Français</option>
+                                        <option value="en">Anglais</option>
+                                        <option value="auto">Détection Auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                            <button type="button" class="btn btn-ghost" onclick="hideEditor()">Annuler</button>
+                            <button type="button" class="btn btn-primary" id="btn-save"
+                                onclick="saveProfile()">ENREGISTRER</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
+            <!-- FULLSCREEN RECAP VIEW -->
+            <div id="view-recap-fullscreen"
+                style="display:none; max-width:900px; margin:20px auto; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border-radius:16px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <h2 style="margin:0; color:#1e293b;">Dernier Récapitulatif</h2>
+                    <button class="btn btn-ghost" onclick="closeRecapView()"
+                        style="color:#ef4444; font-weight:bold;">Fermer ✕</button>
+                </div>
 
-        </div>
+                <div id="audio-player-container"
+                    style="display:none; background:#f1f5f9; padding:16px; border-radius:12px; margin-bottom:24px; align-items:center; gap:12px;">
+                    <span style="font-weight:600; color:#475569; font-size:1.2rem;">🎧</span>
+                    <audio id="recap-audio-player" controls style="flex:1; height:40px;"></audio>
+                </div>
+
+                <div id="view-recap-content"
+                    style="font-family:'Segoe UI', sans-serif; line-height:1.6; color:#334155;">
+                    Chargement...
+                </div>
+            </div>
     </section>
 
-    <div id="footer-placeholder"></div>
-
-    <script src="/api.js"></script>
-    <script src="main.js"></script>
 
     <div id="modal-account-select"
         style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(5px); z-index:100; align-items:center; justify-content:center;">
@@ -753,6 +316,42 @@
                 style="margin-top:24px; width:100%;">Annuler</button>
         </div>
     </div>
+
+
+
+    <div id="footer-placeholder"></div>
+
+    <div id="modal-run-options"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
+        <div class="card" style="width:100%; max-width:400px; padding:24px; background:white; border-radius:12px;">
+            <h3 style="margin-top:0;">⚡ Lancer un Récap</h3>
+
+            <label class="form-label" style="margin-top:16px;">Analyser depuis...</label>
+            <select id="run-hours" class="form-select" style="width:100%; padding:10px;">
+                <option value="12">Les dernières 12 heures</option>
+                <option value="24" selected>Les dernières 24 heures</option>
+                <option value="48">Les dernières 48 heures</option>
+                <option value="72">Les derniers 3 jours</option>
+            </select>
+
+            <label class="form-label" style="margin-top:16px;">Langue</label>
+            <select id="run-lang" class="form-select" style="width:100%; padding:10px;">
+                <option value="Français">Français</option>
+                <option value="Anglais">Anglais</option>
+            </select>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+                <button class="btn btn-ghost"
+                    onclick="document.getElementById('modal-run-options').style.display='none'">Annuler</button>
+                <button class="btn btn-primary" onclick="confirmInstantRun()">🚀 LANCER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="/api.js"></script>
+    <script src="main.js"></script>
+
 </body>
 
 </html>
