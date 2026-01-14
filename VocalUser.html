@@ -340,70 +340,33 @@
             });
         }
 
-        function recordAudio(silenceDelay = 3000, maxDuration = 20000) {
+        function recordAudio(ms) {
             return new Promise(async (resolve) => {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const audioContext = new AudioContext();
-                    const analyser = audioContext.createAnalyser();
-                    const microphone = audioContext.createMediaStreamSource(stream);
-                    const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-
-                    analyser.fftSize = 512;
-                    microphone.connect(analyser);
-                    analyser.connect(scriptProcessor);
-                    scriptProcessor.connect(audioContext.destination);
-
-                    const rec = new MediaRecorder(stream);
+                    // On force WebM qui est bien supporté
+                    const rec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
                     const chunks = [];
-                    let silenceStart = Date.now();
-                    let speaking = false; // Has user started speaking?
-
                     rec.ondataavailable = e => chunks.push(e.data);
+
                     rec.onstop = () => {
-                        try {
-                            scriptProcessor.disconnect();
-                            analyser.disconnect();
-                            microphone.disconnect();
-                            stream.getTracks().forEach(t => t.stop());
-                        } catch (e) { }
-                        resolve(new Blob(chunks, { type: 'audio/webm' }));
+                        const blob = new Blob(chunks, { type: 'audio/webm' });
+                        resolve(blob);
+                        try { stream.getTracks().forEach(track => track.stop()); } catch (e) { }
                     };
 
                     rec.start();
 
-                    // Securité MAX duration
-                    const maxTimeout = setTimeout(() => {
+                    // DURÉE ÉTENDUE À 8 SECONDES
+                    // Pour laisser le temps de dicter une réponse complète
+                    setTimeout(() => {
                         if (rec.state === "recording") rec.stop();
-                    }, maxDuration);
+                    }, 8000);
 
-                    scriptProcessor.onaudioprocess = function (event) {
-                        const array = new Uint8Array(analyser.frequencyBinCount);
-                        analyser.getByteFrequencyData(array);
-                        let values = 0;
-                        const length = array.length;
-                        for (let i = 0; i < length; i++) values += array[i];
-                        const average = values / length;
-
-                        // Seuil simple (a ajuster selon micro)
-                        if (average > 10) {
-                            silenceStart = Date.now();
-                            speaking = true;
-                        } else {
-                            // En silence
-                            // On coupe SEULEMENT si on a déjà parlé OU si le silence initial est très long (ex: 8s)
-                            if (speaking && (Date.now() - silenceStart > silenceDelay)) {
-                                clearTimeout(maxTimeout);
-                                if (rec.state === "recording") rec.stop();
-                            }
-                            else if (!speaking && (Date.now() - silenceStart > 8000)) {
-                                // Timeout silence initial
-                                clearTimeout(maxTimeout);
-                                if (rec.state === "recording") rec.stop();
-                            }
-                        }
-                    };
-                } catch (e) { console.error(e); resolve(null); }
+                } catch (e) {
+                    console.error(e);
+                    resolve(null);
+                }
             });
         }
 
