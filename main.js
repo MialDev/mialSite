@@ -454,11 +454,17 @@ window.loadProfiles = async function () {
                 <td>${plage}</td>
                 <td style="font-weight:600; color:var(--ink);">${sub(p.schedule_time)}</td>
                 <td>${statusPill}</td>
-                <td style="text-align:right;">
-                    <button class="action-btn" title="Voir le texte" style="margin-right:4px;" onclick="viewRecapText('${p.id}')">👁️</button>
-                    <button class="action-btn" title="Écouter" style="margin-right:8px;" onclick="playRecapAudio('${p.id}')">🔈</button>
-                    <button class="btn-icon" title="Modifier" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
-                    <button class="btn-icon delete" title="Supprimer" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
+                <td class="td-actions">
+                    <button class="action-btn btn-view-recap" title="Voir le texte" onclick="viewRecapText('${p.id}')">
+                        <span class="icon-emoji">👁️</span> <span class="btn-label-mobile">Lire</span>
+                    </button>
+                    <button class="action-btn btn-listen-recap" title="Écouter" onclick="playRecapAudio('${p.id}')">
+                         <span class="icon-emoji">🔈</span> <span class="btn-label-mobile">Écouter</span>
+                    </button>
+                    <div class="secondary-actions">
+                        <button class="btn-icon" title="Modifier" onclick="editProfile('${p.id}')">${ICON_EDIT}</button>
+                        <button class="btn-icon delete" title="Supprimer" onclick="deleteProfile('${p.id}')">${ICON_TRASH}</button>
+                    </div>
                 </td>
             </tr>`;
     }).join('');

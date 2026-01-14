@@ -22,19 +22,19 @@
 
             <div id="dashboard-main">
                 <div class="card glass-static" style="margin-bottom: 32px; padding: 20px 32px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="dashboard-header-row">
                         <div>
                             <h1 style="font-size: 1.8rem; margin-bottom: 4px;">Tableau de bord</h1>
                             <p class="muted" style="margin:0;">Bienvenue, <span id="user-email"
                                     style="font-weight:600; color:var(--ink);">...</span></p>
                         </div>
-                        <div style="display:flex; gap:12px;">
-                            <button class="btn btn-secondary btn-small" onclick="openInstantRunModal()">⚡ Lancer
-                                maintenant</button>
-                            <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ Configurer un
-                                nouveau
-                                récap</button>
-                            <button class="btn btn-ghost btn-small" onclick="location.reload()">Rafraîchir</button>
+                        <div class="dashboard-actions">
+                            <button class="btn btn-secondary btn-small" onclick="openInstantRunModal()">⚡ <span
+                                    class="btn-text">Lancer</span></button>
+                            <button class="btn btn-primary btn-small" onclick="handleCreateClick()">＋ <span
+                                    class="btn-text">Nouveau</span></button>
+                            <button class="btn btn-ghost btn-small btn-refresh" onclick="location.reload()"
+                                title="Rafraîchir">↻</button>
                         </div>
                     </div>
                 </div>
