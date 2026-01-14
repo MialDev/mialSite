@@ -1893,129 +1893,279 @@ p {
   }
 }
 
+/* --- VOCAL UI --- */
+.vocal-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+}
+
+.mic-btn-large {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--blue), #0ea5e9);
+  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  color: white;
+  transition: transform 0.2s, box-shadow 0.3s;
+  margin-bottom: 24px;
+}
+
+.mic-btn-large:active {
+  transform: scale(0.95);
+}
+
+/* États */
+.mic-btn-large.processing {
+  background: var(--muted);
+  animation: spin 2s linear infinite;
+}
+
+.mic-btn-large.processing svg {
+  display: none;
+}
+
+.mic-btn-large.processing::after {
+  content: "↻";
+  font-size: 2.5rem;
+}
+
+.mic-btn-large.playing {
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+.mic-btn-large.recording {
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 1.5s infinite;
+}
+
+.vocal-status {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+.vocal-user-info {
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
 /* =========================================================
    VOCAL UI (Refonte Design)
    ========================================================= */
 
 /* Layout de la carte Vocal */
 .vocal-card-content {
-    display: flex;
-    flex-direction: column;
-    height: 65vh; /* Hauteur fixe pour centrer */
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 65vh;
+  /* Hauteur fixe pour centrer */
+  position: relative;
 }
 
 .vocal-top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .user-badge {
-    background: rgba(56, 189, 248, 0.1);
-    color: var(--blue);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--blue);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Zone Centrale (Micro) */
 .vocal-center-stage {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
 }
 
 /* Le Gros Bouton Micro */
 .mic-btn-large {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--blue), #0ea5e9);
-    box-shadow: 0 15px 35px rgba(56, 189, 248, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3.5rem;
-    color: white;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    z-index: 10;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--blue), #0ea5e9);
+  box-shadow: 0 15px 35px rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  color: white;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  z-index: 10;
 }
 
-.mic-btn-large:hover { transform: scale(1.05); }
-.mic-btn-large:active { transform: scale(0.95); }
+.mic-btn-large:hover {
+  transform: scale(1.05);
+}
+
+.mic-btn-large:active {
+  transform: scale(0.95);
+}
 
 /* États du Micro */
-.mic-btn-large.processing { 
-    background: var(--muted); 
-    animation: spin 2s linear infinite; 
+.mic-btn-large.processing {
+  background: var(--muted);
+  animation: spin 2s linear infinite;
 }
-.mic-btn-large.processing::after { content: "↻"; font-size: 2.5rem; }
-.mic-btn-large.processing svg { display: none; }
+
+.mic-btn-large.processing::after {
+  content: "↻";
+  font-size: 2.5rem;
+}
+
+.mic-btn-large.processing svg {
+  display: none;
+}
 
 .mic-btn-large.playing {
-    background: #10b981; /* Vert */
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulse-green 2s infinite;
+  background: #10b981;
+  /* Vert */
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 2s infinite;
 }
 
 .mic-btn-large.recording {
-    background: #ef4444; /* Rouge */
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    animation: pulse-red 1.5s infinite;
+  background: #ef4444;
+  /* Rouge */
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 1.5s infinite;
 }
 
 /* Textes */
 .vocal-status-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--ink);
-    min-height: 1.5em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  min-height: 1.5em;
 }
 
 .vocal-subtext {
-    color: var(--muted);
-    font-size: 1rem;
-    max-width: 80%;
-    text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 80%;
+  text-align: center;
 }
 
 /* Boutons Actions (Settings / Logout) */
 .btn-circle-ghost {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    border: 1px solid rgba(0,0,0,0.1);
-    background: transparent;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 1.2rem;
-    color: var(--muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+  color: var(--muted);
 }
-.btn-circle-ghost:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+
+.btn-circle-ghost:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--ink);
+}
 
 /* Animations */
 @keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 25px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 25px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
+
 @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { box-shadow: 0 0 0 25px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 25px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
