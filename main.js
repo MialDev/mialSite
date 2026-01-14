@@ -1253,17 +1253,45 @@ window.triggerInstantRun = async function (id) {
 };
 
 window.viewRecapText = async function (id) {
-  // Appel API pour récupérer le contenu du buffer
+  const modal = document.getElementById('modal-view-recap');
+  const content = document.getElementById('view-recap-content');
+  if (modal) modal.showModal();
+  if (content) content.innerHTML = '<div style="text-align:center; color:#64748b;">Chargement...</div>';
+
   try {
     const res = await fetch(apiUrl(`/my/profiles/${id}/buffer`), { credentials: 'include' });
     if (!res.ok) throw new Error("Pas de récap disponible");
     const items = await res.json();
 
-    // Affichage simple (alert pour l'instant ou modale custom)
-    let text = items.map(i => `• ${i.subject} (${i.category})\n${i.summary}`).join('\n\n');
-    if (!text) text = "Aucun email dans le dernier récap.";
-    alert(text);
-  } catch (e) { alert(e.message); }
+    if (!items || items.length === 0) {
+      content.innerHTML = '<div style="text-align:center; padding:20px;">Aucun email dans le dernier récap.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      // Couleurs basées sur priorité/catégorie
+      let borderCol = '#cbd5e1'; // Gris défaut
+      let bgCol = '#fff';
+
+      if (item.priority >= 4 || item.category === 'ACTION') { borderCol = '#ef4444'; bgCol = '#fef2f2'; } // Rouge
+      else if (item.category === 'MEETING') { borderCol = '#f59e0b'; bgCol = '#fffbeb'; } // Orange
+      else if (item.category === 'INFO') { borderCol = '#3b82f6'; bgCol = '#eff6ff'; } // Bleu
+
+      html += `
+            <div style="border-left:4px solid ${borderCol}; background:${bgCol}; padding:12px; margin-bottom:12px; border-radius:4px;">
+                <div style="font-weight:700; color:#1e293b; margin-bottom:4px;">
+                    [${item.category}] ${escapeHtml(item.subject)}
+                </div>
+                <div style="font-size:0.85rem; color:#64748b; margin-bottom:8px;">De: ${escapeHtml(item.sender)}</div>
+                <div style="color:#334155;">${escapeHtml(item.summary)}</div>
+            </div>`;
+    });
+    content.innerHTML = html;
+
+  } catch (e) {
+    if (content) content.innerHTML = `<div style="color:red; text-align:center;">${e.message}</div>`;
+  }
 };
 
 window.playRecapAudio = function (id) {
@@ -1277,26 +1305,36 @@ window.openInstantRunModal = function () {
     alert("Aucun profil configuré.");
     return;
   }
-  if (window.PROFILES_BY_ID.size === 1) {
+  const profiles = Array.from(window.PROFILES_BY_ID.values());
+
+  if (profiles.length === 1) {
     // Un seul profil -> Lancement direct
-    const pid = window.PROFILES_BY_ID.keys().next().value;
-    if (confirm("Lancer l'analyse maintenant pour ce profil ?")) {
-      window.triggerInstantRun(pid);
+    const p = profiles[0];
+    if (confirm(`Lancer l'analyse maintenant pour ${p.recap_recipient} ?`)) {
+      window.triggerInstantRun(p.id);
     }
   } else {
     // Plusieurs profils -> Modale simplifiée (reuse account-select logic or native prompt)
-    // Pour faire simple et robuste sans nouveau HTML :
     let msg = "Quel profil lancer ?\n";
-    const pArray = Array.from(window.PROFILES_BY_ID.values());
-    pArray.forEach((p, index) => {
-      msg += `[${index + 1}] ${p.recap_recipient} (${p.heure_debut}-${p.heure_fin})\n`;
+    profiles.forEach((p, index) => {
+      msg += `[${index + 1}] ${p.recap_recipient} (${p.schedule_time})\n`;
     });
     const choice = prompt(msg + "\nEntrez le numéro :");
     if (choice) {
       const idx = parseInt(choice) - 1;
-      if (pArray[idx]) {
-        window.triggerInstantRun(pArray[idx].id);
+      if (profiles[idx]) {
+        window.triggerInstantRun(profiles[idx].id);
       }
     }
   }
 };
+
+function escapeHtml(text) {
+  if (!text) return text;
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
