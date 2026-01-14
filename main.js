@@ -1253,16 +1253,17 @@ window.triggerInstantRun = async function (id) {
 };
 
 // --- GESTION VUE RECAP ---
+// --- GESTION VUE RECAP ---
 window.viewRecapText = async function (id) {
-  // 1. Switch View
-  const mainDash = document.getElementById('dashboard-main');
-  const fullView = document.getElementById('view-recap-fullscreen');
+  // Basculer l'affichage
+  const dash = document.getElementById('dashboard-main');
+  const view = document.getElementById('view-recap-fullscreen');
 
-  if (mainDash) mainDash.style.display = 'none';
-  if (fullView) fullView.style.display = 'block';
+  if (dash) dash.style.display = 'none';
+  if (view) view.style.display = 'block';
 
   const content = document.getElementById('view-recap-content');
-  if (content) content.innerHTML = '<div style="text-align:center; color:#64748b; padding:40px;">Chargement du récapitulatif...</div>';
+  if (content) content.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Chargement des données...</div>';
 
   // Reset Audio
   const audContainer = document.getElementById('audio-player-container');
@@ -1270,39 +1271,39 @@ window.viewRecapText = async function (id) {
 
   try {
     const res = await fetch(apiUrl(`/my/profiles/${id}/buffer`), { credentials: 'include' });
-    if (!res.ok) throw new Error("Pas de récap disponible");
+    if (!res.ok) throw new Error("Impossible de récupérer le récap.");
     const items = await res.json();
 
     if (!items || items.length === 0) {
-      content.innerHTML = '<div style="text-align:center; padding:40px;">📭 Aucun email dans le dernier récap.</div>';
+      content.innerHTML = '<div style="text-align:center; padding:40px;">📭 Aucun email dans le dernier récapitulatif.</div>';
       return;
     }
 
     let html = '';
     items.forEach(item => {
-      // Couleurs
-      let borderCol = '#cbd5e1';
-      let bgCol = '#fff';
+      // Logique de couleur (Tailwind-like colors)
+      let border = '4px solid #cbd5e1';
+      let bg = '#fff';
       let badge = '';
 
       if (item.category === 'ACTION' || item.priority >= 4) {
-        borderCol = '#ef4444'; bgCol = '#fef2f2'; badge = '🔥 IMPORTANT';
+        border = '4px solid #ef4444'; bg = '#fef2f2'; badge = '🔥 ACTION';
       } else if (item.category === 'MEETING') {
-        borderCol = '#f59e0b'; bgCol = '#fffbeb'; badge = '📅 REUNION';
+        border = '4px solid #f59e0b'; bg = '#fffbeb'; badge = '📅 RÉUNION';
       } else if (item.category === 'INFO') {
-        borderCol = '#3b82f6'; bgCol = '#eff6ff'; badge = 'ℹ️ INFO';
+        border = '4px solid #3b82f6'; bg = '#eff6ff'; badge = 'ℹ️ INFO';
       }
 
       html += `
-            <div style="border-left:4px solid ${borderCol}; background:${bgCol}; padding:20px; margin-bottom:16px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <strong style="color:#1e293b; font-size:1.1rem;">${escapeHtml(item.subject)}</strong>
-                    ${badge ? `<span style="font-size:0.75rem; font-weight:700; color:${borderCol}; background:#fff; padding:2px 8px; border-radius:12px; border:1px solid ${borderCol};">${badge}</span>` : ''}
+            <div style="border-left:${border}; background:${bg}; padding:20px; margin-bottom:16px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                    <strong style="color:#0f172a; font-size:1.1rem;">${escapeHtml(item.subject || '(Sans objet)')}</strong>
+                    ${badge ? `<span style="background:#fff; border:1px solid currentColor; color:${border.split(' ')[2]}; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:12px;">${badge}</span>` : ''}
                 </div>
-                <div style="font-size:0.9rem; color:#64748b; margin-bottom:12px;">
-                    De: <strong>${escapeHtml(item.sender)}</strong>
+                <div style="font-size:0.9rem; color:#64748b; margin-bottom:12px; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:8px;">
+                    De: <strong>${escapeHtml(item.sender || 'Inconnu')}</strong>
                 </div>
-                <div style="color:#334155; line-height:1.6;">${escapeHtml(item.summary)}</div>
+                <div style="color:#334155;">${escapeHtml(item.summary)}</div>
             </div>`;
     });
     content.innerHTML = html;
@@ -1314,8 +1315,10 @@ window.viewRecapText = async function (id) {
 
 window.closeRecapView = function () {
   document.getElementById('view-recap-fullscreen').style.display = 'none';
-  document.getElementById('dashboard-main').style.display = 'block';
-  // Stop audio if playing
+  const dash = document.getElementById('dashboard-main');
+  if (dash) dash.style.display = 'block';
+
+  // Stop Audio
   const player = document.getElementById('recap-audio-player');
   if (player) { player.pause(); player.currentTime = 0; }
 };
@@ -1336,30 +1339,39 @@ window.playRecapAudio = async function (id) {
   player.play().catch(e => alert("Impossible de lancer l'audio (Fichier manquant ?)"));
 };
 
-window.openInstantRunModal = function () {
+window.openInstantRunModal = async function () {
+  // Tentative de rechargement si vide
   if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
-    alert("Aucun profil configuré.");
+    if (window.loadProfiles) {
+      // Petit feedback visuel ou console
+      console.log("Loading profiles for instant run...");
+      await window.loadProfiles();
+    }
+  }
+
+  if (!window.PROFILES_BY_ID || window.PROFILES_BY_ID.size === 0) {
+    alert("Aucun profil configuré. Veuillez en créer un d'abord.");
     return;
   }
+
   const profiles = Array.from(window.PROFILES_BY_ID.values());
 
   if (profiles.length === 1) {
-    // Un seul profil -> Lancement direct
     const p = profiles[0];
     if (confirm(`Lancer l'analyse maintenant pour ${p.recap_recipient} ?`)) {
       window.triggerInstantRun(p.id);
     }
   } else {
-    // Plusieurs profils -> Modale simplifiée (reuse account-select logic or native prompt)
-    let msg = "Quel profil lancer ?\n";
-    profiles.forEach((p, index) => {
-      msg += `[${index + 1}] ${p.recap_recipient} (${p.schedule_time})\n`;
+    // Menu de sélection simple et efficace
+    let msg = "Choisissez le profil à lancer :\n";
+    profiles.forEach((p, idx) => {
+      msg += `${idx + 1}. ${p.recap_recipient} (${p.heure_debut}-${p.heure_fin})\n`;
     });
     const choice = prompt(msg + "\nEntrez le numéro :");
     if (choice) {
-      const idx = parseInt(choice) - 1;
-      if (profiles[idx]) {
-        window.triggerInstantRun(profiles[idx].id);
+      const index = parseInt(choice) - 1;
+      if (profiles[index]) {
+        window.triggerInstantRun(profiles[index].id);
       }
     }
   }
