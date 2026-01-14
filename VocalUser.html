@@ -38,13 +38,14 @@
 
                     <div id="status-display" class="vocal-status">Appuyez pour parler</div>
                     <div id="actionFeedback" style="
-                        margin-top: 10px; 
-                        font-size: 0.95rem; 
+                        margin-top: 15px; 
+                        font-size: 1.1rem; 
                         color: #0ea5e9; 
-                        font-weight: 600; 
-                        height: 20px; 
+                        font-weight: 700; 
+                        min-height: 24px; 
                         opacity: 0;
-                        transition: opacity 0.3s;">
+                        transition: opacity 0.5s ease;
+                        text-shadow: 0 0 15px rgba(14,165,233, 0.3);">
                     </div>
                     <div id="transcript-display" style="color:var(--muted); min-height:1.2em;"></div>
                 </div>
@@ -330,10 +331,19 @@
 
                 // --- FEEDBACK VISUEL ---
                 const fbText = res.headers.get("X-Action-Feedback");
+                console.log("📥 Feedback Header Received:", fbText); // DEBUG
+
                 const fbDiv = document.getElementById("actionFeedback");
                 if (fbText && fbDiv) {
-                    try { fbDiv.innerText = decodeURIComponent(fbText); } catch (e) { fbDiv.innerText = fbText; }
+                    try {
+                        fbDiv.innerText = decodeURIComponent(fbText);
+                    } catch (e) {
+                        console.warn("Decoding failed:", e);
+                        fbDiv.innerText = fbText;
+                    }
                     fbDiv.style.opacity = 1;
+
+                    // Hide after 5 sec
                     setTimeout(() => { fbDiv.style.opacity = 0; }, 5000);
                 }
                 // -----------------------
