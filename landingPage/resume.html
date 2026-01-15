@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIAL Résumé - Votre synthèse matinale</title>
+    <link rel="stylesheet" href="landing.css">
+    <!-- Favicon reuse -->
+    <link rel="icon" type="image/svg+xml" href="../assets/logos/logo-mial-small-color.svg">
+</head>
+
+<body data-source="landing_resume">
+
+    <!-- Minimal Logo Header -->
+    <div class="landing-header">
+        <img src="../assets/logos/logo-mial-small-color.svg" alt="Mial Logo" style="height: 32px;">
+    </div>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-card">
+            <h1 class="hero-title">Le résumé audio de vos emails, chaque matin</h1>
+            <p class="hero-subtitle">MIAL résume et priorise vos emails pour vous donner l’essentiel en quelques
+                minutes. Ne ratez plus rien.</p>
+
+            <div class="features-list">
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </span>
+                    <span>Résumé vocal des emails importants</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                            </polygon>
+                        </svg>
+                    </span>
+                    <span>Priorisation automatique par IA</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                    </span>
+                    <span>Moins de charge mentale</span>
+                </div>
+            </div>
+
+            <div class="cta-group">
+                <a href="#" class="btn-primary-lg open-modal-btn">Essayer gratuitement</a>
+                <a href="https://www.mial.be/Resume.html" class="link-secondary">En savoir plus</a>
+            </div>
+
+            <div class="trust-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span>Données sécurisées • Activation rapide • Test gratuit</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL POPUP (Reused Structure) -->
+    <div id="lead-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="close-modal">&times;</button>
+
+            <div id="form-container">
+                <h2 style="margin-top:0; font-size:1.5rem; margin-bottom:12px; color:#0f172a;">Tester MIAL Résumé</h2>
+                <p style="color:#64748b; font-size:0.95rem; margin-bottom:24px;">Nous cherchons des testeurs pour la
+                    version résumé audio. Laissez vos infos.</p>
+
+                <form id="lead-form">
+                    <div class="form-group">
+                        <label class="form-label">Email*</label>
+                        <input type="email" name="email" class="form-input" required placeholder="votre@email.com">
+                    </div>
+
+                    <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div class="form-group">
+                            <label class="form-label">Prénom</label>
+                            <input type="text" name="first_name" class="form-input" placeholder="Jean">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" name="phone" class="form-input" placeholder="06...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Votre profil</label>
+                        <select name="profile_type" class="form-select">
+                            <option value="">Sélectionner...</option>
+                            <option value="Dirigeant">Dirigeant PME</option>
+                            <option value="Commercial">Commercial / Terrain</option>
+                            <option value="Admistratif">Administratif</option>
+                            <option value="Independant">Indépendant</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message (optionnel)</label>
+                        <textarea name="message" class="form-textarea" rows="2"
+                            placeholder="Ex: Volume d'emails..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary-lg"
+                        style="width:100%; border-radius:12px; font-size:1rem;">Être recontacté</button>
+                </form>
+            </div>
+
+            <div id="success-message" class="success-message">
+                <span class="success-icon">🎉</span>
+                <h3 style="margin:0.5em 0;">Merci !</h3>
+                <p>Vos informations ont bien été reçues.<br>Nous vous recontacterons très rapidement.</p>
+                <button class="btn-primary-lg" onclick="document.querySelector('.close-modal').click()"
+                    style="margin-top:20px; padding:10px 30px; font-size:0.9rem;">Fermer</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="landing.js"></script>
+</body>
+
+</html>
