@@ -14,64 +14,125 @@
 
     <!-- Minimal Logo Header -->
     <div class="landing-header">
-        <img src="../assets/logos/logo-mial-small-color.svg" alt="Mial Logo" style="height: 32px;">
+        <img src="../assets/logos/logo-mial-small-color.svg" alt="Mial Logo" style="height: 50px;">
     </div>
 
     <!-- HERO SECTION -->
-    <section class="hero-section">
-        <div class="hero-card">
-            <h1 class="hero-title">Le résumé audio de vos emails, chaque matin</h1>
-            <p class="hero-subtitle">MIAL résume et priorise vos emails pour vous donner l’essentiel en quelques
-                minutes. Ne ratez plus rien.</p>
+    <section class="hero-section" style="flex-direction: column;">
 
-            <div class="features-list">
-                <div class="feature-item">
-                    <span class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                    </span>
-                    <span>Résumé vocal des emails importants</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon
-                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                            </polygon>
-                        </svg>
-                    </span>
-                    <span>Priorisation automatique par IA</span>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                            <path d="M12 6v6l4 2"></path>
-                        </svg>
-                    </span>
-                    <span>Moins de charge mentale</span>
+        <h2 class="promo-title">
+            Le <span>résumé audio</span> de vos emails, chaque matin
+            <!-- Le résumé audio de vos emails, <span>chaque matin</span>-->
+            <!-- Le <span>podcast</span> qui résume vos emails, chaque matin-->
+        </h2>
+        <p class="lead" style="font-size: 1.2rem;">
+            MIAL résume et priorise vos emails pour vous donner l’essentiel en quelques minutes. Ne ratez plus rien.
+        </p>
+
+        <div class="hero-split">
+            <!-- Phone mock (gauche) -->
+            <div class="lp-phone-mock">
+                <div class="lp-phone-device">
+
+                    <!-- Side buttons (real elements, no pseudo) -->
+                    <div class="lp-phone-side lp-phone-side-left">
+                        <span class="lp-phone-side-btn lp-phone-side-btn-1"></span>
+                        <span class="lp-phone-side-btn lp-phone-side-btn-2"></span>
+                    </div>
+                    <div class="lp-phone-side lp-phone-side-right">
+                        <span class="lp-phone-side-btn lp-phone-side-btn-3"></span>
+                    </div>
+
+                    <!-- Screen -->
+                    <div class="lp-phone-screen">
+                        <!-- App UI -->
+                        <div class="lp-phone-app">
+
+                            <div class="lp-phone-content-card">
+                                <div class="lp-phone-header">
+                                    <div class="lp-phone-header-title" id="lp-phone-title">...</div>
+                                    <div class="lp-phone-header-date" id="lp-phone-date">...</div>
+                                </div>
+
+                                <div class="lp-phone-audio">
+                                    <div class="lp-phone-audio-row">
+                                        <span class="lp-phone-audio-icon">🎧</span>
+                                        <audio class="lp-phone-audio-player" id="lp-phone-audio" controls>
+                                            <source id="lp-phone-audio-src" src="" type="audio/mpeg">
+                                        </audio>
+                                    </div>
+                                </div>
+
+                                <div class="lp-phone-mails" id="lp-phone-mails">
+                                    <!-- injected by JS -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- iOS home indicator -->
+                        <div class="lp-phone-home-indicator"></div>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="cta-group">
-                <a href="#" class="btn-primary-lg open-modal-btn">Essayer gratuitement</a>
-                <a href="https://www.mial.be/Resume.html" class="link-secondary">En savoir plus</a>
-            </div>
+            <!-- Glass tile (droite) -->
+            <div class="glass-tile" style="max-width: 550px; width: 90%;">
 
-            <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-                <span>Données sécurisées • Activation rapide • Test gratuit</span>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </span>
+                        <span>Commencez la journée serein</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                                </polygon>
+                            </svg>
+                        </span>
+                        <span>Fini le stress des emails et des oublis</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z">
+                                </path>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                        </span>
+                        <span>Écoutez seulement ce qui compte</span>
+                    </div>
+                </div>
+
+                <div class="cta-group">
+                    <a href="#" class="btn-primary-lg open-modal-btn">Essayer gratuitement</a>
+                    <a href="https://www.mial.be/Resume.html" class="link-secondary">En savoir plus</a>
+                </div>
+
+                <div class="trust-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Données sécurisées • Activation rapide • Test gratuit</span>
+                </div>
             </div>
         </div>
     </section>

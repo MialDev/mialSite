@@ -18,11 +18,66 @@
     </div>
 
     <!-- HERO SECTION -->
-    <section class="hero-section">
-        <div class="hero-card">
-            <h1 class="hero-title">Traitez et répondez à vos emails pendant vos trajets</h1>
-            <p class="hero-subtitle">Mial vous permet de gérer vos emails par la voix, en voiture, sans jamais regarder
-                votre écran.</p>
+    <section class="hero-section" style="flex-direction: column;">
+
+        <h2 class="promo-title">
+            Traitez et répondez à vos emails <span>pendant vos trajets</span>
+        </h2>
+        <p class="lead" style="font-size: 1.2rem;">
+            Mial vous permet de gérer vos emails par la voix, en voiture, sans ouvrir votre boîte mail.
+        </p>
+
+        <div class="hero-split">
+            <!-- Phone mock (gauche) -->
+            <div class="lp-phone-mock">
+                <div class="lp-phone-device">
+
+                    <!-- Side buttons (real elements, no pseudo) -->
+                    <div class="lp-phone-side lp-phone-side-left">
+                        <span class="lp-phone-side-btn lp-phone-side-btn-1"></span>
+                        <span class="lp-phone-side-btn lp-phone-side-btn-2"></span>
+                    </div>
+                    <div class="lp-phone-side lp-phone-side-right">
+                        <span class="lp-phone-side-btn lp-phone-side-btn-3"></span>
+                    </div>
+
+                    <!-- Screen -->
+                    <div class="lp-phone-screen">
+                        <!-- App UI -->
+                        <div class="lp-phone-app">
+
+                            <div class="lp-phone-content-card">
+                                <div class="lp-phone-header">
+                                    <div class="lp-phone-header-title" id="lp-phone-title">...</div>
+                                    <div class="lp-phone-header-date" id="lp-phone-date">...</div>
+                                </div>
+
+                                <div class="lp-phone-audio">
+                                    <div class="lp-phone-audio-row">
+                                        <span class="lp-phone-audio-icon">🎧</span>
+                                        <audio class="lp-phone-audio-player" id="lp-phone-audio" controls>
+                                            <source id="lp-phone-audio-src" src="" type="audio/mpeg">
+                                        </audio>
+                                    </div>
+                                </div>
+
+                                <div class="lp-phone-mails" id="lp-phone-mails">
+                                    <!-- injected by JS -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- iOS home indicator -->
+                        <div class="lp-phone-home-indicator"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Glass tile (droite) -->
+        <div class="glass-tile" style="max-width: 550px; width: 90%;">
 
             <div class="features-list">
                 <div class="feature-item">
@@ -74,6 +129,7 @@
                 </svg>
                 <span>Données sécurisées • Activation rapide • Test gratuit</span>
             </div>
+        </div>
         </div>
     </section>
 

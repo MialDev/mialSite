@@ -1,106 +1,129 @@
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Tracking Init
-    console.log("Landing Page Loaded");
-    
-    // Modal Logic
-    const modal = document.getElementById('lead-modal');
-    const openBtns = document.querySelectorAll('.open-modal-btn');
-    const closeBtn = document.querySelector('.close-modal');
-    const form = document.getElementById('lead-form');
-    const successMsg = document.getElementById('success-message');
-    const formContainer = document.getElementById('form-container');
 
-    function openModal() {
-        modal.classList.add('active');
-        // Simple event tracking
-        if(window.gtag) window.gtag('event', 'lp_open_modal');
-        console.log("Event: lp_open_modal");
-    }
-
-    function closeModal() {
-        modal.classList.remove('active');
-    }
-
-    openBtns.forEach(btn => btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal();
-    }));
-
-    closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-    });
-
-    // Form Submission
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-        btn.disabled = true;
-        btn.innerText = "Envoi...";
-
-        const formData = new FormData(form);
-        const payload = {
-            email: formData.get('email'),
-            first_name: formData.get('first_name'),
-            phone: formData.get('phone'), // Optional
-            profile_type: formData.get('profile_type'), 
-            message: formData.get('message'),
-            source: document.body.dataset.source || 'landing_generic',
-            user_agent: navigator.userAgent
-        };
-
-        try {
-            // API CALL
-            // Utilisation de l'URL absolue ou relative selon le déploiement.
-            // On suppose que portal-api est servi sur le même domaine via proxy ou directement.
-            // Si dev local: http://localhost:8000/public/lead
-            // Mais l'user a demandé un code générique.
-            
-            // Tentative detection API
-            const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://localhost:8000' 
-                : ''; // Relative path on production if same domain
-            
-            const endpoint = `${API_BASE}/public/lead`;
-            
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                // Success UI
-                formContainer.style.display = 'none';
-                successMsg.style.display = 'block';
-                
-                // Track
-                if(window.gtag) window.gtag('event', 'lp_submit_form');
-                console.log("Event: lp_submit_form");
-                
-            } else {
-                alert("Une erreur est survenue. Veuillez réessayer.");
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
-
-        } catch (err) {
-            console.error(err);
-            // Fallback LocalStorage si API fail (pour ne pas perdre le lead en dev)
-            const leads = JSON.parse(localStorage.getItem('mial_leads_backup') || '[]');
-            leads.push({...payload, date: new Date().toISOString()});
-            localStorage.setItem('mial_leads_backup', JSON.stringify(leads));
-            
-            // Show success anyway to user
-            formContainer.style.display = 'none';
-            successMsg.style.display = 'block';
+    const PHONE_DEMOS = {
+        landing_resume: {
+            title: "Smart Récap", // or hidden
+            mails: [
+                {
+                    type: "action",
+                    title: "Infos manquantes",
+                    from: "Marc",
+                    body: "Peux-tu remplir le document demandé avant demain.",
+                    tag: "🔥 ACTION"
+                },
+                {
+                    type: "meeting",
+                    title: "Réunion comptable",
+                    from: "Sophie",
+                    body: "Peux-tu proposer un créneau de 15 minutes pour la réunion avec le comptable.",
+                    tag: "📅 MEETING"
+                },
+                {
+                    type: "info",
+                    title: "Absence fin de semaine",
+                    from: "Cathy",
+                    body: "Je ne serai pas là en fin de semaine.",
+                    tag: "ℹ️ INFO"
+                },
+                {
+                    type: "pub",
+                    title: "Tester MIAL Vocal",
+                    from: "MIAL",
+                    body: "Teste Mial vocal gratuitement.",
+                    tag: "🏷️ PUB"
+                }
+            ],
+            audioSrc: "assets/audio/landingPage_demo.mp3"
+        },
+        landing_vocal: {
+            title: "Commande Vocale",
+            mails: [
+                {
+                    type: "action",
+                    title: "Infos manquantes",
+                    from: "Marc",
+                    body: "Peux-tu remplir le document demandé avant demain.",
+                    tag: "🔥 ACTION"
+                },
+                {
+                    type: "meeting",
+                    title: "Réunion comptable",
+                    from: "Sophie",
+                    body: "Peux-tu proposer un créneau de 15 minutes pour la réunion avec le comptable.",
+                    tag: "📅 MEETING"
+                },
+                {
+                    type: "info",
+                    title: "Absence fin de semaine",
+                    from: "Cathy",
+                    body: "Je ne serai pas là en fin de semaine.",
+                    tag: "ℹ️ INFO"
+                },
+                {
+                    type: "pub",
+                    title: "Tester MIAL Vocal",
+                    from: "MIAL",
+                    body: "Teste Mial vocal gratuitement.",
+                    tag: "🏷️ PUB"
+                }
+            ],
+            audioSrc: "assets/audio/landingPage_demo.mp3"
         }
-    });
+    };
+
+    // 1. Detect Source
+    const source = document.body.dataset.source;
+    if (!source || !PHONE_DEMOS[source]) {
+        console.warn("No valid data-source found on body for Phone Mock.");
+        return;
+    }
+
+    const data = PHONE_DEMOS[source];
+
+    // 2. Inject Date
+    const dateEl = document.getElementById('lp-phone-date');
+    if (dateEl) {
+        const today = new Date();
+        const dateString = today.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        // Capitalize month if desired, or keep lowercase as per prompt example "16 janvier"
+        dateEl.textContent = `Dernier récap — ${dateString}`;
+    }
+
+    // 3. Audio
+    const audioPlayer = document.getElementById('lp-phone-audio');
+    const audioSrc = document.getElementById('lp-phone-audio-src');
+    if (audioPlayer && audioSrc) {
+        audioSrc.src = data.audioSrc;
+        audioPlayer.load(); // Reload audio element to apply new src
+
+        // Debug error
+        audioPlayer.addEventListener('error', (e) => {
+            console.warn("Audio load error:", e, audioPlayer.error);
+        });
+    }
+
+    // 4. Mails
+    const mailsContainer = document.getElementById('lp-phone-mails');
+    if (mailsContainer && data.mails) {
+        mailsContainer.innerHTML = ''; // Clear
+        data.mails.forEach(mail => {
+            const card = document.createElement('div');
+            card.className = `lp-mail-card type-${mail.type}`;
+
+            // Map type to tag class
+            const tagClass = `lp-tag-${mail.type}`;
+
+            card.innerHTML = `
+                <div class="lp-mail-top">
+                    <div class="lp-mail-title">${mail.title}</div>
+                    <div class="lp-mail-tag ${tagClass}">${mail.tag}</div>
+                </div>
+                <div class="lp-mail-from">De: ${mail.from}</div>
+                <div class="lp-mail-body">${mail.body}</div>
+            `;
+            mailsContainer.appendChild(card);
+        });
+    }
+
 });

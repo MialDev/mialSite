@@ -1,244 +1,751 @@
+:root {
+  --blue: #38bdf8;
+  --pink: #fb7185;
+  --ink: #0b1220;
+  --muted: #4b5563;
+  --bg-gradient: radial-gradient(1100px 550px at 10% 0%, rgba(56, 189, 248, .35), transparent),
+    radial-gradient(1100px 550px at 90% 0%, rgba(251, 113, 133, .35), transparent),
+    linear-gradient(#e6edf9, #fdf2f8);
+
+  /* LP Phone UI Colors */
+  --lp-action: var(--pink);
+  /* was #fb7185 */
+  --lp-meeting: #fb923c;
+  /* consistent orange */
+  --lp-info: var(--blue);
+  /* was #38bdf8 */
+  --lp-pub: #22c55e;
+  /* fresh green */
+
+  /* LP Soft Backgrounds (very light) */
+  --lp-action-soft: rgba(251, 113, 133, 0.08);
+  --lp-meeting-soft: rgba(251, 146, 60, 0.08);
+  --lp-info-soft: rgba(56, 189, 248, 0.08);
+  --lp-pub-soft: rgba(34, 197, 94, 0.08);
+}
+
 /* Reuse main style */
 @import url("../style.css");
 
 /* Overrides for Landing Page - Removal of Nav/Footer */
 body {
-    background: #f8fafc;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  background: var(--bg-gradient);
+  padding: 0 !important;
+  /* Override potential mobile override */
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-#site-header, header, .nav {
-    display: none !important;
+/* Removed Inbox Tile Styles as requested */
+
+/* Main Title Outside Card */
+/* Main Title Outside Card */
+.promo-title {
+  font-size: 3rem;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  max-width: 800px;
+  padding: 0 20px;
 }
 
-#footer, footer {
-    display: none !important;
+.promo-title span {
+  background: linear-gradient(90deg, #3bdbda, #38bdf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lead-text {
+  font-size: 1.25rem;
+  color: var(--muted);
+  text-align: center;
+  max-width: 600px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+  padding: 0 20px;
+}
+
+/* Old Card Layout Removed */
+
+#site-header,
+header,
+.nav {
+  display: none !important;
+}
+
+#footer,
+footer {
+  display: none !important;
 }
 
 /* Minimal Header for Logo Only */
 .landing-header {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
 }
 
 /* Hero Centered */
 .hero-section {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    text-align: center;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
 }
 
-.hero-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 24px;
-    padding: 40px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.hero-title {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 16px;
-    color: #0f172a;
-    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.hero-subtitle {
-    font-size: 1.1rem;
-    color: #64748b;
-    margin-bottom: 32px;
-    line-height: 1.6;
-}
+/* Hero Title Removed (replaced by promo-title) */
 
 .features-list {
-    text-align: left;
-    margin-bottom: 32px;
-    display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers items */
+  gap: 16px;
+  margin-bottom: 32px;
+  width: 100%;
 }
 
 .feature-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    color: #334155;
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Centers icon and text */
+  gap: 12px;
+  margin-bottom: 0;
+  color: #334155;
+  font-weight: 500;
 }
 
 .feature-icon {
-    color: #3b82f6;
-    flex-shrink: 0;
+  display: flex;
+  color: #3b82f6;
+  flex-shrink: 0;
 }
 
 .cta-group {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
 }
 
 .btn-primary-lg {
-    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
-    color: white;
-    padding: 16px 48px;
-    border-radius: 100px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-decoration: none;
-    display: inline-block;
+  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+  color: white;
+  padding: 16px 48px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-primary-lg:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
 }
 
 .link-secondary {
-    color: #64748b;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.2s;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .link-secondary:hover {
-    color: #0f172a;
-    text-decoration: underline;
+  color: #0f172a;
+  text-decoration: underline;
 }
 
 .trust-badge {
-    margin-top: 32px;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+  margin-top: 32px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 /* Modal Overlay */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .modal-overlay.active {
-    display: flex;
-    opacity: 1;
+  display: flex;
+  opacity: 1;
 }
 
 .modal-card {
-    background: white;
-    padding: 32px;
-    border-radius: 20px;
-    max-width: 450px;
-    width: 90%;
-    position: relative;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    transform: scale(0.95);
-    transition: transform 0.3s;
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  max-width: 450px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: scale(0.95);
+  transition: transform 0.3s;
 }
 
 .modal-overlay.active .modal-card {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .close-modal {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #cbd5e1;
-    cursor: pointer;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #cbd5e1;
+  cursor: pointer;
 }
 
 .close-modal:hover {
-    color: #64748b;
+  color: #64748b;
 }
 
 .form-group {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .form-label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: #475569;
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #475569;
 }
 
-.form-input, .form-select, .form-textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .error-msg {
-    color: #ef4444;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    display: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: none;
 }
 
 .success-message {
-    display: none;
-    text-align: center;
-    padding: 20px;
+  display: none;
+  text-align: center;
+  padding: 20px;
 }
 
 .success-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
-    display: block;
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
 }
 
 @media (max-width: 640px) {
-    .hero-card {
-        padding: 24px;
-    }
-    .hero-title {
-        font-size: 1.75rem;
-    }
+  .hero-card {
+    padding: 24px;
+  }
+
+  .promo-title {
+    font-size: 2.2rem;
+  }
+}
+
+/* ===== Glass tile (isolable) ===== */
+.glass-tile {
+  border-radius: 26px;
+  background: rgba(255, 255, 255, .18);
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  margin-bottom: 40px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Glass Tile Internal Items Removed (unused) */
+
+/* === Split layout: phone left, tile right === */
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(300px, 500px);
+  gap: 32px;
+  align-items: center;
+  /* Alignés verticalement */
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 10px auto 0;
+}
+
+/* Force une hauteur “visuelle” similaire */
+.phone-mock {
+  align-self: stretch;
+}
+
+.glass-tile {
+  align-self: center;
+  /* Don't stretch */
+  height: auto;
+  padding: 32px;
+  /* Ensure internal padding exists */
+}
+
+.features-list {
+  padding-top: 20px;
+  /* Start lower */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.feature-icon {
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+}
+
+.glass-tile .btn-primary-lg {
+  background: linear-gradient(90deg, #3bdbda, #38bdf8);
+  border: none;
+}
+
+/* =========================
+   PHONE MOCK (shorter + black bezel)
+   ========================= */
+
+/* =========================
+   PHONE MOCK (Hard Refactor - namespaced lp-phone)
+   ========================= */
+
+.lp-phone-mock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 1) Device Frame */
+.lp-phone-device {
+  --lp-width: 280px;
+  --lp-bezel: 10px;
+  --lp-radius: 40px;
+  --lp-depth: 4px;
+
+  position: relative;
+  width: min(90vw, var(--lp-width));
+  /* Compact Ratio */
+  aspect-ratio: 9 / 18;
+  border-radius: var(--lp-radius);
+  background: #0f172a;
+  box-shadow:
+    0 0 0 var(--lp-depth) #1e293b,
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  padding: var(--lp-bezel);
+}
+
+/* 2) Side Buttons (outside frame) */
+.lp-phone-side {
+  position: absolute;
+  z-index: 10;
+}
+
+.lp-phone-side-left {
+  left: -6px;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-phone-side-right {
+  right: -6px;
+  top: 130px;
+}
+
+.lp-phone-side-btn {
+  display: block;
+  width: 4px;
+  background: #334155;
+  box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.lp-phone-side-btn-1 {
+  height: 26px;
+  border-radius: 4px 0 0 4px;
+}
+
+.lp-phone-side-btn-2 {
+  height: 46px;
+  border-radius: 4px 0 0 4px;
+}
+
+.lp-phone-side-btn-3 {
+  height: 100px;
+  border-radius: 0 4px 4px 0;
+}
+
+/* 3) Screen */
+.lp-phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--lp-radius) - var(--lp-bezel));
+  /* Fallback gradient if var(--bg-gradient) is missing */
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--bg-gradient);
+  overflow: hidden;
+  /* Clips content */
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+  /* Inner black border */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Notch & Camera (Pseudo-elements on Screen) */
+.lp-phone-screen::before {
+  /* Camera Dot (Punch hole only) */
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: #000;
+  border-radius: 50%;
+  z-index: 50;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.lp-phone-screen::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  z-index: 51;
+  pointer-events: none;
+}
+
+/* 4) App UI */
+.lp-phone-app {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* Symmetrical horizontal, balanced vertical */
+  padding: 14px;
+  padding-top: 18px;
+  /* (Reduced) Clear Camera Dot */
+  padding-bottom: 18px;
+  /* (Reduced) Clear Home Indicator */
+  height: 100%;
+  min-height: 0;
+  /* CRITIQUE pour permettre le scroll enfant */
+}
+
+/* White Content Card (Glass Static) */
+.lp-phone-content-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 28px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  /* Soft shadow */
+  padding: 18px 14px;
+  width: 100%;
+  min-height: 0;
+  /* CRITIQUE: permet au scroll interne de fonctionner */
+  overflow: hidden;
+  /* IMPORTANT: clip le scroll sur les coins arrondis */
+}
+
+/* Header */
+.lp-phone-header {
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  flex: 0 0 auto;
+}
+
+.lp-phone-header-title {
+  display: none;
+}
+
+.lp-phone-header-date {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Audio Player */
+.lp-phone-audio {
+  background: #f8fafc;
+  /* Light grey background */
+  border-radius: 12px;
+  margin-bottom: 14px;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+/* Neural grey sidebar removed */
+
+.lp-phone-audio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lp-phone-audio-icon {
+  font-size: 1.2rem;
+  cursor: default;
+}
+
+.lp-phone-audio-player {
+  height: 28px;
+  width: 100%;
+  opacity: 0.9;
+}
+
+/* Emails List */
+.lp-phone-mails {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  /* MODIFICATION : Ajout d'espace pour le scroll bas */
+  padding-bottom: 24px !important;
+  margin-bottom: 0 !important;
+
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, .18) transparent;
+}
+
+.lp-phone-mails::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lp-phone-mails::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .18);
+}
+
+.lp-phone-mails::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Wrapper for injected cards to ensure style */
+.lp-mail-card {
+  border-left: 4px solid transparent;
+  padding: 10px 12px 10px 16px;
+  /* kept top/bottom/right, updated left */
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: visible;
+  text-align: left;
+  /* ✅ Left Align */
+  transition: transform 0.2s;
+  height: auto;
+}
+
+.lp-mail-card:hover {
+  transform: translateY(-1px);
+}
+
+.lp-mail-card:last-child {
+  margin-bottom: 0 !important;
+}
+
+.lp-mail-card.type-action {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.lp-mail-card.type-meeting {
+  border-left-color: #f59e0b;
+  background: #fff7ed;
+}
+
+.lp-mail-card.type-info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.lp-mail-card.type-pub {
+  border-left-color: #22c55e;
+  background: #f0fdf4;
+}
+
+/* Mail Content */
+.lp-mail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lp-mail-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.lp-mail-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Tag Colors */
+.lp-tag-action {
+  background: #ffffff;
+  border: 1px solid var(--lp-action);
+  color: var(--lp-action);
+}
+
+.lp-tag-meeting {
+  background: #ffffff;
+  border: 1px solid var(--lp-meeting);
+  color: var(--lp-meeting);
+}
+
+.lp-tag-info {
+  background: #ffffff;
+  border: 1px solid var(--lp-info);
+  color: var(--lp-info);
+}
+
+.lp-tag-pub {
+  background: #ffffff;
+  border: 1px solid var(--lp-pub);
+  color: var(--lp-pub);
+}
+
+.lp-mail-from {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 4px;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.lp-mail-body {
+  font-size: 0.75rem;
+  color: #334155;
+  line-height: 1.35;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+/* Home Indicator */
+.lp-phone-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 35%;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .lp-phone-device {
+    --lp-width: 280px;
+  }
 }
