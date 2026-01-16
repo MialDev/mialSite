@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // URL relative (fonctionne si front et back sont sur le même domaine)
             // Sinon remplacer par l'URL complète de ton API
-            const endpoint = '/public/lead';
+            const endpoint = '/api/lead';
 
             const res = await fetch(endpoint, {
                 method: 'POST',
