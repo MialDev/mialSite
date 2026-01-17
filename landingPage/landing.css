@@ -1,3 +1,5 @@
+@import url("../style.css");
+
 :root {
   --blue: #38bdf8;
   --pink: #fb7185;
@@ -25,7 +27,6 @@
 }
 
 /* Reuse main style */
-@import url("../style.css");
 
 /* Overrides for Landing Page - Removal of Nav/Footer */
 body {
@@ -330,18 +331,28 @@ footer {
   .hero-split {
     display: flex !important;
     flex-direction: column !important;
+    align-items: center !important;
   }
 
   /* Ensure correct order: Phone (first in DOM) on top, Tile below */
   .lp-phone-mock {
     order: 1;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
   }
 
   .glass-tile {
     order: 2;
     width: 90% !important;
     /* Force width on mobile */
+    align-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-section {
+    padding-top: 100px !important;
   }
 }
 

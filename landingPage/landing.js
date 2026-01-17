@@ -187,9 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // URL relative (fonctionne si front et back sont sur le même domaine)
-            // Sinon remplacer par l'URL complète de ton API
-            const endpoint = '/api/lead';
+            // Utilisation de l'URL absolue pour supporter le test local et la prod
+            const endpoint = 'https://mial.be/portal-api/api/lead';
 
             const res = await fetch(endpoint, {
                 method: 'POST',

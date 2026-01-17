@@ -149,22 +149,26 @@
 
                 <form id="lead-form">
                     <div class="form-group">
-                        <label class="form-label">Email*</label>
-                        <input type="email" name="email" class="form-input" required placeholder="votre@email.com">
+                        <label class="form-label" for="email">Email*</label>
+                        <input type="email" id="email" name="email" class="form-input" required
+                            placeholder="votre@email.com" autocomplete="email">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Prénom</label>
-                        <input type="text" name="first_name" class="form-input" placeholder="Jean">
+                        <label class="form-label" for="first_name">Prénom</label>
+                        <input type="text" id="first_name" name="first_name" class="form-input" placeholder="Jean"
+                            autocomplete="given-name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Téléphone (optionnel)</label>
-                        <input type="tel" name="phone" class="form-input" placeholder="+32...">
+                        <label class="form-label" for="phone">Téléphone (optionnel)</label>
+                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="+32..."
+                            autocomplete="tel">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Votre profil</label>
-                        <select name="profile_type" class="form-select">
+                        <label class="form-label" for="profile_type">Votre profil</label>
+                        <select id="profile_type" name="profile_type" class="form-select"
+                            autocomplete="organization-title">
                             <option value="">Sélectionnez...</option>
                             <option value="Dirigeant">Dirigeant PME</option>
                             <option value="Commercial">Commercial / Terrain</option>
@@ -175,9 +179,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Message (optionnel)</label>
-                        <textarea name="message" class="form-textarea" rows="2"
-                            placeholder="Ex: Volume d'emails..."></textarea>
+                        <label class="form-label" for="message">Message (optionnel)</label>
+                        <textarea id="message" name="message" class="form-textarea" rows="2"
+                            placeholder="Ex: Volume d'emails..." autocomplete="off"></textarea>
                     </div>
 
                     <button type="submit" class="btn-primary-lg"
