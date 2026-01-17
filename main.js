@@ -1329,6 +1329,15 @@ window.closeRecapView = function () {
   if (player) { player.pause(); player.currentTime = 0; }
 };
 
+// Helper si pas déjà défini
+function b64toBlob(base64, mimeType) {
+  const bin = window.atob(base64);
+  const len = bin.length;
+  const arr = new Uint8Array(len);
+  for (let i = 0; i < len; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mimeType });
+}
+
 window.playRecapAudio = async function (id) {
   // On ouvre la vue recap ET on lance l'audio
   await viewRecapText(id);
@@ -1336,13 +1345,29 @@ window.playRecapAudio = async function (id) {
   const container = document.getElementById('audio-player-container');
   const player = document.getElementById('recap-audio-player');
 
-  // Construire URL audio (Route à créer côté backend)
-  // On ajoute un timestamp pour éviter le cache navigateur
-  const audioUrl = apiUrl(`/my/profiles/${id}/audio.mp3`) + '?t=' + new Date().getTime();
+  if (!player || !container) return;
 
-  player.src = audioUrl;
-  container.style.display = 'flex';
-  player.play().catch(e => alert("Impossible de lancer l'audio (Fichier manquant ?)"));
+  // SYSTEME UNIFIÉ (Compatible Android)
+  try {
+    // On demande explicitement le format Base64 pour éviter toute corruption binaire par Capacitor
+    const res = await fetch(apiUrl(`/my/profiles/${id}/audio.mp3?format=base64`), { credentials: 'include' });
+
+    if (!res.ok) throw new Error("Audio non disponible");
+
+    const data = await res.json();
+    if (!data.audio_base64) throw new Error("Format invalide");
+
+    const blob = b64toBlob(data.audio_base64, 'audio/wav');
+    const url = URL.createObjectURL(blob);
+
+    player.src = url;
+    container.style.display = 'flex';
+    player.play().catch(e => console.error("Auto-play blocked:", e));
+
+  } catch (e) {
+    console.error(e);
+    alert("Impossible de lancer l'audio (Fichier manquant ou erreur réseau).");
+  }
 };
 
 // --- GESTION INSTANT RUN ---

@@ -220,6 +220,7 @@
         let SESSION_ACTIVE = false;
         let PROFILE_ID = null;
         let CURRENT_EMAIL_ID = null;
+        let GLOBAL_AUDIO = null;
 
         // Configuration temporaire (valeurs par défaut)
         let VOCAL_CONFIG = {
@@ -277,6 +278,18 @@
 
         // 3. Start Session
         async function toggleVocalSession() {
+            // PAUSE / RESUME TRIGGER
+            if (SESSION_ACTIVE && GLOBAL_AUDIO) {
+                if (GLOBAL_AUDIO.paused) {
+                    GLOBAL_AUDIO.play();
+                    updateUI('playing', "Lecture...");
+                } else {
+                    GLOBAL_AUDIO.pause();
+                    updateUI('paused', "Pause (Appuyez pour reprendre)");
+                }
+                return;
+            }
+
             if (SESSION_ACTIVE) return;
             if (!PROFILE_ID) return;
 
@@ -301,6 +314,17 @@
             await startLoop(config);
         }
 
+        // Helper pour décoder le Base64 en Blob audio
+        function base64ToBlob(base64, mimeType) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new Blob([bytes], { type: mimeType });
+        }
+
         async function startLoop(data) {
             try {
                 let fd = new FormData();
@@ -310,47 +334,43 @@
                     method: 'POST', body: fd, credentials: 'include'
                 });
 
-                if (res.headers.get("X-Action") === "stop") {
-                    // Feedback final si stop
-                    const fbText = res.headers.get("X-Action-Feedback");
-                    if (fbText) {
-                        const fbDiv = document.getElementById("actionFeedback");
-                        if (fbDiv) {
-                            try { fbDiv.innerText = decodeURIComponent(fbText); } catch (e) { fbDiv.innerText = fbText; }
-                            fbDiv.style.opacity = 1;
-                        }
-                    }
+                // PROTOCOLE JSON/BASE64 (Compatible Android)
+                const jsonResponse = await res.json();
 
-                    const blob = await res.blob();
-                    await playAudio(blob);
+                const action = jsonResponse.action;
+                const feedback = jsonResponse.feedback;
+                const currentEmailId = jsonResponse.current_email_id;
+                const audioBase64 = jsonResponse.audio_base64;
+
+                if (action === "stop") {
+                    if (feedback) {
+                        const fbDiv = document.getElementById("actionFeedback");
+                        if (fbDiv) { fbDiv.innerText = feedback; fbDiv.style.opacity = 1; }
+                    }
+                    if (audioBase64) {
+                        const blob = base64ToBlob(audioBase64, 'audio/wav');
+                        await playAudio(blob);
+                    }
                     resetUI("Session terminée.");
                     return;
                 }
 
-                CURRENT_EMAIL_ID = res.headers.get("X-Current-Email-ID");
+                if (currentEmailId) CURRENT_EMAIL_ID = currentEmailId;
 
-                // --- FEEDBACK VISUEL ---
-                const fbText = res.headers.get("X-Action-Feedback");
-                console.log("📥 Feedback Header Received:", fbText); // DEBUG
-
-                const fbDiv = document.getElementById("actionFeedback");
-                if (fbText && fbDiv) {
-                    try {
-                        fbDiv.innerText = decodeURIComponent(fbText);
-                    } catch (e) {
-                        console.warn("Decoding failed:", e);
-                        fbDiv.innerText = fbText;
+                if (feedback) {
+                    const fbDiv = document.getElementById("actionFeedback");
+                    if (fbDiv) {
+                        fbDiv.innerText = feedback;
+                        fbDiv.style.opacity = 1;
+                        setTimeout(() => { fbDiv.style.opacity = 0; }, 5000);
                     }
-                    fbDiv.style.opacity = 1;
-
-                    // Hide after 5 sec
-                    setTimeout(() => { fbDiv.style.opacity = 0; }, 5000);
                 }
-                // -----------------------
 
                 updateUI('playing', "Mial parle...");
-                const audioBlob = await res.blob();
-                await playAudio(audioBlob);
+                if (audioBase64) {
+                    const audioBlob = base64ToBlob(audioBase64, 'audio/wav');
+                    await playAudio(audioBlob);
+                }
 
                 updateUI('recording', "À vous...");
                 const userAudio = await recordAudio(4000);
@@ -374,8 +394,17 @@
             return new Promise(resolve => {
                 const url = URL.createObjectURL(blob);
                 const audio = new Audio(url);
-                audio.onended = resolve;
-                audio.play();
+                GLOBAL_AUDIO = audio; // Enable Pause Control
+
+                audio.onended = () => {
+                    GLOBAL_AUDIO = null;
+                    resolve();
+                };
+
+                audio.play().catch(e => {
+                    console.error("Playback error:", e);
+                    resolve(); // Skip if error
+                });
             });
         }
 

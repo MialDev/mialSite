@@ -1,0 +1,148 @@
+/* --- MOBILE COMPACT CARDS FOR DASHBOARD (Step 1149) --- */
+@media (max-width: 768px) {
+
+    /* Reset Table to Block Layout */
+    .dashboard-table,
+    .dashboard-table tbody,
+    .dashboard-table tr {
+        display: block;
+        width: 100%;
+    }
+
+    .dashboard-table thead {
+        display: none;
+    }
+
+    /* Hide headers */
+
+    /* CARD STYLE */
+    .dashboard-table tr {
+        display: grid;
+        /* Grid 2 colonnes : Informations (auto) | Meta & Actions (right) */
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        /* 2 lignes optiques */
+        gap: 2px 12px;
+
+        background: #ffffff;
+        margin-bottom: 12px;
+        padding: 16px;
+        border-radius: 16px;
+        /* Ombre douce et bordure fine pour détacher du fond */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        position: relative;
+        overflow: hidden;
+        /* Pour les effets */
+    }
+
+    /* Reset Cell Styles */
+    .dashboard-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        white-space: normal !important;
+    }
+
+    /* 1. COMPTE (SOURCE) -> Titre Principal (Haut Gauche) */
+    .dashboard-table td:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        /* Espace icone-texte */
+        margin-bottom: 2px;
+    }
+
+    /* Force Icon Size if image */
+    .dashboard-table td:nth-child(1) img,
+    .dashboard-table td:nth-child(1) svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* 2. DESTINATAIRE -> Sous-titre (Bas Gauche) */
+    .dashboard-table td:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .dashboard-table td:nth-child(2)::before {
+        content: '→ ';
+        margin-right: 4px;
+        opacity: 0.5;
+    }
+
+    /* 3. PLAGE HORAIRE -> Badge (Haut Droite) */
+    .dashboard-table td:nth-child(3) {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: start;
+
+        background: #f0f9ff;
+        color: #0ea5e9;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        height: fit-content;
+        white-space: nowrap !important;
+    }
+
+    /* 4. DERNIER ENVOI -> Caché (Trop d'info tue l'info) */
+    .dashboard-table td:nth-child(4) {
+        display: none;
+    }
+
+    /* 5. STATUS -> Pastille intégrée dans le grid items (Caché car redondant avec switch active) */
+    .dashboard-table td:nth-child(5) {
+        display: none;
+    }
+
+    /* 6. ACTIONS -> Boutons (Bas Droite) */
+    .dashboard-table td:last-child {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+        align-self: end;
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+    }
+
+    /* Style des boutons d'action plus tactiles */
+    .dashboard-table td:last-child button,
+    .dashboard-table td:last-child a {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s active;
+    }
+
+    .dashboard-table td:last-child button:active {
+        transform: scale(0.95);
+        background: #e2e8f0;
+    }
+}
