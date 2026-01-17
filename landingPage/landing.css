@@ -328,8 +328,20 @@ footer {
 
 @media (max-width: 900px) {
   .hero-split {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Ensure correct order: Phone (first in DOM) on top, Tile below */
+  .lp-phone-mock {
+    order: 1;
+    margin-bottom: 20px;
+  }
+
+  .glass-tile {
+    order: 2;
+    width: 90% !important;
+    /* Force width on mobile */
   }
 }
 
