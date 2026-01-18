@@ -17,6 +17,15 @@
     <link rel="alternate icon" href="assets/logos/logo-mial-small-color.png">
     <link rel="stylesheet" href="style.css" />
     <meta name="theme-color" content="#1fb6ff">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3TS6HMSLCK"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-3TS6HMSLCK');
+    </script>
 </head>
 <style>
     .input-wrapper {
@@ -138,6 +147,14 @@
             const errorDiv = document.getElementById('error-message');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
+
+            // Track Signup Attempt
+            if (typeof gtag === 'function') {
+                gtag('event', 'signup_submit', {
+                    'event_category': 'auth',
+                    'event_label': 'register_form'
+                });
+            }
 
             const email = (e.target.email.value || '').trim().toLowerCase();
             const password = e.target.password.value || '';

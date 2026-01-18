@@ -1440,3 +1440,18 @@ function escapeHtml(text) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+// =========================================================
+// GLOBAL EVENT TRACKING (Analytics)
+// =========================================================
+document.addEventListener('click', (e) => {
+  // 1. Track "S'inscrire" links (pointing to register.html)
+  const link = e.target.closest('a');
+  if (link && link.getAttribute('href') && link.getAttribute('href').includes('register.html')) {
+    if (typeof gtag === 'function') {
+      gtag('event', 'click_signup_link', {
+        'event_category': 'navigation',
+        'event_label': 'go_to_register'
+      });
+    }
+  }
+});

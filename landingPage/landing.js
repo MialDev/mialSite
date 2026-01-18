@@ -101,6 +101,16 @@ document.addEventListener('DOMContentLoaded', () => {
         audioPlayer.addEventListener('error', (e) => {
             console.warn("Audio load error:", e, audioPlayer.error);
         });
+
+        // Track Play
+        audioPlayer.addEventListener('play', () => {
+            if (typeof gtag === 'function') {
+                gtag('event', 'play_demo_audio', {
+                    'event_category': 'audio',
+                    'event_label': 'landing_demo'
+                });
+            }
+        });
     }
 
     // 4. Mails
@@ -174,17 +184,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(form);
 
-        // Payload correspondant exactement à 'LeadRequest' dans app.py
+        // 1. Capture UTM & Source
+        let sourceVal = document.body.dataset.source || 'landing_generic';
+        const urlParams = new URLSearchParams(window.location.search);
+        const utmParts = [];
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(p => {
+            if (urlParams.get(p)) {
+                utmParts.push(`${p.replace('utm_', '')}:${urlParams.get(p)}`);
+            }
+        });
+        if (utmParts.length > 0) {
+            sourceVal += ` (${utmParts.join(', ')})`;
+        }
+
+        // 2. Construct Payload
         const payload = {
             email: formData.get('email'),
             first_name: formData.get('first_name'),
             phone: formData.get('phone'),
             profile_type: formData.get('profile_type'),
             message: formData.get('message'),
-            // Source dynamique (vocal ou resume)
-            source: document.body.dataset.source || 'landing_generic',
+            source: sourceVal,
             user_agent: navigator.userAgent
         };
+
+        // 3. Track Conversion (GA4)
+        if (typeof gtag === 'function') {
+            gtag('event', 'generate_lead', {
+                'event_category': 'form',
+                'event_label': 'resume_tester'
+            });
+        }
 
         try {
             // Utilisation de l'URL absolue pour supporter le test local et la prod
@@ -211,4 +241,27 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerText = originalText;
         }
     });
+
+    /* --- TRACKING BOUTONS --- */
+    // Helper track
+    const trackClick = (label) => {
+        if (typeof gtag === 'function') {
+            gtag('event', 'click', {
+                'event_category': 'button',
+                'event_label': label
+            });
+        }
+    };
+
+    // 1. Bouton "Essayer gratuitement" (CTA Principal)
+    document.querySelectorAll('.open-modal-btn').forEach(btn => {
+        btn.addEventListener('click', () => trackClick('cta_try_free'));
+    });
+
+    // 2. Bouton "En savoir plus"
+    const moreBtn = document.querySelector('.link-secondary');
+    if (moreBtn) {
+        moreBtn.addEventListener('click', () => trackClick('link_learn_more'));
+    }
+
 });
