@@ -1208,7 +1208,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const res = await fetch(apiUrl('/me'), { credentials: 'include' });
-      if (res.status === 401) window.location.href = 'login.html';
+      if (res.status === 401) window.location.href = 'Connexion.html';
+      if (!res.ok) throw new Error("Erreur connexion API: " + res.status);
       const user = await res.json();
       if (document.getElementById('user-email')) document.getElementById('user-email').textContent = user.email;
       const resMail = await fetch(apiUrl('/my/mailboxes'), { credentials: 'include' });
