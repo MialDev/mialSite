@@ -285,38 +285,48 @@ window.editProfile = async function (id) {
 
   window.toggleCategoryUI();
 
-  // Load Categories & Set Active
-  await window.loadUserCategories(); // Load available
-  // RESTAURATION DE L'ORDRE ET DE LA SELECTION
-  ACTIVE_CATS_ORDER = [];
+  // --- RESTAURATION DES CATEGORIES (FIX) ---
+  await window.loadUserCategories(); // 1. On charge les définitions (Eco, LinkedIn...)
 
-  // On se base sur la chaîne de texte sauvegardée (qui contient l'ordre exact : "ACTION,uuid-1,MEETING")
-  if (p.categories_filter && p.categories_filter !== 'ALL') {
-    const savedItems = p.categories_filter.split(',');
+  const savedFilter = p.categories_filter || 'ALL';
+  ACTIVE_CATS_ORDER = []; // On part de zéro
+
+  if (savedFilter === 'ALL' || !savedFilter) {
+    // CAS 1 : Rien de configuré (ou défaut) -> On met les Standards par défaut
+    console.log("EditProfile: Mode Default (ALL)");
+    STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
+  } else {
+    // CAS 2 : Configuration perso détectée (ex: "uuid-123,ACTION,uuid-456")
+    console.log("EditProfile: Restoring config ->", savedFilter);
+    const items = savedFilter.split(',');
     const allCats = [...STD_CATS, ...USER_CATEGORIES];
 
-    savedItems.forEach(itemRaw => {
-      const item = itemRaw.trim();
-      // On cherche par ID (priorité pour les perso) OU par Nom (pour les standards legacy)
-      const found = allCats.find(c => c.id === item || c.name === item.toUpperCase());
+    items.forEach(rawItem => {
+      const item = rawItem.trim();
+      if (!item) return;
+
+      // On cherche la catégorie correspondante (par ID ou par NOM pour compatibilité)
+      const found = allCats.find(c =>
+        String(c.id) === item ||
+        c.name.toUpperCase() === item.toUpperCase()
+      );
 
       if (found) {
         ACTIVE_CATS_ORDER.push(found.id);
+      } else {
+        console.warn("Categorie introuvable (supprimée ?):", item);
       }
     });
   }
 
-  // Si rien trouvé (ou nouveau profil), on active les standards par défaut
+  // Si après restauration la liste est vide (bug data), on force les standards
   if (ACTIVE_CATS_ORDER.length === 0) {
     STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
   }
 
-  // Si vide (nouveau profil ou jamais configuré), on met les standards par défaut
-  if (ACTIVE_CATS_ORDER.length === 0) {
-    STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
-  }
-
+  // On affiche le résultat
   renderCategories(ACTIVE_CATS_ORDER);
+  // ------------------------------------------
 
   const cSender = document.getElementById('container-sender');
   const cExclude = document.getElementById('container-exclude');
