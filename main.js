@@ -305,16 +305,19 @@ window.editProfile = async function (id) {
       const item = rawItem.trim();
       if (!item) return;
 
-      // On cherche la catégorie correspondante (par ID ou par NOM pour compatibilité)
-      const found = allCats.find(c =>
-        String(c.id) === item ||
-        c.name.toUpperCase() === item.toUpperCase()
-      );
+      // RECHERCHE INTELLIGENTE
+      // On cherche d'abord par ID exact (pour les UUIDs perso)
+      let found = allCats.find(c => String(c.id) === item);
+
+      // Si pas trouvé, on cherche par NOM (pour ACTION, MEETING ou legacy)
+      if (!found) {
+        found = allCats.find(c => c.name.toUpperCase() === item.toUpperCase());
+      }
 
       if (found) {
         ACTIVE_CATS_ORDER.push(found.id);
       } else {
-        console.warn("Categorie introuvable (supprimée ?):", item);
+        console.warn("⚠️ Categorie introuvable dans la liste:", item);
       }
     });
   }
