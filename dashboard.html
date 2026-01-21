@@ -358,6 +358,53 @@
     </div>
 
     <!-- SCRIPTS -->
+<div id="modal-category"
+    style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; align-items:center; justify-content:center;">
+    <div class="card" style="width:100%; max-width:500px; padding:24px; background:white; border-radius:12px;">
+        <h3 style="margin-top:0;">✨ Nouvelle Catégorie</h3>
+
+        <label class="form-label">Nom (Max 16 chars)</label>
+        <input type="text" id="cat-name" class="form-input" placeholder="EX: ECOLE" maxlength="16"
+            oninput="this.value = this.value.toUpperCase()">
+
+        <label class="form-label">Couleur</label>
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+            <input type="color" id="cat-color" value="#38bdf8"
+                style="height:40px; width:60px; border:none; cursor:pointer;">
+            <span class="muted" style="font-size:0.8em; align-self:center;">Choisissez une couleur pour le
+                récapitulatif.</span>
+        </div>
+
+        <label class="form-label">Description (Pour l'IA)</label>
+        <textarea id="cat-desc" class="form-input" rows="3"
+            placeholder="Ex: Tout ce qui vient de @uliege.be ou qui parle de cours/examens."></textarea>
+        <div class="form-helper">L'IA utilisera ceci pour savoir comment classer vos emails.</div>
+
+        <label class="form-label" style="margin-top:16px;">Règles Strictes (Optionnel)</label>
+        <input type="text" id="cat-rules" class="form-input" placeholder="Ex: @uliege.be, prof@math.be">
+        <div class="form-helper">Emails ou domaines séparés par des virgules. Force le classement sans passer par l'IA.
+        </div>
+
+        <div
+            style="margin-top:16px; background:#f8fafc; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong style="font-size:0.9rem;">Dossier Outlook</strong>
+                <div class="muted" style="font-size:0.8rem;">Copier automatiquement les emails dans un dossier du même
+                    nom ?</div>
+            </div>
+            <label class="toggle-wrapper">
+                <input type="checkbox" id="cat-folder" class="toggle-input">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+            <button class="btn btn-ghost"
+                onclick="document.getElementById('modal-category').style.display='none'">Annuler</button>
+            <button class="btn btn-primary" onclick="submitCategory()">Créer</button>
+        </div>
+    </div>
+</div>
     <script src="/api.js"></script>
     <script src="main.js"></script>
 

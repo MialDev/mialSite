@@ -285,6 +285,14 @@ window.editProfile = async function (id) {
 
   window.toggleCategoryUI();
 
+  // Load Categories & Set Active
+  await window.loadUserCategories(); // Load available
+  CURRENT_ACTIVE_CATS.clear();
+  if (p.active_category_ids && Array.isArray(p.active_category_ids)) {
+    p.active_category_ids.forEach(id => CURRENT_ACTIVE_CATS.add(id));
+  }
+  renderCategories();
+
   const cSender = document.getElementById('container-sender');
   const cExclude = document.getElementById('container-exclude');
   const cCc = document.getElementById('container-cc');
@@ -300,6 +308,93 @@ window.editProfile = async function (id) {
 
   document.getElementById('editor-main-title').textContent = "Modifier l'automatisation";
   document.getElementById('btn-save').textContent = "METTRE À JOUR";
+};
+
+// --- CATEGORY LOGIC ---
+let USER_CATEGORIES = [];
+let CURRENT_ACTIVE_CATS = new Set(); // IDs
+
+window.loadUserCategories = async function () {
+  try {
+    const res = await fetch(apiUrl('/my/categories'), { credentials: 'include' });
+    if (res.ok) {
+      USER_CATEGORIES = await res.json();
+      renderCategories();
+    }
+  } catch (e) { console.error("Cats load error", e); }
+};
+
+window.renderCategories = function () {
+  const container = document.getElementById('chips-categories');
+  if (!container) return;
+
+  // 1. Default Static Categories (Always available but handled as strings usually in backend? 
+  // No, backend uses Strings "ACTION", "MEETING". 
+  // User categories have UUIDs. 
+  // We need to support both? 
+  // The 'Active Categories' in DB expects IDs for custom cats. 
+  // Standard categories are likely ignored by the active-check or always on? 
+  // User Prompt says: "Les catégories non demandées seront exclues du rapport."
+  // So we probably only care about CUSTOM categories here for the toggling.
+  // Standard cats are auto-detected by AI always? 
+  // Wait, user logic in recap_quotidien: "fetch custom categories if profile exists". 
+  // The prompt implies we toggle CUSTOM categories. 
+
+  if (USER_CATEGORIES.length === 0) {
+    container.innerHTML = '<span class="muted" style="font-size:0.8rem; font-style:italic;">Aucune catégorie personnelle. Créez-en une !</span>';
+    return;
+  }
+
+  container.innerHTML = USER_CATEGORIES.map(c => {
+    const active = CURRENT_ACTIVE_CATS.has(c.id);
+    const style = active
+      ? `background:${c.color}; color:white; border-color:${c.color};`
+      : `background:white; color:${c.color}; border:1px solid ${c.color}; opacity:0.7;`;
+
+    return `
+      <div style="padding:4px 10px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; ${style}"
+           onclick="toggleCategory('${c.id}')">
+          ${active ? '✓ ' : ''}${c.name}
+      </div>`;
+  }).join('');
+};
+
+window.toggleCategory = function (catId) {
+  if (CURRENT_ACTIVE_CATS.has(catId)) CURRENT_ACTIVE_CATS.delete(catId);
+  else CURRENT_ACTIVE_CATS.add(catId);
+  renderCategories();
+};
+
+window.submitCategory = async function () {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) return alert("Nom requis");
+
+  const payload = {
+    name: name,
+    color: document.getElementById('cat-color').value,
+    description: document.getElementById('cat-desc').value,
+    match_rules: document.getElementById('cat-rules').value,
+    folder_active: document.getElementById('cat-folder').checked
+  };
+
+  try {
+    const res = await fetch(apiUrl('/my/categories'), {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error("Erreur création");
+
+    await window.loadUserCategories(); // Refresh list
+    document.getElementById('modal-category').style.display = 'none';
+
+    // Auto-select the new one?
+    // We'd need to find it ideally.
+
+  } catch (e) {
+    alert(e.message);
+  }
 };
 
 window.saveProfile = async function () {
@@ -334,7 +429,9 @@ window.saveProfile = async function () {
     voice: document.getElementById('f-voice').value,
     speed: parseFloat(document.getElementById('f-speed').value),
     language: document.getElementById('f-lang').value,
-    status: 'Active', timezone: 'Europe/Paris', categories: 'ALL'
+    language: document.getElementById('f-lang').value,
+    status: 'Active', timezone: 'Europe/Paris', categories: 'ALL',
+    category_ids: Array.from(CURRENT_ACTIVE_CATS)
   };
 
   const btn = document.getElementById('btn-save');
@@ -380,7 +477,12 @@ window.showEditor = async function (isEdit) {
   document.getElementById('view-list').style.display = 'none';
   document.getElementById('view-editor').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Load categories FRESH
+  await window.loadUserCategories();
+
   if (!isEdit) {
+    CURRENT_ACTIVE_CATS.clear(); // New profile = no custom cats active by default
     currentEditingId = null;
     document.getElementById('form-editor').reset();
     ['container-sender', 'container-exclude', 'container-cc'].forEach(id => {
@@ -395,6 +497,8 @@ window.showEditor = async function (isEdit) {
     document.getElementById('f-spam').checked = true; // Default true for new
     document.getElementById('f-mark-read').checked = false; // Default false
     document.getElementById('f-marketing').checked = true; // Default true for new
+    window.toggleCategoryUI();
+    // ...
     window.toggleCategoryUI();
     renderCategories();
   }
@@ -411,21 +515,7 @@ window.toggleCategoryUI = function () {
   }
 };
 
-function renderCategories() {
-  const container = document.getElementById('chips-categories');
-  if (!container || container.children.length > 0) return;
-  const cats = [
-    { id: 'meeting', label: 'Meeting', class: 'meeting' },
-    { id: 'action', label: 'Action', class: 'action' },
-    { id: 'info', label: 'Info', class: 'info' },
-    { id: 'pub', label: 'Pub', class: 'pub' }
-  ];
-  container.innerHTML = cats.map(c =>
-    `<div class="cat-pill ${c.class}" draggable="true">
-            ${c.label} <span class="remove" onclick="this.parentElement.remove()">×</span>
-         </div>`
-  ).join('');
-}
+// Old renderCategories function removed
 
 window.loadProfiles = async function () {
   const tbody = document.getElementById('profiles-body');
