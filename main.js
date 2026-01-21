@@ -336,6 +336,27 @@ const STD_CATS = [
   { id: 'OTHER', name: 'OTHER', color: '#f0ad4e', description: 'Le reste' }
 ];
 
+// Helper pour éclaircir une couleur (Hex -> Hex + Lightness)
+function getLightColor(hex, amount) {
+  // Basic implementation: Convert to HSL, increase L, convert back
+  // Ou plus simple : mix avec du blanc
+  let c = hex.substring(1);
+  let r = parseInt(c.substring(0, 2), 16);
+  let g = parseInt(c.substring(2, 4), 16);
+  let b = parseInt(c.substring(4, 6), 16);
+
+  // Mix with white (255)
+  // amount 0..1 (0 = original, 1 = white)
+  // User wants "clair" inside. Let's go 85% white mix.
+  const mix = (val) => Math.round(val + (255 - val) * 0.85);
+
+  let r2 = mix(r);
+  let g2 = mix(g);
+  let b2 = mix(b);
+
+  return `rgb(${r2}, ${g2}, ${b2})`;
+}
+
 let USER_CATEGORIES = [];
 let ACTIVE_CATS_ORDER = []; // Liste ordonnée des IDs (Std + Perso)
 
@@ -374,104 +395,128 @@ window.initCategorySorter = function () {
   }
 };
 
+// --- HELPER DIALOGUES ---
+window.openCategoryModal = function (cat = null) {
+  const modal = document.getElementById('modal-category');
+  const title = modal.querySelector('h3');
+  const nameInput = document.getElementById('cat-name');
+  const colorInput = document.getElementById('cat-color');
+  const descInput = document.getElementById('cat-desc');
+  const rulesInput = document.getElementById('cat-rules');
+  const folderInput = document.getElementById('cat-folder');
+  const idInput = document.getElementById('cat-id');
+
+  const btnSave = document.getElementById('btn-save-cat');
+  const btnDelete = document.getElementById('btn-delete-cat');
+
+  if (cat) {
+    // EDIT MODE
+    title.textContent = "✏️ Modifier la Catégorie";
+    nameInput.value = cat.name;
+    colorInput.value = cat.color || '#38bdf8';
+    descInput.value = cat.description || '';
+    rulesInput.value = cat.match_rules || '';
+    folderInput.checked = !!cat.folder_active;
+    idInput.value = cat.id;
+
+    btnSave.textContent = "Enregistrer";
+    btnDelete.style.display = 'block'; // Show delete
+  } else {
+    // CREATE MODE
+    title.textContent = "✨ Nouvelle Catégorie";
+    nameInput.value = '';
+    colorInput.value = '#38bdf8'; // Bleu défaut
+    descInput.value = '';
+    rulesInput.value = '';
+    folderInput.checked = false;
+    idInput.value = '';
+
+    btnSave.textContent = "Créer la catégorie";
+    btnDelete.style.display = 'none'; // Hide delete
+  }
+
+  modal.style.display = 'flex';
+};
+
 window.renderCategories = function (profileCategories) {
   const container = document.getElementById('chips-categories');
   if (!container) return;
 
   // 1. Fusionner tout le monde
   const allCats = [...STD_CATS, ...USER_CATEGORIES];
-  const catMap = new Map(allCats.map(c => [c.id, c]));
+  const activeSet = new Set(ACTIVE_CATS_ORDER);
 
   // 2. Déterminer l'ordre
-  // Si le profil a déjà un ordre sauvegardé (via filter_categories ou active_category_ids), on l'utilise.
-  // Sinon, on met les standards puis les persos.
-
-  // On suppose que profileCategories est la liste ordonnée des IDs sauvegardés
-  let displayOrder = [];
-  let activeSet = new Set();
-
-  if (profileCategories && profileCategories.length > 0 && profileCategories[0] !== 'ALL') {
-    // Mode "Trié par l'utilisateur"
-    profileCategories.forEach(id => {
-      // Support ancien format (noms) vs nouveau (IDs pour perso)
-      // On essaie de matcher par ID ou Nom
-      let match = allCats.find(c => c.id === id || c.name === id);
-      if (match) {
-        displayOrder.push(match);
-        activeSet.add(match.id);
-      }
-    });
-    // Ajouter les oubliés (inactifs) à la fin pour qu'on puisse les réactiver
-    allCats.forEach(c => {
-      if (!activeSet.has(c.id)) displayOrder.push(c);
-    });
-  } else {
-    // Mode défaut
-    displayOrder = allCats;
-    // Par défaut tout est actif ? Ou juste Standards ? Disons Standards par défaut.
-    STD_CATS.forEach(c => activeSet.add(c.id));
-  }
-
-  // Sync globale
-  ACTIVE_CATS_ORDER = Array.from(activeSet);
+  const displayOrder = [];
+  // D'abord les actifs dans l'ordre
+  ACTIVE_CATS_ORDER.forEach(id => {
+    const match = allCats.find(c => c.id === id);
+    if (match) displayOrder.push(match);
+  });
+  // Ensuite les inactifs (ceux qui ne sont PAS dans le set actif)
+  allCats.forEach(c => {
+    if (!activeSet.has(c.id)) displayOrder.push(c);
+  });
 
   // 3. Rendu HTML
   container.innerHTML = displayOrder.map(c => {
     const isActive = activeSet.has(c.id);
     const color = c.color || '#666';
-    // Style : Actif = Plein, Inactif = Bordure pointillée ou grisâtre
-    const style = isActive
-      ? `background:${color}; color:white; border:1px solid ${color}; box-shadow:0 2px 4px rgba(0,0,0,0.1);`
-      : `background:#f1f5f9; color:#64748b; border:1px dashed #cbd5e1; opacity:0.8;`;
+    const lightBg = getLightColor(color);
+
+    // Style : Actif = Light BG + Dark Border/Text
+    let style = "";
+    if (isActive) {
+      style = `background:${lightBg}; color:${color}; border:1px solid ${color}; box-shadow:0 1px 2px rgba(0,0,0,0.05);`;
+    } else {
+      style = `background:#f1f5f9; color:#94a3b8; border:1px dashed #cbd5e1; opacity:0.7;`;
+    }
+
+    // Is Custom ? (Not in STD_CATS IDs)
+    const isCustom = !STD_CATS.some(std => std.id === c.id);
+
+    // Edit button on custom chips only
+    const editBtn = isCustom ?
+      `<span onclick="event.stopPropagation(); window.openCategoryModal({id:'${c.id}', name:'${c.name}', color:'${color}', description:'${c.description?.replace(/'/g, "\\'") || ''}', match_rules:'${c.match_rules?.replace(/'/g, "\\'") || ''}', folder_active:${c.folder_active}})" 
+               title="Modifier" 
+               style="margin-left:6px; font-size:1.1em; opacity:0.6; cursor:pointer;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">⋮</span>`
+      : '';
+
+    const icon = isActive
+      ? `<span style="font-size:1.2em; line-height:0.5; margin-bottom:2px; opacity:0.7;">×</span>`
+      : `<span style="font-size:1.3em; line-height:0.5; opacity:0.7;">+</span>`;
 
     return `
         <div class="cat-chip ${isActive ? 'active' : ''}" data-id="${c.id}" 
-             style="padding:6px 12px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer; user-select:none; transition:all 0.2s; display:flex; align-items:center; gap:6px; ${style}"
+             style="padding:6px 12px; border-radius:99px; font-size:0.85rem; font-weight:700; cursor:pointer; user-select:none; transition:all 0.1s; display:inline-flex; align-items:center; gap:6px; ${style}"
              onclick="toggleCategory('${c.id}')">
-            ${isActive ? '<span>⠿</span>' : ''} 
             ${c.name}
+            ${icon}
+            ${editBtn}
         </div>`;
-  }).join('');
+  }).join('') +
+    // Bouton "+" général pour créer (toujours à la fin)
+    `<button onclick="openCategoryModal()" style="width:32px; height:32px; border-radius:50%; border:1px dashed #cbd5e1; background:white; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; margin-left:8px; font-size:1.2em;" title="Nouvelle catégorie">+</button>`;
 
   window.initCategorySorter();
 };
 
 window.toggleCategory = function (id) {
-  const chip = document.querySelector(`.cat-chip[data-id="${id}"]`);
-  if (!chip) return;
-
-  const wasActive = chip.classList.contains('active');
-
-  if (wasActive) {
-    chip.classList.remove('active');
-    // Retirer de la liste ordonnée
-    ACTIVE_CATS_ORDER = ACTIVE_CATS_ORDER.filter(x => x !== id);
+  const idx = ACTIVE_CATS_ORDER.indexOf(id);
+  if (idx > -1) {
+    // Remove
+    ACTIVE_CATS_ORDER.splice(idx, 1);
   } else {
-    chip.classList.add('active');
-    // Ajouter à la fin de la liste ordonnée (ou au début ?)
+    // Add
     ACTIVE_CATS_ORDER.push(id);
   }
-
-  // On re-render pour appliquer les styles (optionnel si on gère bien les classes)
-  // Mais pour l'instant on change juste le style visuel direct pour être snappy
-  const cat = [...STD_CATS, ...USER_CATEGORIES].find(c => c.id === id);
-  const color = cat ? cat.color : '#666';
-
-  if (!wasActive) { // Devenu Actif
-    chip.style.background = color;
-    chip.style.color = 'white';
-    chip.style.border = `1px solid ${color}`;
-    chip.innerHTML = `<span>⠿</span> ${cat.name}`;
-  } else { // Devenu Inactif
-    chip.style.background = '#f1f5f9';
-    chip.style.color = '#64748b';
-    chip.style.border = '1px dashed #cbd5e1';
-    chip.innerHTML = cat.name;
-  }
+  // Re-render completely to update order and transparency immediately
+  renderCategories(ACTIVE_CATS_ORDER);
 };
 
 window.submitCategory = async function () {
   const nameEl = document.getElementById('cat-name');
+  const idEl = document.getElementById('cat-id');
   const name = nameEl.value.trim();
   if (!name) return alert("Le nom est obligatoire.");
 
@@ -483,48 +528,78 @@ window.submitCategory = async function () {
     folder_active: document.getElementById('cat-folder').checked
   };
 
-  const btn = document.querySelector('#modal-category .btn-primary');
+  const btn = document.getElementById('btn-save-cat') || document.querySelector('#modal-category .btn-primary');
   const oldText = btn.textContent;
-  btn.textContent = "Création...";
+  btn.textContent = "Sauvegarde...";
   btn.disabled = true;
 
   try {
-    const res = await fetch(apiUrl('/my/categories'), {
-      method: 'POST',
+    const isEdit = !!idEl.value && idEl.value !== '';
+    const url = isEdit ? `/my/categories/${idEl.value}` : '/my/categories';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const res = await fetch(apiUrl(url), {
+      method: method,
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
 
-    if (!res.ok) throw new Error("Erreur lors de la création.");
-    const json = await res.json(); // On récupère l'ID créé
+    if (!res.ok) throw new Error("Erreur serveur.");
+    const json = isEdit ? {} : await res.json();
 
-    // 1. Recharger la liste globale
+    // 1. Reload list
     await window.loadUserCategories();
 
-    // 2. Ajouter automatiquement la nouvelle cat à la liste ACTIVE du profil en cours d'édition
-    if (json.id) {
-      ACTIVE_CATS_ORDER.push(json.id); // Ajout à la fin
+    // 2. Manage Active List
+    if (!isEdit && json.id) {
+      // New: Add to active immediately
+      ACTIVE_CATS_ORDER.push(json.id);
     }
+    // For edit, ID is already in list (or not), reloadUserCategories + render handles details update.
 
-    // 3. Rafraîchir l'affichage des chips
+    // 3. Render
     renderCategories(ACTIVE_CATS_ORDER);
 
-    // 4. Fermer et Reset
+    // 4. Close
     document.getElementById('modal-category').style.display = 'none';
 
     // Reset Form
     nameEl.value = '';
+    idEl.value = '';
     document.getElementById('cat-desc').value = '';
     document.getElementById('cat-rules').value = '';
     document.getElementById('cat-folder').checked = false;
-    document.getElementById('cat-color').value = '#38bdf8'; // Remettre bleu par défaut
+    document.getElementById('cat-color').value = '#38bdf8';
 
   } catch (e) {
     alert(e.message);
   } finally {
     btn.textContent = oldText;
     btn.disabled = false;
+  }
+};
+
+window.deleteCategory = async function () {
+  const id = document.getElementById('cat-id').value;
+  if (!id || !confirm("Êtes-vous sûr de vouloir supprimer cette catégorie ?")) return;
+
+  try {
+    const res = await fetch(apiUrl(`/my/categories/${id}`), {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error("Erreur suppression");
+
+    // Remove from active list if present
+    ACTIVE_CATS_ORDER = ACTIVE_CATS_ORDER.filter(x => x !== id);
+
+    await window.loadUserCategories();
+    renderCategories(ACTIVE_CATS_ORDER);
+    document.getElementById('modal-category').style.display = 'none';
+
+  } catch (e) {
+    alert(e.message);
   }
 };
 
