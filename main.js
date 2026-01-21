@@ -287,20 +287,28 @@ window.editProfile = async function (id) {
 
   // Load Categories & Set Active
   await window.loadUserCategories(); // Load available
-  // CORRECTION BUG ICI :
-  ACTIVE_CATS_ORDER = []; // Reset global
-  if (p.active_category_ids && Array.isArray(p.active_category_ids)) {
-    // On remplit l'ordre avec ce qui vient de la DB
-    ACTIVE_CATS_ORDER = [...p.active_category_ids];
-  } else if (p.categories_filter) {
-    // Fallback legacy (noms séparés par virgules)
-    const legacyNames = p.categories_filter.split(',');
-    // On essaye de retrouver les IDs correspondants aux noms
+  // RESTAURATION DE L'ORDRE ET DE LA SELECTION
+  ACTIVE_CATS_ORDER = [];
+
+  // On se base sur la chaîne de texte sauvegardée (qui contient l'ordre exact : "ACTION,uuid-1,MEETING")
+  if (p.categories_filter && p.categories_filter !== 'ALL') {
+    const savedItems = p.categories_filter.split(',');
     const allCats = [...STD_CATS, ...USER_CATEGORIES];
-    legacyNames.forEach(name => {
-      const found = allCats.find(c => c.name === name.trim().toUpperCase());
-      if (found) ACTIVE_CATS_ORDER.push(found.id);
+
+    savedItems.forEach(itemRaw => {
+      const item = itemRaw.trim();
+      // On cherche par ID (priorité pour les perso) OU par Nom (pour les standards legacy)
+      const found = allCats.find(c => c.id === item || c.name === item.toUpperCase());
+
+      if (found) {
+        ACTIVE_CATS_ORDER.push(found.id);
+      }
     });
+  }
+
+  // Si rien trouvé (ou nouveau profil), on active les standards par défaut
+  if (ACTIVE_CATS_ORDER.length === 0) {
+    STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
   }
 
   // Si vide (nouveau profil ou jamais configuré), on met les standards par défaut
