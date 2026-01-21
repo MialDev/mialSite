@@ -287,11 +287,28 @@ window.editProfile = async function (id) {
 
   // Load Categories & Set Active
   await window.loadUserCategories(); // Load available
-  CURRENT_ACTIVE_CATS.clear();
+  // CORRECTION BUG ICI :
+  ACTIVE_CATS_ORDER = []; // Reset global
   if (p.active_category_ids && Array.isArray(p.active_category_ids)) {
-    p.active_category_ids.forEach(id => CURRENT_ACTIVE_CATS.add(id));
+    // On remplit l'ordre avec ce qui vient de la DB
+    ACTIVE_CATS_ORDER = [...p.active_category_ids];
+  } else if (p.categories_filter) {
+    // Fallback legacy (noms séparés par virgules)
+    const legacyNames = p.categories_filter.split(',');
+    // On essaye de retrouver les IDs correspondants aux noms
+    const allCats = [...STD_CATS, ...USER_CATEGORIES];
+    legacyNames.forEach(name => {
+      const found = allCats.find(c => c.name === name.trim().toUpperCase());
+      if (found) ACTIVE_CATS_ORDER.push(found.id);
+    });
   }
-  renderCategories();
+
+  // Si vide (nouveau profil ou jamais configuré), on met les standards par défaut
+  if (ACTIVE_CATS_ORDER.length === 0) {
+    STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
+  }
+
+  renderCategories(ACTIVE_CATS_ORDER);
 
   const cSender = document.getElementById('container-sender');
   const cExclude = document.getElementById('container-exclude');
@@ -454,8 +471,9 @@ window.toggleCategory = function (id) {
 };
 
 window.submitCategory = async function () {
-  const name = document.getElementById('cat-name').value.trim();
-  if (!name) return alert("Nom requis");
+  const nameEl = document.getElementById('cat-name');
+  const name = nameEl.value.trim();
+  if (!name) return alert("Le nom est obligatoire.");
 
   const payload = {
     name: name,
@@ -465,6 +483,11 @@ window.submitCategory = async function () {
     folder_active: document.getElementById('cat-folder').checked
   };
 
+  const btn = document.querySelector('#modal-category .btn-primary');
+  const oldText = btn.textContent;
+  btn.textContent = "Création...";
+  btn.disabled = true;
+
   try {
     const res = await fetch(apiUrl('/my/categories'), {
       method: 'POST',
@@ -472,16 +495,36 @@ window.submitCategory = async function () {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'
     });
-    if (!res.ok) throw new Error("Erreur création");
 
-    await window.loadUserCategories(); // Refresh list
+    if (!res.ok) throw new Error("Erreur lors de la création.");
+    const json = await res.json(); // On récupère l'ID créé
+
+    // 1. Recharger la liste globale
+    await window.loadUserCategories();
+
+    // 2. Ajouter automatiquement la nouvelle cat à la liste ACTIVE du profil en cours d'édition
+    if (json.id) {
+      ACTIVE_CATS_ORDER.push(json.id); // Ajout à la fin
+    }
+
+    // 3. Rafraîchir l'affichage des chips
+    renderCategories(ACTIVE_CATS_ORDER);
+
+    // 4. Fermer et Reset
     document.getElementById('modal-category').style.display = 'none';
 
-    // Auto-select the new one?
-    // We'd need to find it ideally.
+    // Reset Form
+    nameEl.value = '';
+    document.getElementById('cat-desc').value = '';
+    document.getElementById('cat-rules').value = '';
+    document.getElementById('cat-folder').checked = false;
+    document.getElementById('cat-color').value = '#38bdf8'; // Remettre bleu par défaut
 
   } catch (e) {
     alert(e.message);
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
   }
 };
 

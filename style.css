@@ -3329,3 +3329,82 @@ input[type=range] {
          }  
  }  
  
+/* --- MODALE & OVERLAY --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.6); /* Plus sombre/propre */
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* Espace pour ne pas toucher les bords */
+}
+
+.modal-card {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-height: 90vh; /* Évite que ça dépasse en hauteur */
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- ROW INPUT + COLOR --- */
+.input-group-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end; /* Aligne le bas des inputs */
+    margin-bottom: 20px;
+}
+
+.color-picker-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%; /* Rond */
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 0 0 2px #e2e8f0;
+    transition: transform 0.2s;
+}
+.color-picker-btn:hover { transform: scale(1.1); }
+.color-picker-btn::-webkit-color-swatch-wrapper { padding: 0; }
+.color-picker-btn::-webkit-color-swatch { border: none; }
+
+/* --- CATEGORY CHIPS (Drag & Drop) --- */
+.cat-chip {
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px dashed #cbd5e1;
+}
+.cat-chip:active { cursor: grabbing; }
+.cat-chip.active {
+    border-style: solid;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.cat-chip .drag-handle { opacity: 0.6; font-size: 1.1em; }
