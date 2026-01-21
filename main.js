@@ -396,8 +396,16 @@ window.initCategorySorter = function () {
 };
 
 // --- HELPER DIALOGUES ---
-window.openCategoryModal = function (cat = null) {
+window.openCategoryModal = function (catId = null) {
   const modal = document.getElementById('modal-category');
+
+  // Find category data if ID provided
+  let cat = null;
+  if (catId) {
+    const allCats = [...STD_CATS, ...USER_CATEGORIES];
+    cat = allCats.find(c => c.id === catId);
+  }
+
   const title = modal.querySelector('h3');
   const nameInput = document.getElementById('cat-name');
   const colorInput = document.getElementById('cat-color');
@@ -421,6 +429,8 @@ window.openCategoryModal = function (cat = null) {
 
     btnSave.textContent = "Enregistrer";
     btnDelete.style.display = 'block'; // Show delete
+
+    // Disable ID field editing implicitly by logic
   } else {
     // CREATE MODE
     title.textContent = "✨ Nouvelle Catégorie";
@@ -476,10 +486,11 @@ window.renderCategories = function (profileCategories) {
     const isCustom = !STD_CATS.some(std => std.id === c.id);
 
     // Edit button on custom chips only
+    // FIX: Pass only the ID string, not the object. JS will look it up.
     const editBtn = isCustom ?
-      `<span onclick="event.stopPropagation(); window.openCategoryModal({id:'${c.id}', name:'${c.name}', color:'${color}', description:'${c.description?.replace(/'/g, "\\'") || ''}', match_rules:'${c.match_rules?.replace(/'/g, "\\'") || ''}', folder_active:${c.folder_active}})" 
+      `<span onclick="event.stopPropagation(); window.openCategoryModal('${c.id}')" 
                title="Modifier" 
-               style="margin-left:6px; font-size:1.1em; opacity:0.6; cursor:pointer;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">⋮</span>`
+               style="margin-left:6px; font-size:1.1em; opacity:0.6; cursor:pointer;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6; event.stopPropagation();">⋮</span>`
       : '';
 
     const icon = isActive
