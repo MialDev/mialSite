@@ -3408,3 +3408,21 @@ input[type=range] {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 .cat-chip .drag-handle { opacity: 0.6; font-size: 1.1em; }
+
+/* FORCE FIX MODAL POSITION */
+.modal-overlay {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 9999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.modal-overlay[style*='display: flex'] {
+    display: flex !important;
+}
+
