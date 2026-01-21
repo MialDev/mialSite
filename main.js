@@ -507,7 +507,7 @@ window.renderCategories = function (profileCategories) {
         </div>`;
   }).join('') +
     // Bouton "+" général pour créer (toujours à la fin)
-    `<button onclick="openCategoryModal()" style="width:32px; height:32px; border-radius:50%; border:1px dashed #cbd5e1; background:white; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; margin-left:8px; font-size:1.2em;" title="Nouvelle catégorie">+</button>`;
+    `<button type="button" onclick="openCategoryModal()" style="width:32px; height:32px; border-radius:50%; border:1px dashed #cbd5e1; background:white; color:#94a3b8; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; margin-left:8px; font-size:1.2em;" title="Nouvelle catégorie">+</button>`;
 
   window.initCategorySorter();
 };
