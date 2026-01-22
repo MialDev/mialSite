@@ -286,19 +286,19 @@ window.editProfile = async function (id) {
   window.toggleCategoryUI();
 
   // --- RESTAURATION ULTRA-ROBUSTE ---
-  console.log("🔄 Chargement frais des catégories...");
+  // console.log("🔄 Chargement frais des catégories...");
   await window.loadUserCategories();
 
   const allCats = [...STD_CATS, ...USER_CATEGORIES];
-  console.log("📋 Catégories dispos:", allCats.map(c => `${c.name} (${c.id})`));
+  // console.log("📋 Catégories dispos:", allCats.map(c => `${c.name} (${c.id})`));
 
   ACTIVE_CATS_ORDER = []; // Reset
 
   const savedFilter = p.categories_filter || 'ALL';
-  console.log("💾 Config brute DB:", savedFilter);
+  // console.log("💾 Config brute DB:", savedFilter);
 
   if (savedFilter === 'ALL' || !savedFilter) {
-    console.log("ℹ️ Mode Défaut (ALL)");
+    // console.log("ℹ️ Mode Défaut (ALL)");
     STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
   } else {
     const items = savedFilter.split(',');
@@ -319,7 +319,7 @@ window.editProfile = async function (id) {
       if (found) {
         ACTIVE_CATS_ORDER.push(found.id);
       } else {
-        console.warn("⚠️ Catégorie introuvable (ignorée):", item);
+        // console.warn("⚠️ Catégorie introuvable (ignorée):", item);
       }
     });
   }
@@ -330,7 +330,7 @@ window.editProfile = async function (id) {
     STD_CATS.forEach(c => ACTIVE_CATS_ORDER.push(c.id));
   }
 
-  console.log("✅ Ordre Final:", ACTIVE_CATS_ORDER);
+  // console.log("✅ Ordre Final:", ACTIVE_CATS_ORDER);
   renderCategories(ACTIVE_CATS_ORDER);
 
   const cSender = document.getElementById('container-sender');
