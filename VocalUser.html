@@ -546,7 +546,7 @@
                         if (fbDiv) { fbDiv.innerText = feedback; fbDiv.style.opacity = 1; }
                     }
                     if (audioBase64) {
-                        const blob = base64ToBlob(audioBase64, 'audio/wav');
+                        const blob = base64ToBlob(audioBase64, 'audio/mpeg'); // MP3 Native
                         await playAudio(blob);
                     }
                     resetUI("Session terminée.");
@@ -584,7 +584,7 @@
                 await playTone();
 
                 if (audioBase64) {
-                    const audioBlob = base64ToBlob(audioBase64, 'audio/wav');
+                    const audioBlob = base64ToBlob(audioBase64, 'audio/mpeg'); // MP3 Native
                     await playAudio(audioBlob);
                 }
 
