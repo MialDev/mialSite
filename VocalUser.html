@@ -383,10 +383,17 @@
                 }
 
                 updateUI('playing', "Mial parle...", jsonResponse.user_text || "");
+
+                // 1. Ping Début
+                await playTone();
+
                 if (audioBase64) {
                     const audioBlob = base64ToBlob(audioBase64, 'audio/wav');
                     await playAudio(audioBlob);
                 }
+
+                // 2. Ping Fin (C'est à vous)
+                await playTone();
 
                 updateUI('recording', "À vous...");
                 const userAudio = await recordAudio(4000);
@@ -465,6 +472,30 @@
             SESSION_ACTIVE = false;
             document.getElementById('main-mic').className = 'mic-btn-large';
             document.getElementById('status-display').textContent = txt;
+        }
+
+        // --- SON CLOTURE/OUVERTURE ---
+        const TONE_AUDIO = new Audio('assets/audio/ping.mp3');
+        TONE_AUDIO.volume = 0.4; // Pas trop fort
+
+        function playTone() {
+            return new Promise(resolve => {
+                // On clone pour pouvoir le jouer 2 fois de suite rapidement si besoin
+                // ou simplement rewind
+                TONE_AUDIO.currentTime = 0;
+                TONE_AUDIO.play()
+                    .then(() => {
+                        // On attend la fin ? Non, c'est un ping court, on peut resolve tout de suite
+                        // ou attendre un peu. Le user a dit "un petit bruit".
+                        // Si c'est 0.5s, on attend pour pas que l'IA parle PARDESSUS.
+                        setTimeout(resolve, 600);
+                    })
+                    .catch(e => {
+                        // Si pas de fichier, on ignore silencieusement
+                        // console.warn("Ping sound not found or blocked", e);
+                        resolve();
+                    });
+            });
         }
     </script>
 </body>
