@@ -365,6 +365,26 @@
                     return;
                 }
 
+                // --- GESTION SWITCH MODE (Agent Mial) ---
+                if (action === "switch_to_agent") {
+                    if (feedback) {
+                        const fbDiv = document.getElementById("actionFeedback");
+                        if (fbDiv) { fbDiv.innerText = feedback; fbDiv.style.opacity = 1; }
+                    }
+
+                    // Transition fluide
+                    await playTone(); // Petit ping de confirmation
+
+                    // On arrête la boucle Récap
+                    SESSION_ACTIVE = false;
+
+                    // On démarre l'Agent
+                    setTimeout(() => {
+                        startAgentSession();
+                    }, 1000);
+                    return;
+                }
+
                 if (action === "stop") {
                     if (feedback) {
                         const fbDiv = document.getElementById("actionFeedback");
@@ -422,6 +442,167 @@
             } catch (e) {
                 console.error(e);
                 resetUI("Erreur : " + e.message);
+            }
+        }
+
+        // ============================================================
+        //  MODE AGENT (WebRTC Realtime)
+        // ============================================================
+
+        let pc = null;
+        let dc = null;
+        let isAgentActive = false;
+
+        async function startAgentSession() {
+            if (isAgentActive) return;
+
+            try {
+                updateUI('processing', "Connexion à Mial...");
+
+                // 1. Obtenir le Token Éphémère (Proxy vers vocal.py via Nginx)
+                const response = await fetch("/vocal-api/session", { method: "POST" });
+                if (!response.ok) throw new Error("Erreur auth agent");
+                const data = await response.json();
+                const EPHEMERAL_KEY = data.client_secret.value;
+
+                // 2. Init WebRTC
+                pc = new RTCPeerConnection();
+                isAgentActive = true;
+                SESSION_ACTIVE = true; // Pour bloquer le bouton principal
+
+                // Audio Output
+                const audioEl = document.createElement("audio");
+                audioEl.autoplay = true;
+                pc.ontrack = e => audioEl.srcObject = e.streams[0];
+
+                // Audio Input
+                const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+                pc.addTrack(ms.getTracks()[0]);
+
+                // Data Channel (Events & Tools)
+                dc = pc.createDataChannel("oai-events");
+                setupDataChannel(dc);
+
+                // SDP Offer
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                const baseUrl = "https://api.openai.com/v1/realtime";
+                const model = "gpt-4o-realtime-preview-2024-12-17";
+                const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+                    method: "POST",
+                    body: offer.sdp,
+                    headers: {
+                        Authorization: `Bearer ${EPHEMERAL_KEY}`,
+                        "Content-Type": "application/sdp"
+                    },
+                });
+
+                const answer = { type: "answer", sdp: await sdpResponse.text() };
+                await pc.setRemoteDescription(answer);
+
+                // UI Update
+                document.getElementById('main-mic').className = 'mic-btn-large recording'; // Rouge permanent
+                document.getElementById('status-display').textContent = "Conversation en cours...";
+                document.getElementById('transcript-display').textContent = "Agent Mial Connecté";
+
+                // Petit son pour dire "Je suis là"
+                await playTone();
+
+            } catch (err) {
+                console.error("Agent Error:", err);
+                resetUI("Erreur Agent : " + err.message);
+                isAgentActive = false;
+            }
+        }
+
+        function stopAgentSession() {
+            if (pc) pc.close();
+            pc = null;
+            isAgentActive = false;
+            resetUI("Session terminée.");
+        }
+
+        function setupDataChannel(d) {
+            // Initialisation de la conversation
+            d.onopen = () => {
+                // On donne le contexte utilisateur (Email)
+                const userEmail = document.getElementById('user-display').innerText.replace('Connecté en tant que ', '').trim();
+                const instructions = `L'utilisateur est ${userEmail}. Tu prends le relais après le récapitulatif. Sois bref et utile.`;
+
+                d.send(JSON.stringify({
+                    type: "response.create",
+                    response: {
+                        modalities: ["text", "audio"],
+                        instructions: instructions
+                    }
+                }));
+            };
+
+            d.onmessage = async (e) => {
+                const msg = JSON.parse(e.data);
+
+                // Transcription temps réel (Feedback visuel)
+                if (msg.type === "response.audio_transcript.delta") {
+                    document.getElementById('transcript-display').textContent = "Mial: ...";
+                }
+                if (msg.type === "response.audio_transcript.done") {
+                    document.getElementById('transcript-display').textContent = "Mial: " + msg.transcript;
+                }
+
+                // GESTION DES OUTILS (Tools)
+                if (msg.type === "response.output_item.done" && msg.item.type === "function_call") {
+                    const item = msg.item;
+                    handleToolCall(item, d);
+                }
+            };
+        }
+
+        async function handleToolCall(item, d) {
+            const userEmail = document.getElementById('user-display').innerText.replace('Connecté en tant que ', '').trim();
+
+            if (item.name === "search_contact") {
+                try {
+                    const args = JSON.parse(item.arguments);
+                    if (userEmail) args.from_email = userEmail;
+
+                    const resp = await fetch("/vocal-api/search-contact", {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(args)
+                    });
+                    const result = await resp.json();
+
+                    d.send(JSON.stringify({
+                        type: "conversation.item.create",
+                        item: { type: "function_call_output", call_id: item.call_id, output: JSON.stringify(result) }
+                    }));
+                    d.send(JSON.stringify({ type: "response.create" }));
+                } catch (e) { console.error(e); }
+            }
+
+            else if (item.name === "send_email") {
+                try {
+                    const args = JSON.parse(item.arguments);
+                    if (userEmail) args.from_email = userEmail;
+
+                    const resp = await fetch("/vocal-api/send-email", {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(args)
+                    });
+                    const result = await resp.json();
+
+                    d.send(JSON.stringify({
+                        type: "conversation.item.create",
+                        item: { type: "function_call_output", call_id: item.call_id, output: JSON.stringify(result) }
+                    }));
+                    d.send(JSON.stringify({ type: "response.create" }));
+
+                    if (result.success) {
+                        const fb = document.getElementById("actionFeedback");
+                        fb.innerText = "Email envoyé !"; fb.style.opacity = 1;
+                        setTimeout(() => fb.style.opacity = 0, 4000);
+                    }
+                } catch (e) { console.error(e); }
             }
         }
 
