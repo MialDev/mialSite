@@ -230,6 +230,8 @@
         let PROFILE_ID = null;
         let CURRENT_EMAIL_ID = null;
         let GLOBAL_AUDIO = null;
+        let NEXT_STATE = 'listening_action';
+        let CONTEXT_DATA = null;
 
         // Configuration temporaire (valeurs par défaut)
         let VOCAL_CONFIG = {
@@ -364,6 +366,11 @@
                     return;
                 }
 
+                if (jsonResponse.next_state) NEXT_STATE = jsonResponse.next_state;
+                else NEXT_STATE = 'listening_action'; // Default reset
+
+                if (jsonResponse.context_data) CONTEXT_DATA = jsonResponse.context_data;
+
                 if (currentEmailId) CURRENT_EMAIL_ID = currentEmailId;
 
                 if (feedback) {
@@ -387,8 +394,9 @@
                 updateUI('processing', "Réflexion...");
                 await startLoop({
                     profile_id: PROFILE_ID,
-                    state: 'listening_action',
+                    state: NEXT_STATE,
                     current_email_id: CURRENT_EMAIL_ID,
+                    context_data: CONTEXT_DATA,
                     file: userAudio
                 });
 
