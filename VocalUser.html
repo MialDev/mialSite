@@ -289,7 +289,13 @@
 
         // 3. Start Session
         async function toggleVocalSession() {
-            // PAUSE / RESUME TRIGGER
+            // STOP AGENT TRIGGER
+            if (isAgentActive) {
+                stopAgentSession();
+                return;
+            }
+
+            // PAUSE / RESUME TRIGGER (Existing Logic)
             if (SESSION_ACTIVE && GLOBAL_AUDIO) {
                 if (GLOBAL_AUDIO.paused) {
                     GLOBAL_AUDIO.play();
