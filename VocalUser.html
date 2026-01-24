@@ -35,6 +35,37 @@
                 </div>
 
                 <style>
+                    /* TRANSITIONS BACKGROUND */
+                    body {
+                        transition: background 1s ease, color 0.5s ease;
+                    }
+
+                    /* Thèmes */
+                    body.theme-recap {
+                        background: radial-gradient(circle at center, #fff1f2, #ffe4e6) !important;
+                        /* Rose clair */
+                    }
+
+                    body.theme-agent {
+                        background: radial-gradient(circle at center, #1e3a8a, #0f172a) !important;
+                        /* Bleu nuit foncé */
+                        color: white !important;
+                    }
+
+                    body.theme-agent .card.glass-static {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        /* Glass plus sombre */
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+
+                    body.theme-agent .vocal-user-info {
+                        color: #bfdbfe !important;
+                    }
+
+                    body.theme-agent .vocal-status {
+                        color: #93c5fd !important;
+                    }
+
                     /* MICRO MODERNE STYLE (Mial Live) */
                     .mic-wrapper {
                         position: relative;
@@ -483,6 +514,9 @@
                     // Transition fluide
                     await playTone(); // Petit ping de confirmation
 
+                    // CHANGEMENT THÈME VISUEL -> BLEU FONCÉ
+                    document.body.className = 'theme-agent';
+
                     // On arrête la boucle Récap
                     SESSION_ACTIVE = false;
 
@@ -504,6 +538,15 @@
                     }
                     resetUI("Session terminée.");
                     return;
+                }
+
+                // --- DÉTECTION MODE RÉCAP (Rose) ---
+                // Si on avance dans le flux (state != init_choice) et qu'on est pas redirigé
+                if (action !== "switch_to_agent" && jsonResponse.next_state !== "awaiting_choice" && jsonResponse.next_state !== "init_choice") {
+                    // On applique le thème Rose si ce n'est pas déjà fait
+                    if (!document.body.classList.contains('theme-agent')) {
+                        document.body.classList.add('theme-recap');
+                    }
                 }
 
                 if (jsonResponse.next_state) NEXT_STATE = jsonResponse.next_state;
@@ -789,6 +832,9 @@
 
             if (btn) btn.className = 'mic-button';
             if (wrapper) wrapper.classList.remove('is-listening');
+
+            // Reset Thème
+            document.body.className = '';
 
             document.getElementById('status-display').textContent = txt;
         }
