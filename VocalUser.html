@@ -692,7 +692,10 @@
             d.onopen = () => {
                 // On donne le contexte utilisateur (Email)
                 const userEmail = document.getElementById('user-display').innerText.replace('Connecté en tant que ', '').trim();
-                const instructions = `L'utilisateur est ${userEmail}. Tu prends le relais après le récapitulatif. Sois bref et utile.`;
+
+                const instructions = `L'utilisateur est ${userEmail}. 
+                Commence par te présenter très brièvement : "Bonjour, je suis l'Agent Mial. Je peux lire, rechercher, répondre, transférer et classer vos emails."
+                Puis demande ce que tu peux faire pour aider. Reste toujours concis et efficace.`;
 
                 d.send(JSON.stringify({
                     type: "response.create",
@@ -724,49 +727,51 @@
 
         async function handleToolCall(item, d) {
             const userEmail = document.getElementById('user-display').innerText.replace('Connecté en tant que ', '').trim();
+            const args = JSON.parse(item.arguments);
+            if (userEmail) args.from_email = userEmail;
 
-            if (item.name === "search_contact") {
-                try {
-                    const args = JSON.parse(item.arguments);
-                    if (userEmail) args.from_email = userEmail;
+            let endpoint = "";
+            let feedbackMsg = "";
 
-                    const resp = await fetch("/vocal-api/search-contact", {
-                        method: "POST", headers: { "Content-Type": "application/json" },
+            try {
+                if (item.name === "search_contact") endpoint = "/vocal-api/search-contact";
+                else if (item.name === "send_email") { endpoint = "/vocal-api/send-email"; feedbackMsg = "Email envoyé !"; }
+                else if (item.name === "list_emails") endpoint = "/vocal-api/list-emails";
+                else if (item.name === "forward_email") { endpoint = "/vocal-api/forward-email"; feedbackMsg = "Email transféré !"; }
+                else if (item.name === "categorize_email") { endpoint = "/vocal-api/categorize-email"; feedbackMsg = "Catégorie assignée !"; }
+
+                if (endpoint) {
+                    const resp = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(args)
                     });
                     const result = await resp.json();
 
+                    // Send Output to Model
                     d.send(JSON.stringify({
                         type: "conversation.item.create",
                         item: { type: "function_call_output", call_id: item.call_id, output: JSON.stringify(result) }
                     }));
-                    d.send(JSON.stringify({ type: "response.create" }));
-                } catch (e) { console.error(e); }
-            }
 
-            else if (item.name === "send_email") {
-                try {
-                    const args = JSON.parse(item.arguments);
-                    if (userEmail) args.from_email = userEmail;
-
-                    const resp = await fetch("/vocal-api/send-email", {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(args)
-                    });
-                    const result = await resp.json();
-
-                    d.send(JSON.stringify({
-                        type: "conversation.item.create",
-                        item: { type: "function_call_output", call_id: item.call_id, output: JSON.stringify(result) }
-                    }));
+                    // Trigger Response
                     d.send(JSON.stringify({ type: "response.create" }));
 
-                    if (result.success) {
+                    // UI Feedback
+                    if (result.success && feedbackMsg) {
                         const fb = document.getElementById("actionFeedback");
-                        fb.innerText = "Email envoyé !"; fb.style.opacity = 1;
+                        fb.innerText = feedbackMsg; fb.style.opacity = 1;
                         setTimeout(() => fb.style.opacity = 0, 4000);
                     }
-                } catch (e) { console.error(e); }
+                }
+            } catch (e) {
+                console.error("Tool Error:", e);
+                // Send error to model so it knows
+                d.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: { type: "function_call_output", call_id: item.call_id, output: JSON.stringify({ error: e.message }) }
+                }));
+                d.send(JSON.stringify({ type: "response.create" }));
             }
         }
 
