@@ -35,27 +35,40 @@
                 </div>
 
                 <style>
-                    /* TRANSITIONS BACKGROUND */
+                    /* TRANSITIONS BACKGROUND (Effet Pièces Coulissantes) */
                     body {
-                        transition: background 1s ease, color 0.5s ease;
+                        /* Dégradé large : [RECAP (Rose)] --- [ACCUEIL (Neutre)] --- [AGENT (Bleu Nuit)] */
+                        background: linear-gradient(90deg, #fff1f2 10%, #f8fafc 50%, #0f172a 90%);
+                        background-size: 300% 100%;
+                        background-position: 50% 0;
+                        /* Position Initiale : CENTRE */
+                        transition: background-position 1.2s cubic-bezier(0.4, 0.0, 0.2, 1), color 0.5s ease;
+                        min-height: 100vh;
                     }
 
-                    /* Thèmes */
+                    /* Pièce de Gauche : RECAP */
                     body.theme-recap {
-                        background: radial-gradient(circle at center, #fff1f2, #ffe4e6) !important;
-                        /* Rose clair */
+                        background-position: 0% 0 !important;
                     }
 
+                    /* Pièce de Droite : AGENT */
                     body.theme-agent {
-                        background: radial-gradient(circle at center, #1e3a8a, #0f172a) !important;
-                        /* Bleu nuit foncé */
+                        background-position: 100% 0 !important;
                         color: white !important;
                     }
 
                     body.theme-agent .card.glass-static {
-                        background: rgba(255, 255, 255, 0.1) !important;
-                        /* Glass plus sombre */
+                        background: rgba(255, 255, 255, 0.05) !important;
                         border: 1px solid rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(10px);
+                    }
+
+                    body.theme-agent .vocal-user-info {
+                        color: #bfdbfe !important;
+                    }
+
+                    body.theme-agent .vocal-status {
+                        color: #93c5fd !important;
                     }
 
                     body.theme-agent .vocal-user-info {
