@@ -310,9 +310,9 @@
             // Construction du Payload
             let config = {
                 profile_id: PROFILE_ID,
-                state: 'start',
+                state: 'init_choice', // CHANGEMENT MAJEUR : ON COMMENCE PAR LE CHOIX
                 // Paramètres du formulaire
-                days_back: VOCAL_CONFIG.days_start, // Simplification pour le backend
+                days_back: VOCAL_CONFIG.days_start,
                 voice: VOCAL_CONFIG.voice,
                 speed: VOCAL_CONFIG.speed,
                 sort: VOCAL_CONFIG.sort,
@@ -352,6 +352,18 @@
                 const feedback = jsonResponse.feedback;
                 const currentEmailId = jsonResponse.current_email_id;
                 const audioBase64 = jsonResponse.audio_base64;
+
+                // --- GESTION REDIRECTION (Agent Mial) ---
+                if (action === "redirect") {
+                    if (feedback) {
+                        const fbDiv = document.getElementById("actionFeedback");
+                        if (fbDiv) { fbDiv.innerText = feedback; fbDiv.style.opacity = 1; }
+                    }
+                    setTimeout(() => {
+                        window.location.href = jsonResponse.url;
+                    }, 1500); // Petit délai pour lire le feedback
+                    return;
+                }
 
                 if (action === "stop") {
                     if (feedback) {
