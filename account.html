@@ -179,7 +179,10 @@
                            <div style="font-weight:600;">${escapeHtml(mb.email)}</div>
                            <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
                         </div>
-                        <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                        <div style="display:flex; gap:8px;">
+                           <a href="onboarding.html" class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);">Reconnecter</a>
+                           <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                        </div>
                     </div>
                 `).join('');
             } catch (e) {
