@@ -34,16 +34,118 @@
                     <span class="vocal-user-info" id="user-display">Chargement...</span>
                 </div>
 
+                <style>
+                    /* MICRO MODERNE STYLE (Mial Live) */
+                    .mic-wrapper {
+                        position: relative;
+                        width: 120px;
+                        height: 120px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                        margin: 0 auto;
+                    }
+
+                    .mic-wrapper:hover {
+                        transform: scale(1.05);
+                    }
+
+                    .mic-button {
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #0ea5e9, #2563eb);
+                        box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 2;
+                        position: relative;
+                        border: none;
+                        outline: none;
+                        cursor: pointer;
+                    }
+
+                    .mic-button svg {
+                        width: 32px;
+                        height: 32px;
+                        fill: white;
+                        stroke: none;
+                    }
+
+                    .ripple {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        background: rgba(14, 165, 233, 0.3);
+                        opacity: 0;
+                        z-index: 1;
+                        transform: scale(0.8);
+                        pointer-events: none;
+                    }
+
+                    /* Etats d'animation */
+                    .mic-wrapper.is-listening .ripple {
+                        animation: ripple-anim 2s infinite;
+                    }
+
+                    .mic-wrapper.is-listening .ripple:nth-child(1) {
+                        animation-delay: 0s;
+                    }
+
+                    .mic-wrapper.is-listening .ripple:nth-child(2) {
+                        animation-delay: 0.5s;
+                    }
+
+                    .mic-wrapper.is-listening .ripple:nth-child(3) {
+                        animation-delay: 1.0s;
+                    }
+
+                    @keyframes ripple-anim {
+                        0% {
+                            transform: scale(0.8);
+                            opacity: 0.6;
+                        }
+
+                        100% {
+                            transform: scale(2.0);
+                            opacity: 0;
+                        }
+                    }
+
+                    /* Override status classes for the inner button if needed */
+                    .mic-button.recording {
+                        background: linear-gradient(135deg, #ef4444, #b91c1c);
+                        box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4);
+                    }
+
+                    .mic-button.processing {
+                        background: linear-gradient(135deg, #f59e0b, #d97706);
+                    }
+
+                    .mic-button.playing {
+                        background: linear-gradient(135deg, #10b981, #059669);
+                    }
+                </style>
+
                 <div class="vocal-container" style="min-height:auto;">
-                    <button id="main-mic" class="mic-btn-large" onclick="toggleVocalSession()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                            <line x1="12" y1="19" x2="12" y2="23"></line>
-                            <line x1="8" y1="23" x2="16" y2="23"></line>
-                        </svg>
-                    </button>
+                    <!-- NOUVEAU MICRO -->
+                    <div class="mic-wrapper" id="micWrapper" onclick="toggleVocalSession()">
+                        <div class="ripple"></div>
+                        <div class="ripple"></div>
+                        <div class="ripple"></div>
+                        <button class="mic-button" id="main-mic">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                                <path
+                                    d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <div id="status-display" class="vocal-status">Appuyez pour parler</div>
                     <div id="actionFeedback" style="
@@ -662,14 +764,32 @@
         }
 
         function updateUI(cls, txt, transcript = "") {
-            document.getElementById('main-mic').className = `mic-btn-large ${cls}`;
+            const btn = document.getElementById('main-mic');
+            const wrapper = document.getElementById('micWrapper');
+
+            // Reset classes
+            btn.className = 'mic-button';
+            btn.classList.add(cls); // playing, recording, processing
+
+            // Animation Ripple
+            if (cls === 'playing' || cls === 'recording' || cls === 'processing') {
+                wrapper.classList.add('is-listening');
+            } else {
+                wrapper.classList.remove('is-listening');
+            }
+
             document.getElementById('status-display').textContent = txt;
             if (transcript) document.getElementById('transcript-display').textContent = `"${transcript}"`;
         }
 
         function resetUI(txt = "Prêt") {
             SESSION_ACTIVE = false;
-            document.getElementById('main-mic').className = 'mic-btn-large';
+            const btn = document.getElementById('main-mic');
+            const wrapper = document.getElementById('micWrapper');
+
+            if (btn) btn.className = 'mic-button';
+            if (wrapper) wrapper.classList.remove('is-listening');
+
             document.getElementById('status-display').textContent = txt;
         }
 
