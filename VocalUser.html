@@ -382,7 +382,7 @@
                     }
                 }
 
-                updateUI('playing', "Mial parle...");
+                updateUI('playing', "Mial parle...", jsonResponse.user_text || "");
                 if (audioBase64) {
                     const audioBlob = base64ToBlob(audioBase64, 'audio/wav');
                     await playAudio(audioBlob);
@@ -455,9 +455,10 @@
             });
         }
 
-        function updateUI(cls, txt) {
+        function updateUI(cls, txt, transcript = "") {
             document.getElementById('main-mic').className = `mic-btn-large ${cls}`;
             document.getElementById('status-display').textContent = txt;
+            if (transcript) document.getElementById('transcript-display').textContent = `"${transcript}"`;
         }
 
         function resetUI(txt = "Prêt") {
