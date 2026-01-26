@@ -80,6 +80,21 @@
                         <p class="muted">Chargement...</p>
                     </div>
                 </div>
+
+                <!-- App Settings (Mobile Only) -->
+                <div class="card glass-static" id="card-app-settings" style="padding: 24px; display:none;">
+                    <h3 style="margin-top:0;">Application Mobile</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600;">Connexion Biométrique</div>
+                            <div class="muted" style="font-size:0.8rem;">Utiliser l'empreinte ou le visage</div>
+                        </div>
+                        <label class="toggle-wrapper">
+                            <input type="checkbox" id="bio-toggle" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <!-- Danger Zone -->
@@ -132,10 +147,40 @@
             } catch (e) { window.location.href = 'login.html'; }
 
             // Logout
-            document.getElementById('logout-btn').addEventListener('click', async () => {
-                try { await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }); } catch (e) { }
-                window.location.href = 'login.html';
-            });
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    try { await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }); } catch (e) { }
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // 0. Biometric Toggle Logic (Mobile Only)
+            if (window.Capacitor) {
+                const card = document.getElementById('card-app-settings');
+                const toggle = document.getElementById('bio-toggle');
+
+                if (card) card.style.display = 'block';
+
+                const loadBio = async () => {
+                    if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.Preferences || !toggle) return;
+                    const { value } = await window.Capacitor.Plugins.Preferences.get({ key: 'mial_biometric_enabled' });
+                    toggle.checked = (value === 'true');
+                };
+                setTimeout(loadBio, 500); // Small delay to ensure plugins ready
+
+                if (toggle) {
+                    toggle.addEventListener('change', async (e) => {
+                        if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.Preferences) return;
+                        if (e.target.checked) {
+                            await window.Capacitor.Plugins.Preferences.set({ key: 'mial_biometric_enabled', value: 'true' });
+                        } else {
+                            await window.Capacitor.Plugins.Preferences.set({ key: 'mial_biometric_enabled', value: 'false' });
+                            await window.Capacitor.Plugins.Preferences.remove({ key: 'mial_saved_password' });
+                        }
+                    });
+                }
+            }
         });
 
         // 1. Password Change
