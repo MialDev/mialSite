@@ -163,20 +163,35 @@
                 if (card) card.style.display = 'block';
 
                 const loadBio = async () => {
-                    if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.Preferences || !toggle) return;
-                    const { value } = await window.Capacitor.Plugins.Preferences.get({ key: 'mial_biometric_enabled' });
-                    toggle.checked = (value === 'true');
+                    // Wait for injection
+                    if (!window.MialBiometric) { setTimeout(loadBio, 200); return; }
+                    toggle.checked = await window.MialBiometric.isEnabled();
                 };
-                setTimeout(loadBio, 500); // Small delay to ensure plugins ready
+                loadBio();
 
                 if (toggle) {
                     toggle.addEventListener('change', async (e) => {
-                        if (!window.Capacitor.Plugins || !window.Capacitor.Plugins.Preferences) return;
-                        if (e.target.checked) {
-                            await window.Capacitor.Plugins.Preferences.set({ key: 'mial_biometric_enabled', value: 'true' });
-                        } else {
-                            await window.Capacitor.Plugins.Preferences.set({ key: 'mial_biometric_enabled', value: 'false' });
-                            await window.Capacitor.Plugins.Preferences.remove({ key: 'mial_saved_password' });
+                        if (!window.MialBiometric) return;
+
+                        toggle.disabled = true;
+                        try {
+                            if (e.target.checked) {
+                                // Enable (Fetch Secure Token + Store in KeyStore)
+                                const email = document.getElementById('account-email-display').textContent.trim();
+                                if (!email || email === '...' || email === 'Utilisateur') throw new Error("Email non chargé");
+
+                                await window.MialBiometric.enable(email);
+                                alert("Biométrie activée !");
+                            } else {
+                                // Disable (Remove from KeyStore)
+                                await window.MialBiometric.disable();
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert("Erreur: " + err.message);
+                            e.target.checked = !e.target.checked; // Rollback UI
+                        } finally {
+                            toggle.disabled = false;
                         }
                     });
                 }
