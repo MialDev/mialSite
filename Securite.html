@@ -65,10 +65,12 @@
                             <h3 style="margin:0; font-size:1.1rem;">Gmail</h3>
                         </div>
                         <p style="font-size:0.9rem; color:var(--muted); margin-bottom:8px;"><strong>Méthode :</strong>
-                            Mot de passe d'application</p>
+                            OAuth2 (Moderne)</p>
                         <p style="font-size:0.9rem; color:var(--muted); line-height:1.5;">
-                            Vous générez une clé unique de 16 caractères dédiée uniquement à Mial.
-                            Cette clé est stockée de manière chiffrée (AES-256) dans notre base de données sécurisée.
+                            Nous n'avons <strong>jamais</strong> accès à votre mot de passe Google. Nous utilisons un
+                            "jeton
+                            d'accès" sécurisé fourni par Google. Les tokens sont chiffrés (AES-128) en base de données.
+                            Vous pouvez révoquer cet accès à tout moment depuis votre compte Google.
                         </p>
                     </div>
 

@@ -83,14 +83,28 @@
                             </div>
                         </div>
 
-                        <div id="instr-gmail" class="instruction-block instruction-block-styled mb-20">
-                            <strong>Gmail :</strong>
-                            <ul class="instruction-list">
-                                <li>Activez la <strong>Validation en deux étapes</strong> sur votre compte Google.</li>
-                                <li>Allez dans <em>Gérer votre compte Google > Sécurité</em>.</li>
-                                <li>Cherchez "Mots de passe d'application".</li>
-                                <li>Générez un mot de passe pour "Messagerie". Copiez la clé de 16 caractères.</li>
-                            </ul>
+                        <div id="instr-gmail" class="instruction-block center mb-24">
+                            <!-- OAuth Button for Gmail -->
+                            <button type="button" id="btn-gmail-auth" class="btn btn-primary w-full"
+                                style="justify-content:center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    style="margin-right: 8px;">
+                                    <path fill="currentColor"
+                                        d="M12 11.5v-1c0-.3.2-.5.5-.5h2l-3-3-3 3h2c.3 0 .5.2.5.5v1h-1.5c-.3 0-.4.2-.3.4l2 3.1c.2.3.5.3.6 0l2-3.1c.1-.2 0-.4-.3-.4H12z" />
+                                    <path fill="currentColor"
+                                        d="M20.49 7.52L19 12h-1.5l1.27-3.85c.11-.32-.01-.67-.31-.85l-4.08-2.47a1.5 1.5 0 0 0-1.55-.01L9.88 7.08H7.5L12 4l5.09 3.07c.46.28.77.78.77 1.33v.12h2.63z" />
+                                    <path fill="currentColor"
+                                        d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8z" />
+                                </svg>
+                                Se connecter avec Google
+                            </button>
+                            <div class="mt-4 muted text-085rem">
+                                <p style="margin-bottom: 4px;"><strong>🔒 Connexion Officielle Google</strong></p>
+                                <p style="font-size: 0.8rem; opacity: 0.85;">
+                                    Nous utilisons le protocole sécurisé OAuth2. Nous n'avons jamais accès à votre mot
+                                    de passe et vous pouvez révoquer l'accès à tout moment.
+                                </p>
+                            </div>
                         </div>
 
                         <div id="instr-other" class="instruction-block instruction-block-styled mb-20"
@@ -207,7 +221,7 @@
                 document.getElementById('instr-outlook').style.display = 'block';
             } else if (provider === 'gmail') {
                 document.getElementById('instr-gmail').style.display = 'block';
-                document.getElementById('manual-fields').style.display = 'block';
+                // Gmail now uses OAuth2 - no manual fields needed
             } else {
                 // Mode Autre : Contact form uniquement
                 document.getElementById('instr-other-contact').style.display = 'block';
@@ -239,6 +253,30 @@
                         window.location.href = data.url;
                     } else {
                         throw new Error("URL de redirection manquante");
+                    }
+                } catch (e) {
+                    err.textContent = e.message;
+                    err.style.display = 'block';
+                }
+            });
+        }
+
+        // --- OAUTH LOGIC (Gmail) ---
+        const btnGmail = document.getElementById('btn-gmail-auth');
+        if (btnGmail) {
+            btnGmail.addEventListener('click', async () => {
+                const err = document.getElementById('error-message');
+                try {
+                    const res = await fetch(apiUrl('/auth/google/url'), {
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error("Erreur lors de l'initiation OAuth Google");
+                    const data = await res.json();
+
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error("URL de redirection Google manquante");
                     }
                 } catch (e) {
                     err.textContent = e.message;
