@@ -240,7 +240,12 @@
                            <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
                         </div>
                         <div style="display:flex; gap:8px;">
-                           <a href="onboarding.html" class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);">Reconnecter</a>
+                           ${mb.provider === 'gmail'
+                        ? `<button class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);" onclick="reconnectGoogle('${mb.email_account_id || mb.id}')">Reconnecter</button>`
+                        : mb.provider === 'microsoft'
+                            ? `<button class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);" onclick="reconnectMicrosoft('${mb.email_account_id || mb.id}')">Reconnecter</button>`
+                            : `<a href="onboarding.html" class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);">Reconnecter</a>`
+                    }
                            <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
                         </div>
                     </div>
@@ -262,6 +267,39 @@
                 if (!res.ok) throw new Error(await res.text());
                 loadMailboxes();
             } catch (e) { alert("Erreur: " + e.message); }
+        };
+
+        // Reconnect Google (Gmail)
+        window.reconnectGoogle = async function (id) {
+            try {
+                const res = await fetch(apiUrl(`/auth/google/url?email_account_id=${encodeURIComponent(id)}`), {
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error("URL de reconnexion manquante");
+                }
+            } catch (e) { alert("Erreur reconnexion Google: " + e.message); }
+        };
+
+        // Reconnect Microsoft
+        window.reconnectMicrosoft = async function (id) {
+            try {
+                const redirectUri = window.location.origin + '/callback.html';
+                const res = await fetch(apiUrl(`/auth/microsoft/url?email_account_id=${encodeURIComponent(id)}&redirect_uri=${encodeURIComponent(redirectUri)}`), {
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error("URL de reconnexion manquante");
+                }
+            } catch (e) { alert("Erreur reconnexion Microsoft: " + e.message); }
         };
 
         // 3. Delete Account
