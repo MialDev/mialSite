@@ -80,6 +80,21 @@
                         <p class="muted">Chargement...</p>
                     </div>
                 </div>
+
+                <!-- App Settings (Mobile Only) -->
+                <div class="card glass-static" id="card-app-settings" style="padding: 24px; display:none;">
+                    <h3 style="margin-top:0;">Application Mobile</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600;">Connexion Biométrique</div>
+                            <div class="muted" style="font-size:0.8rem;">Utiliser l'empreinte ou le visage</div>
+                        </div>
+                        <label class="toggle-wrapper">
+                            <input type="checkbox" id="bio-toggle" class="toggle-input">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <!-- Danger Zone -->
@@ -132,10 +147,55 @@
             } catch (e) { window.location.href = 'login.html'; }
 
             // Logout
-            document.getElementById('logout-btn').addEventListener('click', async () => {
-                try { await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }); } catch (e) { }
-                window.location.href = 'login.html';
-            });
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    try { await fetch(apiUrl('/auth/logout'), { method: 'POST', credentials: 'include' }); } catch (e) { }
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // 0. Biometric Toggle Logic (Mobile Only)
+            if (window.Capacitor) {
+                const card = document.getElementById('card-app-settings');
+                const toggle = document.getElementById('bio-toggle');
+
+                if (card) card.style.display = 'block';
+
+                const loadBio = async () => {
+                    // Wait for injection
+                    if (!window.MialBiometric) { setTimeout(loadBio, 200); return; }
+                    toggle.checked = await window.MialBiometric.isEnabled();
+                };
+                loadBio();
+
+                if (toggle) {
+                    toggle.addEventListener('change', async (e) => {
+                        if (!window.MialBiometric) return;
+
+                        toggle.disabled = true;
+                        try {
+                            if (e.target.checked) {
+                                // Enable (Fetch Secure Token + Store in KeyStore)
+                                const email = document.getElementById('account-email-display').textContent.trim();
+                                if (!email || email === '...' || email === 'Utilisateur') throw new Error("Email non chargé");
+
+                                await window.MialBiometric.enable(email);
+                                alert("Biométrie activée !");
+                            } else {
+                                // Disable (Remove from KeyStore)
+                                await window.MialBiometric.disable();
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert("Erreur: " + err.message);
+                            e.target.checked = !e.target.checked; // Rollback UI
+                        } finally {
+                            toggle.disabled = false;
+                        }
+                    });
+                }
+            }
         });
 
         // 1. Password Change
@@ -179,7 +239,10 @@
                            <div style="font-weight:600;">${escapeHtml(mb.email)}</div>
                            <div class="muted" style="font-size:0.8rem;">${escapeHtml(mb.provider || 'Gmail')}</div>
                         </div>
-                        <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                        <div style="display:flex; gap:8px;">
+                           <a href="onboarding.html" class="btn btn-ghost btn-small" style="font-size:0.8rem; color:var(--blue);">Reconnecter</a>
+                           <button class="btn btn-ghost btn-small" style="color:#ef4444; font-size:0.8rem;" onclick="disconnectMailbox('${mb.email_account_id || mb.id}')">Déconnecter</button>
+                        </div>
                     </div>
                 `).join('');
             } catch (e) {
