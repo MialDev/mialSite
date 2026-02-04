@@ -315,6 +315,44 @@
             color: #94a3b8;
             padding: 8px;
         }
+
+        /* Highlight effect for navigation */
+        @keyframes highlight-fade {
+            0% {
+                background-color: #fef3c7;
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .row-highlight {
+            animation: highlight-fade 2s ease-out;
+        }
+
+        .filter-highlight {
+            background: linear-gradient(90deg, #fef3c7 0%, transparent 100%);
+            padding: 4px 8px;
+            border-radius: 4px;
+            animation: highlight-fade 3s ease-out;
+        }
+
+        /* Open in User Tree button */
+        .btn-tree {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            background: #f0f9ff;
+            color: #0ea5e9;
+            border: 1px solid #bae6fd;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-tree:hover {
+            background: #e0f2fe;
+        }
     </style>
 </head>
 
@@ -580,17 +618,18 @@
                 sortCol.innerHTML = '<option value="">-- Colonne --</option>' + data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
 
                 // Headers
+                const needsActionCol = currentTable === 'app_user' || currentTable === 'email_account';
                 thead.innerHTML = '<tr>' + data.columns.map(c => {
                     const isFK = fkMap[c] ? ' <span class="badge badge-fk">FK</span>' : '';
                     return `<th>${escapeHtml(c)}${isFK}</th>`;
-                }).join('') + '</tr>';
+                }).join('') + (needsActionCol ? '<th>Actions</th>' : '') + '</tr>';
 
                 // Rows
                 if (data.rows.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="99" style="text-align:center; color:#64748b;">Aucune donnée</td></tr>';
                 } else {
                     tbody.innerHTML = data.rows.map(row => {
-                        return '<tr>' + data.columns.map(col => {
+                        const rowHtml = data.columns.map(col => {
                             let val = row[col];
                             if (val === null) val = '<span style="color:#94a3b8;">NULL</span>';
                             else val = escapeHtml(String(val));
@@ -598,10 +637,21 @@
                             // FK link
                             if (fkMap[col] && row[col] !== null) {
                                 const fk = fkMap[col];
-                                val = `<span class="fk-link" onclick="navigateFK('${fk.ref_schema}', '${fk.ref_table}', '${fk.ref_column}', '${escapeHtml(String(row[col]))}')">${val}</span>`;
+                                val = `<span class="fk-link" onclick="navigateFKWithHighlight('${fk.ref_schema}', '${fk.ref_table}', '${fk.ref_column}', '${escapeHtml(String(row[col]))}')">${val}</span>`;
                             }
                             return `<td title="${escapeHtml(String(row[col] ?? ''))}">${val}</td>`;
-                        }).join('') + '</tr>';
+                        }).join('');
+
+                        // Add Open in User Tree button for app_user and email_account
+                        let actionCell = '';
+                        if (currentTable === 'app_user' && row.id) {
+                            actionCell = `<td><button class="btn-tree" onclick="openUserTree('${row.id}', null)">🌳 User Tree</button></td>`;
+                        } else if (currentTable === 'email_account' && (row.user_id || row.app_user_id)) {
+                            const uid = row.user_id || row.app_user_id;
+                            actionCell = `<td><button class="btn-tree" onclick="openUserTree('${uid}', null)">🌳 User Tree</button></td>`;
+                        }
+
+                        return '<tr>' + rowHtml + actionCell + '</tr>';
                     }).join('');
                 }
 
@@ -704,21 +754,21 @@
                 let html = '';
 
                 // Outgoing
-                html += `<div class="schema-section"><h4>Outgoing (cette table → autres)</h4>`;
+                html += `<div class="schema-section"><h4>Cette table référence…</h4>`;
                 if (data.outgoing.length === 0) {
                     html += '<p class="muted">Aucune FK sortante</p>';
                 } else {
                     html += '<ul>';
                     for (const ref of data.outgoing) {
                         html += `<li>${escapeHtml(ref.from_column)} → 
-                            <span class="ref-link" onclick="selectTable('${ref.to_schema}', '${ref.to_table}')">${ref.to_schema}.${ref.to_table}</span>.${ref.to_column}</li>`;
+                            <span class="ref-link" onclick="navigateFKWithHighlight('${ref.to_schema}', '${ref.to_table}', '${ref.to_column}')">${ref.to_schema}.${ref.to_table}</span>.${ref.to_column}</li>`;
                     }
                     html += '</ul>';
                 }
                 html += '</div>';
 
                 // Incoming
-                html += `<div class="schema-section"><h4>Incoming (autres → cette table)</h4>`;
+                html += `<div class="schema-section"><h4>Tables qui référencent celle-ci…</h4>`;
                 if (data.incoming.length === 0) {
                     html += '<p class="muted">Aucune table ne référence celle-ci</p>';
                 } else {
@@ -748,6 +798,148 @@
                 document.getElementById('filter-op').value = 'eq';
                 document.getElementById('filter-val').value = value;
             });
+        }
+
+        // Navigation with highlight effect
+        function navigateFKWithHighlight(refSchema, refTable, refColumn, value) {
+            currentFilterCol = refColumn;
+            currentFilterOp = 'eq';
+            currentFilterVal = value || '';
+
+            selectTable(refSchema, refTable).then(() => {
+                document.getElementById('filter-col').value = refColumn;
+                document.getElementById('filter-op').value = 'eq';
+                document.getElementById('filter-val').value = value || '';
+
+                // Add highlight effect to show navigation context
+                const filterForm = document.querySelector('.filter-form');
+                if (filterForm) {
+                    filterForm.classList.add('filter-highlight');
+                    setTimeout(() => filterForm.classList.remove('filter-highlight'), 3000);
+                }
+
+                // Highlight rows briefly
+                setTimeout(() => {
+                    document.querySelectorAll('#data-tbody tr').forEach(tr => {
+                        tr.classList.add('row-highlight');
+                    });
+                }, 200);
+            });
+        }
+
+        // Open User Tree with a specific user
+        function openUserTree(userId, email) {
+            // Switch to User Tree tab
+            const btn = document.querySelector('.tab-btn[data-tab="user-tree"]');
+            if (btn) btn.click();
+
+            // Set search value and trigger search
+            const searchInput = document.getElementById('ut-search');
+            if (searchInput) {
+                searchInput.value = userId || email || '';
+            }
+
+            // Trigger search
+            setTimeout(() => searchUserTree(), 100);
+        }
+
+        // Search User Tree using new API endpoint
+        async function searchUserTree() {
+            const query = document.getElementById('ut-search').value.trim();
+            const resDiv = document.getElementById('ut-results');
+            const treeDiv = document.getElementById('ut-tree-view');
+
+            if (!query) {
+                resDiv.innerHTML = '<div class="muted">Entrez un email ou UUID pour rechercher.</div>';
+                treeDiv.innerHTML = '';
+                return;
+            }
+
+            resDiv.innerHTML = '<div class="ut-loading">Recherche...</div>';
+            treeDiv.innerHTML = '';
+
+            try {
+                // Determine if query is UUID or email
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+                const params = isUUID ? `user_id=${encodeURIComponent(query)}` : `email=${encodeURIComponent(query)}`;
+
+                const res = await fetch(apiUrl(`/admin/db/api/user_tree?${params}`), { credentials: 'include' });
+                if (!res.ok) throw new Error('API error');
+
+                const data = await res.json();
+
+                if (!data.ok) {
+                    resDiv.innerHTML = `<div class="ut-empty">${data.error === 'not_found' ? 'Utilisateur non trouvé' : data.message || 'Erreur'}</div>`;
+                    return;
+                }
+
+                resDiv.innerHTML = `<div class="muted" style="font-size:0.85rem;">Trouvé via: ${data.meta?.lookups?.method || 'direct'}</div>`;
+
+                // Render tree from API response
+                renderUserTree(data);
+
+            } catch (e) {
+                resDiv.innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        // Render tree from user_tree API response
+        function renderUserTree(data) {
+            const treeDiv = document.getElementById('ut-tree-view');
+            treeDiv.innerHTML = '';
+
+            // Root user card
+            const rootCard = createNodeCard('public', 'app_user', data.root, 'Utilisateur', true);
+            treeDiv.appendChild(rootCard);
+
+            // Email accounts container
+            if (data.email_accounts && data.email_accounts.length > 0) {
+                const eaContainer = document.createElement('div');
+                eaContainer.className = 'ut-children';
+
+                const eaTitle = document.createElement('h5');
+                eaTitle.style.cssText = 'margin:0 0 8px 0; color:#64748b;';
+                eaTitle.textContent = `Email Accounts (${data.email_accounts.length})`;
+                eaContainer.appendChild(eaTitle);
+
+                for (const ea of data.email_accounts) {
+                    const eaCard = createNodeCard('public', 'email_account', ea, null, false);
+                    eaContainer.appendChild(eaCard);
+
+                    // OAuth tokens for this email account
+                    const eaId = String(ea.id);
+                    if (data.oauth_tokens && data.oauth_tokens[eaId]) {
+                        const tokenBox = document.createElement('div');
+                        tokenBox.className = 'ut-children';
+                        const tokenTitle = document.createElement('h5');
+                        tokenTitle.style.cssText = 'margin:0 0 8px 0; color:#64748b;';
+                        tokenTitle.textContent = 'OAuth Token';
+                        tokenBox.appendChild(tokenTitle);
+
+                        for (const token of data.oauth_tokens[eaId]) {
+                            tokenBox.appendChild(createNodeCard('public', 'oauth_token', token, null, false));
+                        }
+                        eaCard.appendChild(tokenBox);
+                    }
+
+                    // Recap profiles for this email account
+                    if (data.recap && data.recap.recap_profile && data.recap.recap_profile[eaId]) {
+                        const profileBox = document.createElement('div');
+                        profileBox.className = 'ut-children';
+                        const profileTitle = document.createElement('h5');
+                        profileTitle.style.cssText = 'margin:0 0 8px 0; color:#64748b;';
+                        profileTitle.textContent = 'Recap Profiles';
+                        profileBox.appendChild(profileTitle);
+
+                        for (const profile of data.recap.recap_profile[eaId]) {
+                            profileBox.appendChild(createNodeCard('public', 'recap_profile', profile, null, false));
+                        }
+                        eaCard.appendChild(profileBox);
+                    }
+                }
+
+                treeDiv.appendChild(eaContainer);
+            }
         }
 
         // Pagination
