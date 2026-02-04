@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DB Inspector — mial Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- Admin Guard -->
+    <script src="/api.js"></script>
+    <script>
+        (async () => {
+            try {
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (!res.ok) {
+                    if (res.status === 401) window.location.replace('/Connexion.html');
+                    else window.location.replace('/dashboard.html');
+                    return;
+                }
+                const user = await res.json();
+                if (user.role !== 'admin' && user.is_admin !== true) {
+                    window.location.replace('/dashboard.html');
+                }
+            } catch (e) {
+                window.location.replace('/Connexion.html');
+            }
+        })();
+    </script>
+
+    <meta name="theme-color" content="#1fb6ff">
+    <style>
+        .db-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            min-height: 600px;
+        }
+
+        @media (max-width: 900px) {
+            .db-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .db-sidebar {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .db-main {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            transition: background 0.15s;
+        }
+
+        .table-item:hover {
+            background: #e2e8f0;
+        }
+
+        .table-item.active {
+            background: var(--blue);
+            color: white;
+        }
+
+        .table-item .row-count {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .schema-label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 16px 0 8px 0;
+            text-transform: uppercase;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-radius: 6px 6px 0 0;
+            color: #64748b;
+        }
+
+        .tab-btn.active {
+            background: var(--blue);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f1f5f9;
+        }
+
+        .fk-link {
+            color: var(--blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .fk-link:hover {
+            color: #0ea5e9;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-form select,
+        .filter-form input {
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-off {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-on {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-pk {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-fk {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .schema-section {
+            margin-bottom: 24px;
+        }
+
+        .schema-section h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .ref-link {
+            color: var(--blue);
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .table-wrapper {
+            max-height: 500px;
+            overflow: auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="site-header" class="nav">
+        <div id="header-placeholder"></div>
+    </header>
+
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
+            <!-- Hero -->
+            <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h1 style="font-size: 1.8rem; margin-bottom: 8px;">DB Inspector</h1>
+                        <p class="muted">Exploration lecture seule de la base PostgreSQL</p>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <span id="masking-badge" class="badge badge-off">Masking: OFF</span>
+                        <a href="/admin/dashboard.html" class="btn btn-ghost btn-small">Dashboard</a>
+                        <a href="/admin/analytics.html" class="btn btn-ghost btn-small">Analytics</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="db-container">
+                <!-- Sidebar: Tables List -->
+                <div class="db-sidebar">
+                    <input type="text" class="search-input" id="table-search" placeholder="Rechercher une table...">
+                    <div id="tables-list">
+                        <div class="loading">Chargement...</div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="db-main">
+                    <div id="no-selection" style="text-align:center; padding: 60px; color: #64748b;">
+                        <p>Sélectionnez une table à gauche pour commencer.</p>
+                    </div>
+
+                    <div id="table-view" style="display: none;">
+                        <h2 id="current-table-name" style="margin: 0 0 16px 0; font-size: 1.3rem;"></h2>
+
+                        <div class="tabs">
+                            <button class="tab-btn active" data-tab="data">Data</button>
+                            <button class="tab-btn" data-tab="schema">Schema</button>
+                            <button class="tab-btn" data-tab="references">References</button>
+                        </div>
+
+                        <!-- Data Tab -->
+                        <div id="tab-data" class="tab-content active">
+                            <div class="filter-form">
+                                <select id="filter-col">
+                                    <option value="">-- Colonne --</option>
+                                </select>
+                                <select id="filter-op">
+                                    <option value="eq">=</option>
+                                    <option value="ilike">ILIKE</option>
+                                    <option value="like">LIKE</option>
+                                    <option value="gt">&gt;</option>
+                                    <option value="gte">&gt;=</option>
+                                    <option value="lt">&lt;</option>
+                                    <option value="lte">&lt;=</option>
+                                    <option value="isnull">IS NULL</option>
+                                    <option value="notnull">IS NOT NULL</option>
+                                </select>
+                                <input type="text" id="filter-val" placeholder="Valeur...">
+                                <button class="btn btn-primary btn-small" onclick="applyFilter()">Filtrer</button>
+                                <button class="btn btn-ghost btn-small" onclick="clearFilter()">Reset</button>
+
+                                <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+                                    <label style="font-size: 0.85rem;">Tri:</label>
+                                    <select id="sort-col"></select>
+                                    <select id="sort-dir">
+                                        <option value="asc">ASC</option>
+                                        <option value="desc">DESC</option>
+                                    </select>
+                                    <button class="btn btn-ghost btn-small" onclick="applySort()">Trier</button>
+                                </div>
+                            </div>
+
+                            <div class="table-wrapper">
+                                <table class="data-table" id="data-table">
+                                    <thead id="data-thead"></thead>
+                                    <tbody id="data-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="pagination">
+                                <button class="btn btn-ghost btn-small" id="btn-prev" onclick="prevPage()">←
+                                    Précédent</button>
+                                <span id="pagination-info">0 - 0</span>
+                                <button class="btn btn-ghost btn-small" id="btn-next" onclick="nextPage()">Suivant
+                                    →</button>
+                                <span class="muted" style="margin-left: auto;" id="total-estimate"></span>
+                            </div>
+                        </div>
+
+                        <!-- Schema Tab -->
+                        <div id="tab-schema" class="tab-content">
+                            <div id="schema-content">
+                                <div class="loading">Chargement...</div>
+                            </div>
+                        </div>
+
+                        <!-- References Tab -->
+                        <div id="tab-references" class="tab-content">
+                            <div id="references-content">
+                                <div class="loading">Chargement...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/main.js"></script>
+    <script>
+        // State
+        let currentSchema = null;
+        let currentTable = null;
+        let currentOffset = 0;
+        let currentLimit = 50;
+        let currentOrderBy = null;
+        let currentOrderDir = 'asc';
+        let currentFilterCol = null;
+        let currentFilterOp = null;
+        let currentFilterVal = null;
+        let fkMap = {};
+        let allColumns = [];
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTables();
+
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // Search filter
+            document.getElementById('table-search').addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                document.querySelectorAll('.table-item').forEach(item => {
+                    const name = item.dataset.table.toLowerCase();
+                    item.style.display = name.includes(q) ? 'block' : 'none';
+                });
+            });
+        });
+
+        async function loadTables() {
+            try {
+                const res = await fetch(apiUrl('/admin/db/api/tables'), { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load tables');
+                const data = await res.json();
+
+                let html = '';
+                for (const schemaInfo of data.schemas) {
+                    html += `<div class="schema-label">${escapeHtml(schemaInfo.schema)}</div>`;
+                    for (const tbl of schemaInfo.tables) {
+                        html += `
+                            <div class="table-item" data-schema="${schemaInfo.schema}" data-table="${tbl.name}" onclick="selectTable('${schemaInfo.schema}', '${tbl.name}')">
+                                <div>${escapeHtml(tbl.name)}</div>
+                                <div class="row-count">~${formatNumber(tbl.row_estimate)} rows</div>
+                            </div>
+                        `;
+                    }
+                }
+                document.getElementById('tables-list').innerHTML = html;
+            } catch (e) {
+                document.getElementById('tables-list').innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        async function selectTable(schema, table) {
+            currentSchema = schema;
+            currentTable = table;
+            currentOffset = 0;
+            currentFilterCol = null;
+            currentFilterOp = null;
+            currentFilterVal = null;
+            currentOrderBy = null;
+            currentOrderDir = 'asc';
+
+            // Update UI
+            document.querySelectorAll('.table-item').forEach(i => i.classList.remove('active'));
+            document.querySelector(`.table-item[data-schema="${schema}"][data-table="${table}"]`)?.classList.add('active');
+
+            document.getElementById('no-selection').style.display = 'none';
+            document.getElementById('table-view').style.display = 'block';
+            document.getElementById('current-table-name').textContent = `${schema}.${table}`;
+
+            // Reset filter inputs
+            document.getElementById('filter-col').value = '';
+            document.getElementById('filter-val').value = '';
+
+            // Load data
+            await Promise.all([
+                loadRows(),
+                loadSchema(),
+                loadReferences()
+            ]);
+        }
+
+        async function loadRows() {
+            const tbody = document.getElementById('data-tbody');
+            const thead = document.getElementById('data-thead');
+            tbody.innerHTML = '<tr><td colspan="99" class="loading">Chargement...</td></tr>';
+
+            try {
+                let url = `/admin/db/api/table/${currentSchema}/${currentTable}/rows?limit=${currentLimit}&offset=${currentOffset}`;
+                if (currentOrderBy) url += `&order_by=${currentOrderBy}&order_dir=${currentOrderDir}`;
+                if (currentFilterCol && currentFilterOp) {
+                    url += `&filter_col=${currentFilterCol}&filter_op=${currentFilterOp}`;
+                    if (currentFilterVal) url += `&filter_val=${encodeURIComponent(currentFilterVal)}`;
+                }
+
+                const res = await fetch(apiUrl(url), { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load rows');
+                const data = await res.json();
+
+                allColumns = data.columns;
+                fkMap = data.fk_map || {};
+
+                // Update masking badge
+                const badge = document.getElementById('masking-badge');
+                if (data.masking?.enabled) {
+                    badge.textContent = 'Masking: ON';
+                    badge.className = 'badge badge-on';
+                } else {
+                    badge.textContent = 'Masking: OFF';
+                    badge.className = 'badge badge-off';
+                }
+
+                // Populate filter/sort dropdowns
+                const filterCol = document.getElementById('filter-col');
+                const sortCol = document.getElementById('sort-col');
+                filterCol.innerHTML = '<option value="">-- Colonne --</option>' + data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
+                sortCol.innerHTML = '<option value="">-- Colonne --</option>' + data.columns.map(c => `<option value="${c}">${c}</option>`).join('');
+
+                // Headers
+                thead.innerHTML = '<tr>' + data.columns.map(c => {
+                    const isFK = fkMap[c] ? ' <span class="badge badge-fk">FK</span>' : '';
+                    return `<th>${escapeHtml(c)}${isFK}</th>`;
+                }).join('') + '</tr>';
+
+                // Rows
+                if (data.rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="99" style="text-align:center; color:#64748b;">Aucune donnée</td></tr>';
+                } else {
+                    tbody.innerHTML = data.rows.map(row => {
+                        return '<tr>' + data.columns.map(col => {
+                            let val = row[col];
+                            if (val === null) val = '<span style="color:#94a3b8;">NULL</span>';
+                            else val = escapeHtml(String(val));
+
+                            // FK link
+                            if (fkMap[col] && row[col] !== null) {
+                                const fk = fkMap[col];
+                                val = `<span class="fk-link" onclick="navigateFK('${fk.ref_schema}', '${fk.ref_table}', '${fk.ref_column}', '${escapeHtml(String(row[col]))}')">${val}</span>`;
+                            }
+                            return `<td title="${escapeHtml(String(row[col] ?? ''))}">${val}</td>`;
+                        }).join('') + '</tr>';
+                    }).join('');
+                }
+
+                // Pagination
+                document.getElementById('pagination-info').textContent = `${currentOffset + 1} - ${currentOffset + data.rows.length}`;
+                document.getElementById('total-estimate').textContent = `Total estimé: ~${formatNumber(data.total_estimate)}`;
+                document.getElementById('btn-prev').disabled = currentOffset === 0;
+                document.getElementById('btn-next').disabled = data.rows.length < currentLimit;
+
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="99" style="color:red">Erreur: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function loadSchema() {
+            const container = document.getElementById('schema-content');
+            container.innerHTML = '<div class="loading">Chargement...</div>';
+
+            try {
+                const res = await fetch(apiUrl(`/admin/db/api/table/${currentSchema}/${currentTable}/schema`), { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load schema');
+                const data = await res.json();
+
+                let html = '';
+
+                // Columns table
+                html += `<div class="schema-section">
+                    <h4>Colonnes</h4>
+                    <table class="data-table">
+                        <thead><tr><th>Nom</th><th>Type</th><th>Nullable</th><th>Default</th><th>Flags</th></tr></thead>
+                        <tbody>`;
+                for (const col of data.columns) {
+                    const flags = [];
+                    if (col.is_pk) flags.push('<span class="badge badge-pk">PK</span>');
+                    if (col.is_fk) flags.push('<span class="badge badge-fk">FK</span>');
+                    if (col.is_unique) flags.push('<span class="badge" style="background:#f3e8ff;color:#7c3aed;">UNIQUE</span>');
+                    html += `<tr>
+                        <td><strong>${escapeHtml(col.name)}</strong></td>
+                        <td>${escapeHtml(col.type)}</td>
+                        <td>${col.nullable ? 'YES' : 'NO'}</td>
+                        <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(col.default || '')}</td>
+                        <td>${flags.join(' ')}</td>
+                    </tr>`;
+                }
+                html += '</tbody></table></div>';
+
+                // Primary Key
+                if (data.primary_key.length > 0) {
+                    html += `<div class="schema-section"><h4>Primary Key</h4><p>${data.primary_key.map(escapeHtml).join(', ')}</p></div>`;
+                }
+
+                // Foreign Keys
+                if (data.foreign_keys.length > 0) {
+                    html += `<div class="schema-section"><h4>Foreign Keys</h4><ul>`;
+                    for (const fk of data.foreign_keys) {
+                        html += `<li><strong>${escapeHtml(fk.column)}</strong> → 
+                            <span class="ref-link" onclick="selectTable('${fk.ref_schema}', '${fk.ref_table}')">${fk.ref_schema}.${fk.ref_table}</span>.${fk.ref_column}
+                            <span class="muted">(${escapeHtml(fk.constraint_name)})</span></li>`;
+                    }
+                    html += '</ul></div>';
+                }
+
+                // Indexes
+                if (data.indexes.length > 0) {
+                    html += `<div class="schema-section"><h4>Indexes</h4><ul>`;
+                    for (const idx of data.indexes) {
+                        const flags = [];
+                        if (idx.unique) flags.push('UNIQUE');
+                        if (idx.primary) flags.push('PRIMARY');
+                        html += `<li><strong>${escapeHtml(idx.name)}</strong> (${idx.columns.join(', ')}) ${flags.length ? '— ' + flags.join(', ') : ''}</li>`;
+                    }
+                    html += '</ul></div>';
+                }
+
+                // Checks
+                if (data.checks.length > 0) {
+                    html += `<div class="schema-section"><h4>Check Constraints</h4><ul>`;
+                    for (const chk of data.checks) {
+                        html += `<li><strong>${escapeHtml(chk.name)}</strong>: ${escapeHtml(chk.expression)}</li>`;
+                    }
+                    html += '</ul></div>';
+                }
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                container.innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        async function loadReferences() {
+            const container = document.getElementById('references-content');
+            container.innerHTML = '<div class="loading">Chargement...</div>';
+
+            try {
+                const res = await fetch(apiUrl(`/admin/db/api/table/${currentSchema}/${currentTable}/references`), { credentials: 'include' });
+                if (!res.ok) throw new Error('Failed to load references');
+                const data = await res.json();
+
+                let html = '';
+
+                // Outgoing
+                html += `<div class="schema-section"><h4>Outgoing (cette table → autres)</h4>`;
+                if (data.outgoing.length === 0) {
+                    html += '<p class="muted">Aucune FK sortante</p>';
+                } else {
+                    html += '<ul>';
+                    for (const ref of data.outgoing) {
+                        html += `<li>${escapeHtml(ref.from_column)} → 
+                            <span class="ref-link" onclick="selectTable('${ref.to_schema}', '${ref.to_table}')">${ref.to_schema}.${ref.to_table}</span>.${ref.to_column}</li>`;
+                    }
+                    html += '</ul>';
+                }
+                html += '</div>';
+
+                // Incoming
+                html += `<div class="schema-section"><h4>Incoming (autres → cette table)</h4>`;
+                if (data.incoming.length === 0) {
+                    html += '<p class="muted">Aucune table ne référence celle-ci</p>';
+                } else {
+                    html += '<ul>';
+                    for (const ref of data.incoming) {
+                        html += `<li><span class="ref-link" onclick="selectTable('${ref.from_schema}', '${ref.from_table}')">${ref.from_schema}.${ref.from_table}</span>.${ref.from_column} → ${escapeHtml(ref.to_column)}</li>`;
+                    }
+                    html += '</ul>';
+                }
+                html += '</div>';
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                container.innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        // Navigation
+        function navigateFK(refSchema, refTable, refColumn, value) {
+            // Switch to the referenced table and apply filter
+            currentFilterCol = refColumn;
+            currentFilterOp = 'eq';
+            currentFilterVal = value;
+            selectTable(refSchema, refTable).then(() => {
+                document.getElementById('filter-col').value = refColumn;
+                document.getElementById('filter-op').value = 'eq';
+                document.getElementById('filter-val').value = value;
+            });
+        }
+
+        // Pagination
+        function prevPage() {
+            if (currentOffset > 0) {
+                currentOffset = Math.max(0, currentOffset - currentLimit);
+                loadRows();
+            }
+        }
+
+        function nextPage() {
+            currentOffset += currentLimit;
+            loadRows();
+        }
+
+        // Filtering
+        function applyFilter() {
+            currentFilterCol = document.getElementById('filter-col').value || null;
+            currentFilterOp = document.getElementById('filter-op').value || null;
+            currentFilterVal = document.getElementById('filter-val').value || null;
+            currentOffset = 0;
+            loadRows();
+        }
+
+        function clearFilter() {
+            currentFilterCol = null;
+            currentFilterOp = null;
+            currentFilterVal = null;
+            document.getElementById('filter-col').value = '';
+            document.getElementById('filter-val').value = '';
+            currentOffset = 0;
+            loadRows();
+        }
+
+        // Sorting
+        function applySort() {
+            currentOrderBy = document.getElementById('sort-col').value || null;
+            currentOrderDir = document.getElementById('sort-dir').value || 'asc';
+            loadRows();
+        }
+
+        // Utils
+        function escapeHtml(s) {
+            return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function formatNumber(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return String(n);
+        }
+    </script>
+</body>
+
+</html>
