@@ -353,6 +353,52 @@
         .btn-tree:hover {
             background: #e0f2fe;
         }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--blue);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
     </style>
 </head>
 
@@ -371,6 +417,14 @@
                         <p class="muted">Exploration lecture seule de la base PostgreSQL</p>
                     </div>
                     <div style="display: flex; gap: 12px; align-items: center;">
+                        <div
+                            style="display:flex; align-items:center; gap:8px; border-right:1px solid #cbd5e1; padding-right:12px; margin-right:4px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="reveal-toggle" onchange="toggleReveal()">
+                                <span class="slider"></span>
+                            </label>
+                            <span style="font-size:0.8rem; color:#64748b;">Reveal</span>
+                        </div>
                         <span id="masking-badge" class="badge badge-off">Masking: OFF</span>
                         <a href="/admin/dashboard.html" class="btn btn-ghost btn-small">Dashboard</a>
                         <a href="/admin/analytics.html" class="btn btn-ghost btn-small">Analytics</a>
@@ -594,21 +648,28 @@
                     if (currentFilterVal) url += `&filter_val=${encodeURIComponent(currentFilterVal)}`;
                 }
 
-                const res = await fetch(apiUrl(url), { credentials: 'include' });
+                // Apply Reveal if enabled
+                const fullUrl = withReveal(apiUrl(url));
+
+                const res = await fetch(fullUrl, { credentials: 'include' });
                 if (!res.ok) throw new Error('Failed to load rows');
                 const data = await res.json();
 
                 allColumns = data.columns;
                 fkMap = data.fk_map || {};
 
-                // Update masking badge
-                const badge = document.getElementById('masking-badge');
-                if (data.masking?.enabled) {
-                    badge.textContent = 'Masking: ON';
-                    badge.className = 'badge badge-on';
-                } else {
-                    badge.textContent = 'Masking: OFF';
-                    badge.className = 'badge badge-off';
+                // Update masking badge from server response
+                if (data.masking) {
+                    const badge = document.getElementById('masking-badge');
+                    if (badge && !revealMode) { // Only update if not in explicit reveal mode
+                        if (data.masking.enabled) {
+                            badge.textContent = "Masking: ON";
+                            badge.className = "badge badge-off";
+                        } else {
+                            badge.textContent = "Masking: OFF";
+                            badge.className = "badge badge-on";
+                        }
+                    }
                 }
 
                 // Populate filter/sort dropdowns
@@ -863,7 +924,8 @@
                 const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
                 const params = isUUID ? `user_id=${encodeURIComponent(query)}` : `email=${encodeURIComponent(query)}`;
 
-                const res = await fetch(apiUrl(`/admin/db/api/user_tree?${params}`), { credentials: 'include' });
+                const url = withReveal(apiUrl(`/admin/db/api/user_tree?${params}`));
+                const res = await fetch(url, { credentials: 'include' });
                 if (!res.ok) throw new Error('API error');
 
                 const data = await res.json();
@@ -888,6 +950,8 @@
             const treeDiv = document.getElementById('ut-tree-view');
             treeDiv.innerHTML = '';
 
+            const digest = data.digest?.mailboxes || {};
+
             // Root user card
             const rootCard = createNodeCard('public', 'app_user', data.root, 'Utilisateur', true);
             treeDiv.appendChild(rootCard);
@@ -903,11 +967,28 @@
                 eaContainer.appendChild(eaTitle);
 
                 for (const ea of data.email_accounts) {
+                    const eaId = String(ea.id);
+                    const d = digest[eaId] || {};
+
+                    // Digest Badges
+                    const badgesHtml = `
+                        <div style="display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;">
+                            <span class="badge ${d.mailbox_status === 'connected' ? 'badge-on' : 'badge-off'}">MB: ${d.mailbox_status}</span>
+                            <span class="badge ${d.token_present ? 'badge-on' : 'badge-fk'}">${d.token_present ? 'Token' : 'No Token'}</span>
+                            <span class="badge ${d.recap_configured ? 'badge-pk' : 'badge-off'}">${d.recap_configured ? 'Recap Configured' : 'No Recap'}</span>
+                        </div>
+                    `;
+
                     const eaCard = createNodeCard('public', 'email_account', ea, null, false);
+                    // Insert badges after title (h4) inside the card
+                    const h4 = eaCard.querySelector('h4');
+                    if (h4) {
+                        h4.insertAdjacentHTML('beforeend', badgesHtml);
+                    }
+
                     eaContainer.appendChild(eaCard);
 
                     // OAuth tokens for this email account
-                    const eaId = String(ea.id);
                     if (data.oauth_tokens && data.oauth_tokens[eaId]) {
                         const tokenBox = document.createElement('div');
                         tokenBox.className = 'ut-children';
@@ -932,7 +1013,35 @@
                         profileBox.appendChild(profileTitle);
 
                         for (const profile of data.recap.recap_profile[eaId]) {
-                            profileBox.appendChild(createNodeCard('public', 'recap_profile', profile, null, false));
+                            const pCard = createNodeCard('public', 'recap_profile', profile, null, false);
+                            profileBox.appendChild(pCard);
+
+                            // Nested schedules/filters
+                            const pid = String(profile.id);
+
+                            // Schedule
+                            if (data.recap.recap_schedule && data.recap.recap_schedule[eaId]) {
+                                const scheds = data.recap.recap_schedule[eaId].filter(s => String(s.recap_profile_id || s.profile_id) === pid);
+                                if (scheds.length > 0) {
+                                    const schedBox = document.createElement('div');
+                                    schedBox.className = 'ut-children';
+                                    schedBox.innerHTML = '<h6 style="margin:0 0 4px 0; color:#94a3b8;">Schedule</h6>';
+                                    scheds.forEach(s => schedBox.appendChild(createNodeCard('public', 'recap_schedule', s, null, false)));
+                                    pCard.appendChild(schedBox);
+                                }
+                            }
+
+                            // Filter
+                            if (data.recap.recap_filter && data.recap.recap_filter[eaId]) {
+                                const filts = data.recap.recap_filter[eaId].filter(f => String(f.recap_profile_id || f.profile_id) === pid);
+                                if (filts.length > 0) {
+                                    const filtBox = document.createElement('div');
+                                    filtBox.className = 'ut-children';
+                                    filtBox.innerHTML = '<h6 style="margin:0 0 4px 0; color:#94a3b8;">Filter</h6>';
+                                    filts.forEach(f => filtBox.appendChild(createNodeCard('public', 'recap_filter', f, null, false)));
+                                    pCard.appendChild(filtBox);
+                                }
+                            }
                         }
                         eaCard.appendChild(profileBox);
                     }
@@ -990,6 +1099,48 @@
             if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
             if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
             return String(n);
+        }
+
+        // --- REVEAL LOGIC ---
+        let revealMode = localStorage.getItem('dbInspectorReveal') === 'true';
+        const revealToggle = document.getElementById('reveal-toggle');
+        if (revealToggle) revealToggle.checked = revealMode;
+
+        // Init badge state
+        updateMaskingBadge();
+
+        function toggleReveal() {
+            revealMode = document.getElementById('reveal-toggle').checked;
+            localStorage.setItem('dbInspectorReveal', revealMode);
+            updateMaskingBadge(revealMode);
+
+            // Reload current view
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab && activeTab.dataset.tab === 'data' && currentTable) loadRows();
+            if (activeTab && activeTab.dataset.tab === 'user-tree') {
+                const searchVal = document.getElementById('ut-search').value;
+                if (searchVal) searchUserTree();
+            }
+        }
+
+        function withReveal(url) {
+            if (!revealMode) return url;
+            const separator = url.includes('?') ? '&' : '?';
+            return url + separator + 'reveal=1';
+        }
+
+        function updateMaskingBadge(forceState) {
+            const badge = document.getElementById('masking-badge');
+            if (!badge) return;
+
+            const isReveal = forceState !== undefined ? forceState : revealMode;
+            if (isReveal) {
+                badge.textContent = "Masking: OFF (REVEAL)";
+                badge.className = "badge badge-pk";
+            } else {
+                badge.textContent = "Masking: ON";
+                badge.className = "badge badge-off";
+            }
         }
     </script>
     <script>
