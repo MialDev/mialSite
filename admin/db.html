@@ -243,6 +243,78 @@
             border-radius: 6px;
             margin-bottom: 12px;
         }
+
+        /* Tree View Styles */
+        .ut-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .ut-card.root-card {
+            border-left: 4px solid var(--blue);
+            background: #f8fafc;
+        }
+
+        .ut-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ut-card .meta {
+            font-size: 0.85rem;
+            color: #64748b;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .ut-card .meta div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ut-children {
+            margin-left: 24px;
+            padding-left: 16px;
+            border-left: 2px solid #e2e8f0;
+            margin-top: 12px;
+        }
+
+        .ut-open-btn {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            color: var(--blue);
+        }
+
+        .ut-open-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .ut-loading {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-style: italic;
+            padding: 8px;
+        }
+
+        .ut-empty {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            padding: 8px;
+        }
     </style>
 </head>
 
@@ -291,6 +363,7 @@
                             <button class="tab-btn active" data-tab="data">Data</button>
                             <button class="tab-btn" data-tab="schema">Schema</button>
                             <button class="tab-btn" data-tab="references">References</button>
+                            <button class="tab-btn" data-tab="user-tree">User Tree</button>
                         </div>
 
                         <!-- Data Tab -->
@@ -349,11 +422,25 @@
                             </div>
                         </div>
 
-                        <!-- References Tab -->
                         <div id="tab-references" class="tab-content">
                             <div id="references-content">
                                 <div class="loading">Chargement...</div>
                             </div>
+                        </div>
+
+                        <!-- User Tree Tab -->
+                        <div id="tab-user-tree" class="tab-content">
+                            <div style="margin-bottom: 20px;">
+                                <div style="display:flex; gap:10px;">
+                                    <input type="text" id="ut-search" class="search-input"
+                                        style="margin-bottom:0; max-width:400px;"
+                                        placeholder="Rechercher utilisateur (email ou ID)...">
+                                    <button class="btn btn-primary" id="ut-search-btn"
+                                        onclick="searchUserTree()">Rechercher</button>
+                                </div>
+                            </div>
+                            <div id="ut-results" style="margin-bottom: 24px;"></div>
+                            <div id="ut-tree-view"></div>
                         </div>
                     </div>
                 </div>
@@ -713,6 +800,235 @@
             return String(n);
         }
     </script>
-</body>
+    <script>
+        // --- USER TREE LOGIC ---
+
+        async function searchUserTree() {
+            const query = document.getElementById('ut-search').value.trim();
+            if (!query) return;
+
+            const resDiv = document.getElementById('ut-results');
+            resDiv.innerHTML = '<div class="ut-loading">Recherche en cours...</div>';
+            document.getElementById('ut-tree-view').innerHTML = ''; // Clear tree
+
+            try {
+                // Try searching by email (ilike)
+                // Note: user must check if 'email' column exists in app_user, but we assume it does based on audit.
+                // Fallback to ID if query looks like UUID?
+                let filterCol = 'email';
+                let filterOp = 'ilike';
+
+                // Simple heuristic for UUID
+                if (query.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i)) {
+                    filterCol = 'id';
+                    filterOp = 'eq';
+                }
+
+                const url = `/admin/db/api/table/public/app_user/rows?limit=10&filter_col=${filterCol}&filter_op=${filterOp}&filter_val=${encodeURIComponent(query)}`;
+                const res = await fetch(apiUrl(url), { credentials: 'include' });
+                if (!res.ok) throw new Error('Search failed');
+                const data = await res.json();
+
+                if (data.rows.length === 0) {
+                    resDiv.innerHTML = '<div class="ut-empty">Aucun utilisateur trouvé.</div>';
+                    return;
+                }
+
+                let html = '<div style="display:flex; gap:8px; flex-wrap:wrap;">';
+                data.rows.forEach(row => {
+                    // Safe encoding
+                    const label = escapeHtml(row.email || row.id);
+                    // Store row data in attribute to avoid re-fetching
+                    const rowJson = encodeURIComponent(JSON.stringify(row));
+                    html += `<button class="btn btn-ghost btn-small" onclick="selectTreeUser('${rowJson}')">${label}</button>`;
+                });
+                html += '</div>';
+                resDiv.innerHTML = html;
+
+                // Auto-select if only 1 result
+                if (data.rows.length === 1) {
+                    selectTreeUser(encodeURIComponent(JSON.stringify(data.rows[0])));
+                }
+
+            } catch (e) {
+                resDiv.innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        function selectTreeUser(rowJson) {
+            const row = JSON.parse(decodeURIComponent(rowJson));
+            const treeDiv = document.getElementById('ut-tree-view');
+            treeDiv.innerHTML = ''; // Clear
+
+            const card = createNodeCard('public', 'app_user', row, 'Utilisateur', true);
+            treeDiv.appendChild(card);
+
+            // Create container for children (Email Accounts)
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'ut-children';
+            childrenContainer.id = `children-user-${row.id}`;
+            treeDiv.appendChild(childrenContainer);
+
+            // Load Email Accounts automatically
+            loadRelated('public', 'email_account', 'user_id', row.id, childrenContainer, 'Email Accounts');
+        }
+
+        async function loadRelated(targetSchema, targetTable, fkCol, parentId, container, title) {
+            container.innerHTML = '<div class="ut-loading">Chargement...</div>';
+
+            try {
+                // 1. Fetch rows filtered by FK
+                const url = `/admin/db/api/table/${targetSchema}/${targetTable}/rows?limit=50&filter_col=${fkCol}&filter_op=eq&filter_val=${encodeURIComponent(parentId)}`;
+                const res = await fetch(apiUrl(url), { credentials: 'include' });
+
+                if (!res.ok) {
+                    // If table doesn't exist (e.g. leads), handle gracefully
+                    if (res.status === 404 || res.status === 500) {
+                        container.innerHTML = `<div class="ut-empty">Table ${targetTable} non trouvée ou erreur.</div>`;
+                        return;
+                    }
+                    throw new Error('Load failed');
+                }
+                const data = await res.json();
+
+                container.innerHTML = ''; // Clear loading
+
+                if (data.rows.length === 0) {
+                    container.innerHTML = '<div class="ut-empty">Aucun résultat.</div>';
+                    return;
+                }
+
+                if (title) {
+                    const h = document.createElement('h5');
+                    h.style.margin = '0 0 8px 0';
+                    h.style.color = '#64748b';
+                    h.textContent = title;
+                    container.appendChild(h);
+                }
+
+                for (const row of data.rows) {
+                    const card = createNodeCard(targetSchema, targetTable, row, null, false);
+                    container.appendChild(card);
+
+                    // Logic for specific tables to load their children
+                    if (targetTable === 'email_account') {
+                        const childBox = document.createElement('div');
+                        childBox.className = 'ut-children';
+                        card.appendChild(childBox);
+
+                        // Load OAuth Token (1-to-1 usually)
+                        loadRelated('public', 'oauth_token', 'email_account_id', row.id, childBox, 'OAuth Token');
+
+                        // Load Recap Profiles
+                        const profileBox = document.createElement('div');
+                        profileBox.className = 'ut-children';
+                        card.appendChild(profileBox);
+                        loadRelated('public', 'recap_profile', 'email_account_id', row.id, profileBox, 'Recap Profiles');
+                    }
+
+                    if (targetTable === 'recap_profile') {
+                        const subBox = document.createElement('div');
+                        subBox.className = 'ut-children';
+                        card.appendChild(subBox);
+
+                        // Recap Schedule & Filter
+                        loadRelated('public', 'recap_schedule', 'recap_profile_id', row.id, subBox, 'Schedule');
+                        const filterBox = document.createElement('div');
+                        filterBox.className = 'ut-children';
+                        card.appendChild(filterBox);
+                        loadRelated('public', 'recap_filter', 'recap_profile_id', row.id, filterBox, 'Filters');
+                    }
+                }
+
+            } catch (e) {
+                container.innerHTML = `<div style="color:red">Erreur: ${e.message}</div>`;
+            }
+        }
+
+        function createNodeCard(schema, table, row, customTitle, isRoot) {
+            const div = document.createElement('div');
+            div.className = `ut-card ${isRoot ? 'root-card' : ''}`;
+
+            const title = customTitle || `${table}`;
+
+            // Meta info selection
+            let metaHtml = '';
+
+            // Helper to safe display
+            const val = (k) => escapeHtml(String(row[k] ?? ''));
+
+            if (table === 'app_user') {
+                metaHtml = `
+                    <div><strong>ID:</strong> ${val('id')}</div>
+                    <div><strong>Email:</strong> ${val('email')}</div>
+                    <div><strong>Role:</strong> ${val('role')}</div>
+                    <div><strong>Active:</strong> ${val('is_active')}</div>
+                    <div><strong>Created:</strong> ${val('created_at')}</div>
+                `;
+            } else if (table === 'email_account') {
+                metaHtml = `
+                    <div><strong>ID:</strong> ${val('id')}</div>
+                    <div><strong>Address:</strong> ${val('email_address')}</div>
+                    <div><strong>Provider:</strong> ${val('provider')}</div>
+                    <div><strong>Status:</strong> ${val('status')}</div>
+                `;
+            } else if (table === 'oauth_token') {
+                metaHtml = `
+                    <div><strong>Exp:</strong> ${val('expires_at')}</div>
+                    <div><strong>Created:</strong> ${val('created_at')}</div>
+                    <div title="${val('access_token_enc')}"><strong>Access:</strong> ${val('access_token_enc').substring(0, 20)}...</div>
+                `;
+            } else if (table === 'recap_profile') {
+                metaHtml = `
+                    <div><strong>ID:</strong> ${val('id')}</div>
+                    <div><strong>Recipient:</strong> ${val('recap_recipient')}</div>
+                    <div><strong>Min/Max:</strong> ${val('heure_debut')} - ${val('heure_fin')}</div>
+                    <div><strong>Lang:</strong> ${val('language')}</div>
+                `;
+            } else if (table === 'recap_schedule') {
+                metaHtml = `
+                    <div><strong>Time:</strong> ${val('time_of_day')}</div>
+                    <div><strong>Enabled:</strong> ${val('enabled')}</div>
+                `;
+            } else {
+                // Fallback generic
+                metaHtml = `<div><strong>ID:</strong> ${val('id')}</div>`;
+            }
+
+            div.innerHTML = `
+                <h4>
+                    <span>${title}</span>
+                    <button class="ut-open-btn" onclick="openInDataTab('${schema}', '${table}', 'id', '${row.id}')">Open Data</button>
+                </h4>
+                <div class="meta">${metaHtml}</div>
+            `;
+
+            return div;
+        }
+
+        function openInDataTab(schema, table, col, val) {
+            // Need to find which col is the PK or just use ID if passed
+            // For this specific 'tree' view, we usually filter the table BY ID (to show that specific row)
+            // But if we want to show 'children' in data tab, we'd filter by FK.
+            // The button says "Open Data", implies "Show me this row in the data tab".
+
+            // Switch tab
+            const btn = document.querySelector('.tab-btn[data-tab="data"]');
+            if (btn) btn.click();
+
+            // Select table & apply filter
+            // We use a small timeout to let the tab switch and UI update
+            setTimeout(() => {
+                selectTable(schema, table).then(() => {
+                    // Set filter
+                    document.getElementById('filter-col').value = col;
+                    document.getElementById('filter-op').value = 'eq';
+                    document.getElementById('filter-val').value = val;
+                    // Apply
+                    applyFilter();
+                });
+            }, 100);
+        }
+    </script>
 
 </html>

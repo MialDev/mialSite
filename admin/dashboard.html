@@ -104,274 +104,270 @@
                         <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Admin Dashboard</h1>
                         <p class="muted">Administration globale</p>
                     </div>
-                    <div style="display: flex; gap: 12px;">
-                        <a href="/admin/db" class="btn btn-ghost btn-small">DB</a>
-                        <a href="/admin/analytics.html" class="btn btn-ghost btn-small">Analytics</a>
-                        <a href="/dashboard.html" class="btn btn-primary btn-small">User Dashboard</a>
-                    </div>
+                    <a href="/admin/analytics.html" class="btn btn-ghost btn-small">Analytics</a>
+                    <a href="/dashboard.html" class="btn btn-primary btn-small">User Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Profiles -->
+        <div id="view-profiles">
+            <!-- Hierarchy Container -->
+            <div class="card glass-static" style="padding: 24px; min-height: 400px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2 style="font-size: 1.5rem; margin:0;">Utilisateurs & Profils</h2>
+                    <button class="action-btn" onclick="initAdminDashboard()">Rafraîchir tout</button>
+                </div>
+
+                <div id="hierarchy-root">
+                    <div style="text-align:center; padding: 40px;" class="muted">Chargement...</div>
                 </div>
             </div>
 
-            <!-- View Profiles -->
-            <div id="view-profiles">
-                <!-- Hierarchy Container -->
-                <div class="card glass-static" style="padding: 24px; min-height: 400px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h2 style="font-size: 1.5rem; margin:0;">Utilisateurs & Profils</h2>
-                        <button class="action-btn" onclick="initAdminDashboard()">Rafraîchir tout</button>
+            <!-- Profile Editor (Hidden by default) -->
+            <!-- Modal Admin Editor -->
+            <dialog id="modal-admin-edit" class="glass-static"
+                style="padding:0; border:none; border-radius:16px; width:100%; max-width:900px; backdrop-filter:blur(12px); box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+                <div style="padding:32px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                        <div>
+                            <h2 style="margin:0;">Éditeur Admin</h2>
+                            <div class="muted" style="font-size:0.9rem;">ID: <span id="admin-edit-title-id"></span>
+                            </div>
+                        </div>
+                        <form method="dialog"><button class="btn btn-ghost" style="color:#ef4444;">Fermer</button>
+                        </form>
                     </div>
 
-                    <div id="hierarchy-root">
-                        <div style="text-align:center; padding: 40px;" class="muted">Chargement...</div>
-                    </div>
-                </div>
+                    <div id="admin-editor-error"
+                        style="display:none; margin-bottom:16px; color:#ef4444; font-size:0.95rem;"></div>
 
-                <!-- Profile Editor (Hidden by default) -->
-                <!-- Modal Admin Editor -->
-                <dialog id="modal-admin-edit" class="glass-static"
-                    style="padding:0; border:none; border-radius:16px; width:100%; max-width:900px; backdrop-filter:blur(12px); box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
-                    <div style="padding:32px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                    <input type="hidden" id="admin-f-account">
+
+                    <!-- Assignment Block -->
+                    <div id="admin-assign-block"
+                        style="margin-bottom:24px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
+                        <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation Propriétaire</h4>
+                        <div style="display:flex; gap:8px; align-items:flex-end;">
+                            <label style="flex:1;">Email utilisateur
+                                <input id="admin-f-assign-email" class="form-input" type="email"
+                                    placeholder="client@example.com" style="margin-top:4px;" />
+                            </label>
+                            <button class="btn btn-primary btn-small" id="admin-btn-assign">Assigner</button>
+                            <button class="btn btn-ghost btn-small" id="admin-btn-unassign"
+                                style="display:none;">Désassigner</button>
+                        </div>
+                        <div id="admin-assign-status" style="margin-top:8px; font-size:0.9rem; color: #64748b;">
+                        </div>
+                    </div>
+
+                    <!-- Full Form (prefixed admin-) -->
+                    <div class="editor-section">
+                        <h3 class="editor-title">1. Informations Principales</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
                             <div>
-                                <h2 style="margin:0;">Éditeur Admin</h2>
-                                <div class="muted" style="font-size:0.9rem;">ID: <span id="admin-edit-title-id"></span>
-                                </div>
+                                <label class="form-label">Destinataire du récap</label>
+                                <input type="email" id="admin-f-recipient" class="form-input" required>
                             </div>
-                            <form method="dialog"><button class="btn btn-ghost" style="color:#ef4444;">Fermer</button>
-                            </form>
-                        </div>
-
-                        <div id="admin-editor-error"
-                            style="display:none; margin-bottom:16px; color:#ef4444; font-size:0.95rem;"></div>
-
-                        <input type="hidden" id="admin-f-account">
-
-                        <!-- Assignment Block -->
-                        <div id="admin-assign-block"
-                            style="margin-bottom:24px; padding:16px; background:rgba(31,182,255,0.05); border-radius:8px; border:1px solid rgba(31,182,255,0.2);">
-                            <h4 style="margin:0 0 12px 0; font-size:1rem;">Assignation Propriétaire</h4>
-                            <div style="display:flex; gap:8px; align-items:flex-end;">
-                                <label style="flex:1;">Email utilisateur
-                                    <input id="admin-f-assign-email" class="form-input" type="email"
-                                        placeholder="client@example.com" style="margin-top:4px;" />
-                                </label>
-                                <button class="btn btn-primary btn-small" id="admin-btn-assign">Assigner</button>
-                                <button class="btn btn-ghost btn-small" id="admin-btn-unassign"
-                                    style="display:none;">Désassigner</button>
-                            </div>
-                            <div id="admin-assign-status" style="margin-top:8px; font-size:0.9rem; color: #64748b;">
+                            <div>
+                                <label class="form-label">Heure d'envoi</label>
+                                <input type="time" id="admin-f-schedule" class="form-input" required>
                             </div>
                         </div>
-
-                        <!-- Full Form (prefixed admin-) -->
-                        <div class="editor-section">
-                            <h3 class="editor-title">1. Informations Principales</h3>
-                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                                <div>
-                                    <label class="form-label">Destinataire du récap</label>
-                                    <input type="email" id="admin-f-recipient" class="form-input" required>
-                                </div>
-                                <div>
-                                    <label class="form-label">Heure d'envoi</label>
-                                    <input type="time" id="admin-f-schedule" class="form-input" required>
-                                </div>
-                            </div>
-                            <!-- Status & Debug (Admin specific) -->
-                            <div style="margin-top:16px; display:flex; gap:24px;">
-                                <label style="display:flex; align-items:center; gap:8px;">
-                                    <input type="checkbox" id="admin-f-status">
-                                    <strong>Actif</strong>
-                                </label>
-                                <label style="display:flex; align-items:center; gap:8px;">
-                                    <input type="checkbox" id="admin-f-debug">
-                                    <span>Mode Debug</span>
-                                </label>
-                            </div>
+                        <!-- Status & Debug (Admin specific) -->
+                        <div style="margin-top:16px; display:flex; gap:24px;">
+                            <label style="display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" id="admin-f-status">
+                                <strong>Actif</strong>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" id="admin-f-debug">
+                                <span>Mode Debug</span>
+                            </label>
                         </div>
+                    </div>
 
-                        <div class="editor-section">
-                            <h3 class="editor-title">2. Période Analysée</h3>
-                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                                <div class="time-block">
-                                    <h4>DÉBUT (Jours arrière)</h4>
-                                    <div style="display:flex; gap:12px;">
-                                        <div style="flex:1">
-                                            <label class="form-label" style="font-size:0.8rem">Jours</label>
-                                            <input type="number" id="admin-f-days-start" class="form-input" min="0"
-                                                max="30">
-                                        </div>
-                                        <div style="flex:1">
-                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                            <input type="time" id="admin-f-time-start" class="form-input">
-                                        </div>
+                    <div class="editor-section">
+                        <h3 class="editor-title">2. Période Analysée</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div class="time-block">
+                                <h4>DÉBUT (Jours arrière)</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours</label>
+                                        <input type="number" id="admin-f-days-start" class="form-input" min="0"
+                                            max="30">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="admin-f-time-start" class="form-input">
                                     </div>
                                 </div>
-                                <div class="time-block">
-                                    <h4>FIN (Jours arrière)</h4>
-                                    <div style="display:flex; gap:12px;">
-                                        <div style="flex:1">
-                                            <label class="form-label" style="font-size:0.8rem">Jours</label>
-                                            <input type="number" id="admin-f-days-end" class="form-input" min="0"
-                                                max="30">
-                                        </div>
-                                        <div style="flex:1">
-                                            <label class="form-label" style="font-size:0.8rem">Heure</label>
-                                            <input type="time" id="admin-f-time-end" class="form-input">
-                                        </div>
+                            </div>
+                            <div class="time-block">
+                                <h4>FIN (Jours arrière)</h4>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Jours</label>
+                                        <input type="number" id="admin-f-days-end" class="form-input" min="0" max="30">
+                                    </div>
+                                    <div style="flex:1">
+                                        <label class="form-label" style="font-size:0.8rem">Heure</label>
+                                        <input type="time" id="admin-f-time-end" class="form-input">
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="editor-section">
-                            <h3 class="editor-title">3. Filtres & Options</h3>
-                            <div style="margin-bottom:16px;">
-                                <label class="form-label">Mode de Tri</label>
-                                <select id="admin-f-sort" class="form-select">
-                                    <option value="date_desc">Chronologique</option>
-                                    <option value="priority">Priorité IA</option>
-                                    <option value="category">Par Catégorie</option>
+                    <div class="editor-section">
+                        <h3 class="editor-title">3. Filtres & Options</h3>
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Mode de Tri</label>
+                            <select id="admin-f-sort" class="form-select">
+                                <option value="date_desc">Chronologique</option>
+                                <option value="priority">Priorité IA</option>
+                                <option value="category">Par Catégorie</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Whitelist (Sender) <span class="icon-help"
+                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                            <textarea id="admin-f-filter-sender" class="form-textarea" rows="2"
+                                placeholder="email1, email2..."></textarea>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Blacklist (Sender) <span class="icon-help"
+                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                            <textarea id="admin-f-filter-exclude" class="form-textarea" rows="2"></textarea>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="form-label">Seulement si en CC <span class="icon-help"
+                                    title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
+                            <textarea id="admin-f-filter-cc" class="form-textarea" rows="2"></textarea>
+                        </div>
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="admin-f-unread">
+                            <span>Seulement les non-lus</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                            <input type="checkbox" id="admin-f-mark-read">
+                            <span>Marquer comme "Lu"</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                            <input type="checkbox" id="admin-f-spam">
+                            <span>Anti-Spam</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                            <input type="checkbox" id="admin-f-marketing">
+                            <span>Cacher Marketing (IA)</span>
+                        </label>
+                    </div>
+
+                    <div class="editor-section">
+                        <h3 class="editor-title">4. Audio</h3>
+                        <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                            <div>
+                                <label class="form-label">Activer Audio</label>
+                                <input type="checkbox" id="admin-f-audio">
+                            </div>
+                            <div>
+                                <label class="form-label">Voix</label>
+                                <select id="admin-f-voice" class="form-select">
+                                    <option value="alloy">Alloy (Neutre & Polyvalent)</option>
+                                    <option value="echo">Echo (Masculin & Doux)</option>
+                                    <option value="fable">Fable (Masculin & Narratif)</option>
+                                    <option value="onyx">Onyx (Masculin & Profond)</option>
+                                    <option value="nova">Nova (Féminin & Énergique)</option>
+                                    <option value="shimmer">Shimmer (Féminin & Calme)</option>
                                 </select>
                             </div>
-
-                            <div style="margin-bottom:16px;">
-                                <label class="form-label">Whitelist (Sender) <span class="icon-help"
-                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                                <textarea id="admin-f-filter-sender" class="form-textarea" rows="2"
-                                    placeholder="email1, email2..."></textarea>
+                            <div>
+                                <label class="form-label">Speed</label>
+                                <input type="number" id="admin-f-speed" class="form-input" step="0.1" min="0.5"
+                                    max="2.0">
                             </div>
-                            <div style="margin-bottom:16px;">
-                                <label class="form-label">Blacklist (Sender) <span class="icon-help"
-                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                                <textarea id="admin-f-filter-exclude" class="form-textarea" rows="2"></textarea>
+                            <div>
+                                <label class="form-label">Langue</label>
+                                <select id="admin-f-lang" class="form-select">
+                                    <option value="fr">Français</option>
+                                    <option value="en">Anglais</option>
+                                    <option value="auto">Auto</option>
+                                </select>
                             </div>
-                            <div style="margin-bottom:16px;">
-                                <label class="form-label">Seulement si en CC <span class="icon-help"
-                                        title="Séparez par des virgules. Vous pouvez mettre une adresse exacte (jean@test.com) OU un nom de domaine (@test.com).">?</span></label>
-                                <textarea id="admin-f-filter-cc" class="form-textarea" rows="2"></textarea>
-                            </div>
-                            <label style="display:flex; align-items:center; gap:8px;">
-                                <input type="checkbox" id="admin-f-unread">
-                                <span>Seulement les non-lus</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-                                <input type="checkbox" id="admin-f-mark-read">
-                                <span>Marquer comme "Lu"</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-                                <input type="checkbox" id="admin-f-spam">
-                                <span>Anti-Spam</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-                                <input type="checkbox" id="admin-f-marketing">
-                                <span>Cacher Marketing (IA)</span>
-                            </label>
-                        </div>
-
-                        <div class="editor-section">
-                            <h3 class="editor-title">4. Audio</h3>
-                            <div class="grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-                                <div>
-                                    <label class="form-label">Activer Audio</label>
-                                    <input type="checkbox" id="admin-f-audio">
-                                </div>
-                                <div>
-                                    <label class="form-label">Voix</label>
-                                    <select id="admin-f-voice" class="form-select">
-                                        <option value="alloy">Alloy (Neutre & Polyvalent)</option>
-                                        <option value="echo">Echo (Masculin & Doux)</option>
-                                        <option value="fable">Fable (Masculin & Narratif)</option>
-                                        <option value="onyx">Onyx (Masculin & Profond)</option>
-                                        <option value="nova">Nova (Féminin & Énergique)</option>
-                                        <option value="shimmer">Shimmer (Féminin & Calme)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="form-label">Speed</label>
-                                    <input type="number" id="admin-f-speed" class="form-input" step="0.1" min="0.5"
-                                        max="2.0">
-                                </div>
-                                <div>
-                                    <label class="form-label">Langue</label>
-                                    <select id="admin-f-lang" class="form-select">
-                                        <option value="fr">Français</option>
-                                        <option value="en">Anglais</option>
-                                        <option value="auto">Auto</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top:16px; margin-bottom:16px;">
-                            <label class="form-label">Timezone</label>
-                            <input type="text" id="admin-f-timezone" class="form-input" value="Europe/Paris">
-                        </div>
-
-                        <div
-                            style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #e2e8f0;">
-                            <form method="dialog"><button class="btn btn-ghost">Annuler</button></form>
-                            <button class="btn btn-primary" onclick="saveAdminProfile()">ENREGISTRER</button>
                         </div>
                     </div>
-                </dialog>
-            </div>
-            <!-- End View Profiles -->
 
-            <!-- View Leads -->
-            <div id="view-leads" class="container" style="display:none;">
-                <div class="card glass-static" style="padding: 24px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                        <h2 style="font-size: 1.5rem; margin:0;">Gestion des Leads</h2>
-                        <button class="action-btn" onclick="loadLeads()">Rafraîchir</button>
+                    <div style="margin-top:16px; margin-bottom:16px;">
+                        <label class="form-label">Timezone</label>
+                        <input type="text" id="admin-f-timezone" class="form-input" value="Europe/Paris">
                     </div>
 
-                    <div style="overflow-x:auto;">
-                        <table class="dashboard-table" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Nom</th>
-                                    <th>Email</th>
-                                    <th>Société</th>
-                                    <th>Message</th>
-                                    <th style="text-align:right;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leads-tbody">
-                                <!-- JS populated -->
-                            </tbody>
-                        </table>
+                    <div
+                        style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #e2e8f0;">
+                        <form method="dialog"><button class="btn btn-ghost">Annuler</button></form>
+                        <button class="btn btn-primary" onclick="saveAdminProfile()">ENREGISTRER</button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Reply Modal -->
-            <dialog id="modal-reply" class="glass-static"
-                style="padding:0; border:none; border-radius:16px; width:100%; max-width:500px; backdrop-filter:blur(12px); box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
-                <div style="padding:24px;">
-                    <h3 style="margin-top:0;">Répondre au lead</h3>
-                    <div class="muted mb-24" id="modal-reply-subtitle"></div>
-
-                    <form id="reply-form" method="dialog">
-                        <label class="form-label" style="display:block; margin-bottom:8px;">Sujet</label>
-                        <input type="text" id="reply-subject" class="w-full"
-                            style="margin-bottom:16px; padding:8px; width:100%; border:1px solid #ddd; border-radius:6px;"
-                            placeholder="Re: Votre demande..." required>
-
-                        <label class="form-label" style="display:block; margin-bottom:8px;">Message</label>
-                        <textarea id="reply-message" rows="6" class="w-full"
-                            style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; margin-bottom:24px;"
-                            placeholder="Bonjour..." required></textarea>
-
-                        <div style="display:flex; justify-content:flex-end; gap:12px;">
-                            <button type="button" class="btn btn-ghost"
-                                onclick="document.getElementById('modal-reply').close()">Annuler</button>
-                            <button type="button" class="btn btn-primary" onclick="submitReply()">Envoyer</button>
-                        </div>
-                    </form>
                 </div>
             </dialog>
+        </div>
+        <!-- End View Profiles -->
+
+        <!-- View Leads -->
+        <div id="view-leads" class="container" style="display:none;">
+            <div class="card glass-static" style="padding: 24px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2 style="font-size: 1.5rem; margin:0;">Gestion des Leads</h2>
+                    <button class="action-btn" onclick="loadLeads()">Rafraîchir</button>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="dashboard-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Société</th>
+                                <th>Message</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-tbody">
+                            <!-- JS populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reply Modal -->
+        <dialog id="modal-reply" class="glass-static"
+            style="padding:0; border:none; border-radius:16px; width:100%; max-width:500px; backdrop-filter:blur(12px); box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+            <div style="padding:24px;">
+                <h3 style="margin-top:0;">Répondre au lead</h3>
+                <div class="muted mb-24" id="modal-reply-subtitle"></div>
+
+                <form id="reply-form" method="dialog">
+                    <label class="form-label" style="display:block; margin-bottom:8px;">Sujet</label>
+                    <input type="text" id="reply-subject" class="w-full"
+                        style="margin-bottom:16px; padding:8px; width:100%; border:1px solid #ddd; border-radius:6px;"
+                        placeholder="Re: Votre demande..." required>
+
+                    <label class="form-label" style="display:block; margin-bottom:8px;">Message</label>
+                    <textarea id="reply-message" rows="6" class="w-full"
+                        style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; margin-bottom:24px;"
+                        placeholder="Bonjour..." required></textarea>
+
+                    <div style="display:flex; justify-content:flex-end; gap:12px;">
+                        <button type="button" class="btn btn-ghost"
+                            onclick="document.getElementById('modal-reply').close()">Annuler</button>
+                        <button type="button" class="btn btn-primary" onclick="submitReply()">Envoyer</button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
     </section>
 
     <div id="toast" class="toast">Action effectuée</div>
