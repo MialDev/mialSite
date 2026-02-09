@@ -1547,6 +1547,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         else if (data && data.connected) USER_MAILBOXES = [data];
       }
       if (window.loadProfiles) window.loadProfiles();
+
+      // --- ONBOARDING CIBLÉ (Juste après connexion OAuth) ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const isJustConnected = urlParams.get('google_connected') === 'true' ||
+        urlParams.get('microsoft_connected') === 'true' ||
+        urlParams.get('connected') === 'true';
+
+      // Condition : Vient de se connecter + A une boite mail + N'a PAS encore de profil configuré
+      if (isJustConnected && USER_MAILBOXES.length > 0 && PROFILES_BY_ID.size === 0) {
+        console.log("🎯 Retour OAuth détecté : Lancement configuration initiale...");
+
+        setTimeout(() => {
+          // Nettoyage de l'URL pour ne pas rouvrir la modale si l'utilisateur rafraîchit la page
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+
+          // Ouverture de la création avec la boite mail connectée
+          const firstMailbox = USER_MAILBOXES[0];
+          if (window.openEditorForCreation) {
+            window.openEditorForCreation(firstMailbox);
+          }
+        }, 500);
+      }
     } catch (e) { console.error(e); }
   }
 
