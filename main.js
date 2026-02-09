@@ -252,10 +252,24 @@ window.closeAccountModal = function () {
 window.openEditorForCreation = function (mailbox) {
   window.closeAccountModal();
   window.showEditor(false);
+
   const accId = mailbox.id || mailbox.email_account_id;
+  // [UX] Récupération sécurisée de l'email
+  const emailVal = mailbox.email_address || mailbox.email || "";
+
   if (!accId) { alert("Erreur technique: ID absent"); return; }
+
   document.getElementById('f-account').value = accId;
-  document.getElementById('f-recipient').value = mailbox.email || mailbox.email_address || "";
+
+  // [UX] Pré-remplissage automatique du destinataire
+  const recipientInput = document.getElementById('f-recipient');
+  if (recipientInput) {
+    recipientInput.value = emailVal;
+    // Feedback visuel léger
+    recipientInput.style.backgroundColor = "#f0f9ff";
+    setTimeout(() => recipientInput.style.backgroundColor = "", 500);
+  }
+
   document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
   document.getElementById('btn-save').textContent = "CRÉER L'AUTOMATISATION";
 };
