@@ -249,25 +249,36 @@ window.closeAccountModal = function () {
   document.getElementById('modal-account-select').style.display = 'none';
 };
 
-window.openEditorForCreation = function (mailbox) {
+// Correction : Ajout de 'async' pour pouvoir utiliser 'await'
+window.openEditorForCreation = async function (mailbox) {
   window.closeAccountModal();
-  window.showEditor(false);
+
+  // 1. ON ATTEND que l'éditeur soit totalement prêt et réinitialisé
+  await window.showEditor(false);
 
   const accId = mailbox.id || mailbox.email_account_id;
-  // [UX] Récupération sécurisée de l'email
+  // Récupération sécurisée de l'email
   const emailVal = mailbox.email_address || mailbox.email || "";
 
   if (!accId) { alert("Erreur technique: ID absent"); return; }
 
+  // 2. Remplissage du Compte Source
   document.getElementById('f-account').value = accId;
 
-  // [UX] Pré-remplissage automatique du destinataire
+  // 3. Remplissage du Destinataire (Maintenant ça va rester !)
   const recipientInput = document.getElementById('f-recipient');
   if (recipientInput) {
     recipientInput.value = emailVal;
-    // Feedback visuel léger
+    // Petit effet visuel
     recipientInput.style.backgroundColor = "#f0f9ff";
     setTimeout(() => recipientInput.style.backgroundColor = "", 500);
+  }
+
+  // 4. Exclusion par défaut (assistant@mial.be)
+  const excludeContainer = document.getElementById('container-exclude');
+  if (excludeContainer && excludeContainer.loadEmails) {
+    // On pré-remplit le champ exclusion
+    excludeContainer.loadEmails('assistant@mial.be');
   }
 
   document.getElementById('editor-main-title').textContent = "Créer une nouvelle automatisation";
