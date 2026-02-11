@@ -1,0 +1,3 @@
+Contact: mailto:victor.schyns@hotmail.com
+Policy: https://mial.be/security
+Preferred-Languages: fr, en
