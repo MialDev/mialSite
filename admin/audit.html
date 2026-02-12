@@ -111,6 +111,12 @@
             opacity: 0.9;
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #94a3b8;
+        }
+
         .table-container {
             background: var(--card-bg);
             border-radius: 8px;
@@ -167,6 +173,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
             color: var(--text-muted);
+            font-family: monospace;
+            cursor: help;
         }
 
         pre {
@@ -240,7 +248,10 @@
                 <option value="200">200</option>
             </select>
         </div>
-        <button onclick="loadLogs()">Refresh</button>
+        <div style="display:flex; gap:8px;">
+            <button onclick="filtersChanged()">🔍 Filter</button>
+            <button onclick="exportCSV()" style="background:var(--success);">📥 Export CSV</button>
+        </div>
     </div>
 
     <!-- Table -->
@@ -265,8 +276,18 @@
         </table>
     </div>
 
+    <!-- Pagination -->
+    <div style="display:flex; justify-content:center; align-items:center; margin-top:16px; gap:16px;">
+        <button id="btn-prev" onclick="changePage(-1)" disabled>⬅️ Previous</button>
+        <span id="page-indicator" style="font-weight:500; font-size:14px;">Page 1</span>
+        <button id="btn-next" onclick="changePage(1)">Next ➡️</button>
+    </div>
+
     <script>
         const API_BASE = '/portal-api'; // Adjust if needed
+        let currentOffset = 0;
+        let currentLimit = 50;
+        let totalCount = 0;
 
         async function fetchWithAuth(url) {
             // Assume Basic Auth or Session Cookie is handled by browser/admin context
@@ -287,56 +308,142 @@
             }
         }
 
+        function getFilters() {
+            return {
+                action: document.getElementById('f-action').value,
+                email: document.getElementById('f-email').value,
+                ip: document.getElementById('f-ip').value,
+                success: document.getElementById('f-success').value
+            };
+        }
+
+        function filtersChanged() {
+            currentOffset = 0;
+            loadLogs();
+        }
+
         async function loadLogs() {
+            currentLimit = parseInt(document.getElementById('f-limit').value);
+
             const params = new URLSearchParams({
-                limit: document.getElementById('f-limit').value,
-                offset: 0
+                limit: currentLimit,
+                offset: currentOffset,
+                ...getFilters()
             });
 
-            const action = document.getElementById('f-action').value;
-            if (action) params.append('action', action);
-
-            const email = document.getElementById('f-email').value;
-            if (email) params.append('email', email);
-
-            const ip = document.getElementById('f-ip').value;
-            if (ip) params.append('ip', ip);
-
-            const success = document.getElementById('f-success').value;
-            if (success) params.append('success', success);
+            // Remove empty filters
+            for (const [key, value] of params.entries()) {
+                if (!value) params.delete(key);
+            }
 
             try {
-                const logs = await fetchWithAuth(`${API_BASE}/admin/api/audit?${params}`);
+                // UI Loading State
                 const tbody = document.getElementById('logsBody');
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading...</td></tr>';
+                document.getElementById('btn-prev').disabled = true;
+                document.getElementById('btn-next').disabled = true;
+
+                // V2 Endpoint call
+                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/logs?${params}`);
+                const logs = data.rows || [];
+                totalCount = data.total_count || 0;
+
                 tbody.innerHTML = '';
 
                 if (logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No logs found</td></tr>';
-                    return;
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No logs found</td></tr>';
+                } else {
+                    logs.forEach(log => {
+                        const tr = document.createElement('tr');
+                        const statusClass = log.success ? 'status-success' : 'status-fail';
+                        const statusText = log.success ? 'SUCCESS' : 'FAILURE';
+                        // Clean defaults
+                        const detailsObj = log.detail || {};
+                        const detailsStr = JSON.stringify(detailsObj);
+
+                        tr.innerHTML = `
+                            <td>${new Date(log.ts).toLocaleString()}</td>
+                            <td style="font-weight:600;">${log.action}</td>
+                            <td>${log.actor_email || '-'}</td>
+                            <td>${log.target_type || '-'} ${log.target_id ? `(${log.target_id})` : ''}</td>
+                            <td><code>${log.ip || '-'}</code></td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td class="detail-cell" title='${detailsStr}'>${detailsStr}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 }
 
-                logs.forEach(log => {
-                    const tr = document.createElement('tr');
-                    const statusClass = log.success ? 'status-success' : 'status-fail';
-                    const statusText = log.success ? 'SUCCESS' : 'FAILURE';
-                    const detailsObj = log.detail || {};
-                    const detailsStr = JSON.stringify(detailsObj);
+                // Update Pagination Controls
+                const totalPages = Math.ceil(totalCount / currentLimit);
+                const currentPage = Math.floor(currentOffset / currentLimit) + 1;
 
-                    tr.innerHTML = `
-                        <td>${new Date(log.ts).toLocaleString()}</td>
-                        <td style="font-weight:600;">${log.action}</td>
-                        <td>${log.actor_email}</td>
-                        <td>${log.target_type || '-'} ${log.target_id ? `(${log.target_id})` : ''}</td>
-                        <td><code>${log.ip}</code></td>
-                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                        <td class="detail-cell" title='${detailsStr}'>${detailsStr}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                document.getElementById('btn-prev').disabled = currentOffset === 0;
+                document.getElementById('btn-next').disabled = (currentOffset + logs.length) >= totalCount;
+                document.getElementById('page-indicator').innerText = `Page ${currentPage} / ${totalPages || 1} (Total: ${totalCount})`;
 
             } catch (e) {
                 console.error("Logs load failed", e);
                 document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:red;text-align:center;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        function changePage(direction) {
+            if (direction === 1) currentOffset += currentLimit;
+            else if (direction === -1) currentOffset = Math.max(0, currentOffset - currentLimit);
+            loadLogs();
+        }
+
+        async function exportCSV() {
+            // max 1000 for export
+            const params = new URLSearchParams({
+                limit: 1000,
+                offset: 0,
+                ...getFilters()
+            });
+
+            for (const [key, value] of params.entries()) {
+                if (!value) params.delete(key);
+            }
+
+            try {
+                // V2 Endpoint call
+                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/logs?${params}`);
+                const logs = data.rows || [];
+
+                if (!logs.length) return alert("Nothing to export");
+
+                // Convert to CSV
+                const headers = ["Timestamp", "Action", "Actor", "Target Type", "Target ID", "IP", "Success", "Details"];
+                const csvRows = [headers.join(",")];
+
+                for (const row of logs) {
+                    const cleanDetail = JSON.stringify(row.detail || "").replace(/"/g, '""');
+                    const values = [
+                        `"${row.ts}"`,
+                        `"${row.action}"`,
+                        `"${row.actor_email || ''}"`,
+                        `"${row.target_type || ''}"`,
+                        `"${row.target_id || ''}"`,
+                        `"${row.ip || ''}"`,
+                        row.success ? "SUCCESS" : "FAILURE",
+                        `"${cleanDetail}"`
+                    ];
+                    csvRows.push(values.join(","));
+                }
+
+                const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.setAttribute("hidden", "");
+                a.setAttribute("href", url);
+                a.setAttribute("download", `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+            } catch (e) {
+                alert("Export failed: " + e.message);
             }
         }
 
