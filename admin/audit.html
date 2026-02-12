@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - mIAl Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .h-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .filters {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input,
+        select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .detail-cell {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-muted);
+        }
+
+        pre {
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="h-title">🛡️ Audit Logs Dashboard</div>
+        <div style="font-size: 14px; color: var(--text-muted);">
+            Retention: 12 months (Archived to S3)
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card">
+            <div class="kpi-label">Logins (24h)</div>
+            <div class="kpi-value" id="kpi-login-ok">-</div>
+            <div style="font-size: 12px; color: var(--success);">Success</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Failed Logins (24h)</div>
+            <div class="kpi-value" id="kpi-login-fail" style="color: var(--danger)">-</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Alerts</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Admin Actions (24h)</div>
+            <div class="kpi-value" id="kpi-admin">-</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Total Events (7 days)</div>
+            <div class="kpi-value" id="kpi-total">-</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <div class="filter-group">
+            <label>Action</label>
+            <input type="text" id="f-action" placeholder="ex: LOGIN">
+        </div>
+        <div class="filter-group">
+            <label>Email</label>
+            <input type="text" id="f-email" placeholder="user@example.com">
+        </div>
+        <div class="filter-group">
+            <label>IP</label>
+            <input type="text" id="f-ip" placeholder="192.168...">
+        </div>
+        <div class="filter-group">
+            <label>Success?</label>
+            <select id="f-success">
+                <option value="">All</option>
+                <option value="true">✅ Success</option>
+                <option value="false">❌ Failure</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Limit</label>
+            <select id="f-limit">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+            </select>
+        </div>
+        <button onclick="loadLogs()">Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Actor</th>
+                    <th>Target</th>
+                    <th>IP</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody id="logsBody">
+                <tr>
+                    <td colspan="7" style="text-align:center;">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_BASE = '/portal-api'; // Adjust if needed
+
+        async function fetchWithAuth(url) {
+            // Assume Basic Auth or Session Cookie is handled by browser/admin context
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`API Error: ${res.status}`);
+            return res.json();
+        }
+
+        async function loadSummary() {
+            try {
+                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/summary`);
+                document.getElementById('kpi-login-ok').innerText = data.login_ok_24h;
+                document.getElementById('kpi-login-fail').innerText = data.login_fail_24h;
+                document.getElementById('kpi-admin').innerText = data.admin_actions_24h;
+                document.getElementById('kpi-total').innerText = data.total_events_7d;
+            } catch (e) {
+                console.error("Summary load failed", e);
+            }
+        }
+
+        async function loadLogs() {
+            const params = new URLSearchParams({
+                limit: document.getElementById('f-limit').value,
+                offset: 0
+            });
+
+            const action = document.getElementById('f-action').value;
+            if (action) params.append('action', action);
+
+            const email = document.getElementById('f-email').value;
+            if (email) params.append('email', email);
+
+            const ip = document.getElementById('f-ip').value;
+            if (ip) params.append('ip', ip);
+
+            const success = document.getElementById('f-success').value;
+            if (success) params.append('success', success);
+
+            try {
+                const logs = await fetchWithAuth(`${API_BASE}/admin/api/audit?${params}`);
+                const tbody = document.getElementById('logsBody');
+                tbody.innerHTML = '';
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No logs found</td></tr>';
+                    return;
+                }
+
+                logs.forEach(log => {
+                    const tr = document.createElement('tr');
+                    const statusClass = log.success ? 'status-success' : 'status-fail';
+                    const statusText = log.success ? 'SUCCESS' : 'FAILURE';
+                    const detailsObj = log.detail || {};
+                    const detailsStr = JSON.stringify(detailsObj);
+
+                    tr.innerHTML = `
+                        <td>${new Date(log.ts).toLocaleString()}</td>
+                        <td style="font-weight:600;">${log.action}</td>
+                        <td>${log.actor_email}</td>
+                        <td>${log.target_type || '-'} ${log.target_id ? `(${log.target_id})` : ''}</td>
+                        <td><code>${log.ip}</code></td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td class="detail-cell" title='${detailsStr}'>${detailsStr}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (e) {
+                console.error("Logs load failed", e);
+                document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:red;text-align:center;">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        // Init
+        loadSummary();
+        loadLogs();
+    </script>
+</body>
+
+</html>
