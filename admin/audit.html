@@ -5,154 +5,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Logs - mIAl Security</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/logos/logo-mial-small-color.svg">
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- Admin Guard -->
+    <script src="/api.js"></script>
+    <script>
+        (async () => {
+            try {
+                const res = await fetch(apiUrl('/me'), { credentials: 'include' });
+                if (!res.ok) {
+                    if (res.status === 401) window.location.replace('/Connexion.html');
+                    else window.location.replace('/dashboard.html');
+                    return;
+                }
+                const user = await res.json();
+                if (user.role !== 'admin' && user.is_admin !== true) {
+                    window.location.replace('/dashboard.html');
+                }
+            } catch (e) {
+                window.location.replace('/Connexion.html');
+            }
+        })();
+    </script>
+
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .h-title {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .kpi-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border);
-        }
-
-        .kpi-label {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .kpi-value {
-            font-size: 28px;
-            font-weight: 600;
-        }
-
-        .filters {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 8px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-            align-items: end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .filter-group label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-        }
-
-        input,
-        select {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #94a3b8;
-        }
-
-        .table-container {
-            background: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th {
-            background: #f1f5f9;
-            text-align: left;
-            padding: 12px 16px;
-            font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
+        /* Specific styles for audit logs table if needed, keeping it minimal and consistent */
         .status-badge {
             display: inline-block;
             padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            border-radius: 99px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
@@ -171,133 +54,146 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: var(--text-muted);
+            color: var(--muted);
             font-family: monospace;
             cursor: help;
-        }
-
-        pre {
-            background: #f8fafc;
-            padding: 8px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-size: 12px;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header">
-        <div class="h-title">🛡️ Audit Logs Dashboard</div>
-        <div style="font-size: 14px; color: var(--text-muted);">
-            Retention: 12 months
-        </div>
-    </div>
+    <header id="site-header" class="nav">
+        <div id="header-placeholder"></div>
+    </header>
 
-    <!-- KPI Cards -->
-    <div class="kpi-grid" id="kpiGrid">
-        <div class="kpi-card">
-            <div class="kpi-label">Logins (24h)</div>
-            <div class="kpi-value" id="kpi-login-ok">-</div>
-            <div style="font-size: 12px; color: var(--success);">Success</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Failed Logins (24h)</div>
-            <div class="kpi-value" id="kpi-login-fail" style="color: var(--danger)">-</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Alerts</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Admin Actions (24h)</div>
-            <div class="kpi-value" id="kpi-admin">-</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Total Events (7 days)</div>
-            <div class="kpi-value" id="kpi-total">-</div>
-        </div>
-    </div>
+    <section class="section" style="padding-top: 140px;">
+        <div class="container">
 
-    <!-- Filters -->
-    <div class="filters">
-        <div class="filter-group">
-            <label>Action</label>
-            <input type="text" id="f-action" placeholder="ex: LOGIN">
-        </div>
-        <div class="filter-group">
-            <label>Email</label>
-            <input type="text" id="f-email" placeholder="user@example.com">
-        </div>
-        <div class="filter-group">
-            <label>IP</label>
-            <input type="text" id="f-ip" placeholder="192.168...">
-        </div>
-        <div class="filter-group">
-            <label>Success?</label>
-            <select id="f-success">
-                <option value="">All</option>
-                <option value="true">✅ Success</option>
-                <option value="false">❌ Failure</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Limit</label>
-            <select id="f-limit">
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-            </select>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <button onclick="filtersChanged()">🔍 Filter</button>
-            <button onclick="exportCSV()" style="background:var(--success);">📥 Export CSV</button>
-        </div>
-    </div>
+            <div class="card glass-static" style="margin-bottom: 32px; padding: 32px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 style="font-size: 1.8rem; margin-bottom: 8px;">🛡️ Audit Logs</h1>
+                        <p class="muted">Historique de sécurité · Retention: 12 mois</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <button onclick="exportCSV()" class="btn btn-primary btn-small">📥 Export CSV</button>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Table -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Action</th>
-                    <th>Actor</th>
-                    <th>Target</th>
-                    <th>IP</th>
-                    <th>Status</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody id="logsBody">
-                <tr>
-                    <td colspan="7" style="text-align:center;">Loading...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <!-- KPI Cards -->
+            <div class="grid-4" style="gap: 16px; margin-bottom: 32px;" id="kpiGrid">
+                <div class="card" style="padding: 20px; background:white;">
+                    <div class="muted" style="font-size: 0.9rem; margin-bottom: 8px;">Logins (24h)</div>
+                    <div class="h2" style="font-size: 1.8rem; margin:0;" id="kpi-login-ok">-</div>
+                    <div style="font-size: 0.8rem; color: var(--green);">Success</div>
+                </div>
+                <div class="card" style="padding: 20px; background:white;">
+                    <div class="muted" style="font-size: 0.9rem; margin-bottom: 8px;">Failed Logins (24h)</div>
+                    <div class="h2" style="font-size: 1.8rem; margin:0; color: var(--red);" id="kpi-login-fail">-</div>
+                    <div style="font-size: 0.8rem; color: var(--muted);">Alerts</div>
+                </div>
+                <div class="card" style="padding: 20px; background:white;">
+                    <div class="muted" style="font-size: 0.9rem; margin-bottom: 8px;">Admin Actions (24h)</div>
+                    <div class="h2" style="font-size: 1.8rem; margin:0;" id="kpi-admin">-</div>
+                </div>
+                <div class="card" style="padding: 20px; background:white;">
+                    <div class="muted" style="font-size: 0.9rem; margin-bottom: 8px;">Total Events (7 days)</div>
+                    <div class="h2" style="font-size: 1.8rem; margin:0;" id="kpi-total">-</div>
+                </div>
+            </div>
 
-    <!-- Pagination -->
-    <div style="display:flex; justify-content:center; align-items:center; margin-top:16px; gap:16px;">
-        <button id="btn-prev" onclick="changePage(-1)" disabled>⬅️ Previous</button>
-        <span id="page-indicator" style="font-weight:500; font-size:14px;">Page 1</span>
-        <button id="btn-next" onclick="changePage(1)">Next ➡️</button>
-    </div>
+            <!-- Filters -->
+            <div class="card glass-static" style="padding: 24px; margin-bottom: 24px;">
+                <div style="display:flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label class="form-label">Action</label>
+                        <input type="text" id="f-action" class="form-input" placeholder="ex: LOGIN">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Email</label>
+                        <input type="text" id="f-email" class="form-input" placeholder="user@example.com">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label class="form-label">IP</label>
+                        <input type="text" id="f-ip" class="form-input" placeholder="192.168...">
+                    </div>
+                    <div style="width: 150px;">
+                        <label class="form-label">Success?</label>
+                        <select id="f-success" class="form-select">
+                            <option value="">All</option>
+                            <option value="true">✅ Success</option>
+                            <option value="false">❌ Failure</option>
+                        </select>
+                    </div>
+                    <div style="width: 100px;">
+                        <label class="form-label">Limit</label>
+                        <select id="f-limit" class="form-select">
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+                    <button onclick="filtersChanged()" class="btn btn-secondary">🔍 Filtrer</button>
+                </div>
+            </div>
 
+            <!-- Table -->
+            <div class="card glass-static" style="padding: 0; overflow: hidden;">
+                <div style="overflow-x: auto;">
+                    <table class="dashboard-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Action</th>
+                                <th>Actor</th>
+                                <th>Target</th>
+                                <th>IP</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsBody">
+                            <tr>
+                                <td colspan="7" style="text-align:center; padding: 40px;" class="muted">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div style="display:flex; justify-content:center; align-items:center; margin-top:24px; gap:16px;">
+                <button id="btn-prev" class="btn btn-ghost" onclick="changePage(-1)" disabled>⬅️ Previous</button>
+                <span id="page-indicator" class="muted" style="font-weight:500; font-size:0.9rem;">Page 1</span>
+                <button id="btn-next" class="btn btn-ghost" onclick="changePage(1)">Next ➡️</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="/main.js"></script>
     <script>
-        const API_BASE = '/portal-api'; // Adjust if needed
+        // API_BASE is handled by apiUrl in api.js/main.js logic usually, but here we construct paths manually or use apiUrl helper if available globally
+        // dashboard/audit logic re-implementation using styles
+
         let currentOffset = 0;
         let currentLimit = 50;
         let totalCount = 0;
 
-        async function fetchWithAuth(url) {
-            // Assume Basic Auth or Session Cookie is handled by browser/admin context
-            const res = await fetch(url);
+        async function fetchWithAuth(path) {
+            // apiUrl helper is globally available via api.js included in head
+            const url = apiUrl(path);
+            const res = await fetch(url, { credentials: 'include' });
             if (!res.ok) throw new Error(`API Error: ${res.status}`);
             return res.json();
         }
 
         async function loadSummary() {
             try {
-                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/summary`);
+                const data = await fetchWithAuth('/admin/api/audit/summary');
                 document.getElementById('kpi-login-ok').innerText = data.login_ok_24h;
                 document.getElementById('kpi-login-fail').innerText = data.login_fail_24h;
                 document.getElementById('kpi-admin').innerText = data.admin_actions_24h;
@@ -330,7 +226,7 @@
                 ...getFilters()
             });
 
-            // Remove empty filters (Backend is now tolerant but this is cleaner)
+            // Remove empty filters
             for (const [key, value] of Array.from(params.entries())) {
                 if (value === "" || value == null) params.delete(key);
             }
@@ -338,36 +234,35 @@
             try {
                 // UI Loading State
                 const tbody = document.getElementById('logsBody');
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px;" class="muted">Loading...</td></tr>';
                 document.getElementById('btn-prev').disabled = true;
                 document.getElementById('btn-next').disabled = true;
 
-                // V2 Endpoint call
-                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/logs?${params}`);
+                // Call API
+                const data = await fetchWithAuth(`/admin/api/audit/logs?${params}`);
                 const logs = data.rows || [];
                 totalCount = data.total_count || 0;
 
                 tbody.innerHTML = '';
 
                 if (logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No logs found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px;" class="muted">No logs found</td></tr>';
                 } else {
                     logs.forEach(log => {
                         const tr = document.createElement('tr');
                         const statusClass = log.success ? 'status-success' : 'status-fail';
                         const statusText = log.success ? 'SUCCESS' : 'FAILURE';
-                        // Clean defaults
                         const detailsObj = log.detail || {};
                         const detailsStr = JSON.stringify(detailsObj);
 
                         tr.innerHTML = `
-                            <td>${new Date(log.ts).toLocaleString()}</td>
+                            <td class="muted">${new Date(log.ts).toLocaleString()}</td>
                             <td style="font-weight:600;">${log.action}</td>
                             <td>${log.actor_email || '-'}</td>
-                            <td>${log.target_type || '-'} ${log.target_id ? `(${log.target_id})` : ''}</td>
-                            <td><code>${log.ip || '-'}</code></td>
+                            <td>${log.target_type || '-'} <span class="muted">${log.target_id ? `(${log.target_id})` : ''}</span></td>
+                            <td><code style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-size:0.85em;">${log.ip || '-'}</code></td>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                            <td class="detail-cell" title='${detailsStr}'>${detailsStr}</td>
+                            <td class="detail-cell" title='${detailsStr.replace(/'/g, "&#39;")}'>${detailsStr}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -383,7 +278,7 @@
 
             } catch (e) {
                 console.error("Logs load failed", e);
-                document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:red;text-align:center;">Error: ${e.message}</td></tr>`;
+                document.getElementById('logsBody').innerHTML = `<tr><td colspan="7" style="color:var(--red); text-align:center; padding:20px;">Error: ${e.message}</td></tr>`;
             }
         }
 
@@ -394,7 +289,6 @@
         }
 
         async function exportCSV() {
-            // max 1000 for export
             const params = new URLSearchParams({
                 limit: 1000,
                 offset: 0,
@@ -406,13 +300,11 @@
             }
 
             try {
-                // V2 Endpoint call
-                const data = await fetchWithAuth(`${API_BASE}/admin/api/audit/logs?${params}`);
+                const data = await fetchWithAuth(`/admin/api/audit/logs?${params}`);
                 const logs = data.rows || [];
 
                 if (!logs.length) return alert("Nothing to export");
 
-                // Convert to CSV
                 const headers = ["Timestamp", "Action", "Actor", "Target Type", "Target ID", "IP", "Success", "Details"];
                 const csvRows = [headers.join(",")];
 
@@ -434,9 +326,9 @@
                 const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
-                a.setAttribute("hidden", "");
-                a.setAttribute("href", url);
-                a.setAttribute("download", `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+                a.hidden = true;
+                a.href = url;
+                a.download = `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -447,8 +339,10 @@
         }
 
         // Init
-        loadSummary();
-        loadLogs();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSummary();
+            loadLogs();
+        });
     </script>
 </body>
 
