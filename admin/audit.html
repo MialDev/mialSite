@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Logs - mIAl Security</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
@@ -20,7 +19,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
             margin: 0;
@@ -192,7 +191,7 @@
     <div class="header">
         <div class="h-title">🛡️ Audit Logs Dashboard</div>
         <div style="font-size: 14px; color: var(--text-muted);">
-            Retention: 12 months (Archived to S3)
+            Retention: 12 months
         </div>
     </div>
 
@@ -331,9 +330,9 @@
                 ...getFilters()
             });
 
-            // Remove empty filters
-            for (const [key, value] of params.entries()) {
-                if (!value) params.delete(key);
+            // Remove empty filters (Backend is now tolerant but this is cleaner)
+            for (const [key, value] of Array.from(params.entries())) {
+                if (value === "" || value == null) params.delete(key);
             }
 
             try {
@@ -402,8 +401,8 @@
                 ...getFilters()
             });
 
-            for (const [key, value] of params.entries()) {
-                if (!value) params.delete(key);
+            for (const [key, value] of Array.from(params.entries())) {
+                if (value === "" || value == null) params.delete(key);
             }
 
             try {
